@@ -1,9 +1,10 @@
 # gorm-multitenancy
 
-[![GoDoc](https://godoc.org/github.com/bartventer/gorm-multitenancy?status.svg)](https://godoc.org/github.com/bartventer/gorm-multitenancy)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy)
-[![codecov](https://codecov.io/gh/bartventer/gorm-multitenancy/branch/master/graph/badge.svg)](https://codecov.io/gh/bartventer/gorm-multitenancy)
-[![Build Status](https://travis-ci.org/bartventer/gorm-multitenancy.svg?branch=master)](https://travis-ci.org/bartventer/gorm-multitenancy)
+[![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
+[![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml)
+[![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](LICENSE)
 
 There are three common approaches to multitenancy in a database:
 - Shared database, shared schema
