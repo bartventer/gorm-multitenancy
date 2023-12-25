@@ -1,0 +1,55 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      DB_NAME: test_tenants
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_PORT: 5432
+      DB_HOST: localhost
+    services:
+      db:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        volumes:
+          - db-data:/var/lib/postgresql/data
+    steps:
+
+    - name: Set up Go 1.21
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.21
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Test
+      run: go test -v -coverprofile=./profile.cov ./...
+      
+    - uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: ./profile.cov
