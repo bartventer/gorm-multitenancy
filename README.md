@@ -31,7 +31,7 @@ go get -u github.com/bartventer/gorm-multitenancy
 ## Usage
 
 ### PostgreSQL driver
-For a complete example, refer to the [examples](#examples) section.
+For a complete example refer to the [examples](#examples) section.
 ```go
 
 import (
@@ -121,6 +121,89 @@ func main(){
     // ... other operations
 }
 ```
+
+### echo middleware
+For a complete example refer to the [PostgreSQL with echo](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/echo) example.
+```go
+import (
+    "github.com/labstack/echo/v4"
+    multitenancymw "github.com/bartventer/gorm-multitenancy/middleware/echo"
+    "github.com/bartventer/gorm-multitenancy/scopes"
+    // ...
+)
+
+func main(){
+    // ...
+    e := echo.New()
+    // ... other middleware
+    // Add the multitenancy middleware
+    e.Use(multitenancymw.WithTenant(multitenancymw.WithTenantConfig{
+        DB: db,
+        Skipper: func(r *http.Request) bool {
+			return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
+		},
+        TenantGetters: multitenancymw.DefaultTenantGetters,
+    }))
+    // ... other middleware
+
+    // ... routes
+    e.GET("/books", func(c echo.Context) error {
+        // Get the tenant from context
+        tenant, _ := multitenancymw.TenantFromContext(c)
+        var books []Book
+        // Query the tenant specific schema
+        if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
+            return err
+        }
+        return c.JSON(http.StatusOK, books)
+    })
+
+    // ... rest of code
+}
+
+```
+
+### net/http middleware
+For a complete example refer to the [PostgreSQL with net/http](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/nethttp) example.
+```go
+import (
+    "net/http"
+    multitenancymw "github.com/bartventer/gorm-multitenancy/middleware/nethttp"
+    "github.com/bartventer/gorm-multitenancy/scopes"
+    // ...
+)
+
+func main(){
+    // ...
+    r := chi.NewRouter() // your router of choice
+    // ... other middleware
+    // Add the multitenancy middleware
+    r.Use(multitenancymw.WithTenant(multitenancymw.WithTenantConfig{
+        DB: db,
+        Skipper: func(r *http.Request) bool {
+            return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
+        },
+        TenantGetters: multitenancymw.DefaultTenantGetters,
+    }))
+    // ... other middleware
+
+    // ... routes
+    r.Get("/books", func(w http.ResponseWriter, r *http.Request) {
+        // Get the tenant from context
+        tenant, _ := multitenancymw.TenantFromContext(r.Context())
+        var books []Book
+        // Query the tenant specific schema
+        if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
+            return err
+        }
+        return c.JSON(http.StatusOK, books)
+    })
+
+    // ... rest of code
+}
+
+```
+
 
 ## Examples
 
