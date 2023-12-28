@@ -75,8 +75,11 @@ func main(){
     // Register the models
     // Models are categorized as either public or tenant specific, which allow for simpler migrations
     postgres.RegisterModels(
-        &Tenant{},  // Public model
-        &Book{},   // Tenant specific model (implements TenantTabler)
+        db,        // Database connection
+        // Public models (does not implement TenantTabler or implements TenantTabler with IsTenantTable() returning false)
+        &Tenant{},  
+        // Tenant specific model (implements TenantTabler)
+        &Book{},
         )
 
     // Migrate the database
