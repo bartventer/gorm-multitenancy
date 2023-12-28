@@ -36,7 +36,7 @@ For a complete example, refer to the [examples](#examples) section.
 
 import (
     "gorm.io/gorm"
-    "gorm.io/gorm-multitenancy/driver/postgres"
+    "github.com/bartventer/gorm-multitenancy/drivers/postgres"
 )
 
 // For models that are tenant specific, ensure that TenantTabler is implemented
