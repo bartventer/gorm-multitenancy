@@ -153,7 +153,7 @@ func main(){
         var books []Book
         // Query the tenant specific schema
         if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
-            return err
+            return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
         }
         return c.JSON(http.StatusOK, books)
     })
@@ -167,8 +167,11 @@ func main(){
 For a complete example refer to the [PostgreSQL with net/http](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/nethttp) example.
 ```go
 import (
+    "encoding/json"
     "net/http"
+
     multitenancymw "github.com/bartventer/gorm-multitenancy/middleware/nethttp"
+    "github.com/go-chi/chi/v5"
     "github.com/bartventer/gorm-multitenancy/scopes"
     // ...
 )
@@ -183,7 +186,7 @@ func main(){
         Skipper: func(r *http.Request) bool {
             return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
         },
-        TenantGetters: multitenancymw.DefaultTenantGetters,
+        TenantGetters: multitenancymw.DefaultTenantGetters, 
     }))
     // ... other middleware
 
@@ -194,9 +197,13 @@ func main(){
         var books []Book
         // Query the tenant specific schema
         if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
-            return err
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
         }
-        return c.JSON(http.StatusOK, books)
+        if err := json.NewEncoder(w).Encode(books); err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
     })
 
     // ... rest of code
