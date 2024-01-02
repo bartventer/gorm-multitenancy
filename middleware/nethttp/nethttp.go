@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	mw "github.com/bartventer/gorm-multitenancy/middleware"
+	mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
 )
 
 // TenantFromContext retrieves the tenant from the request context

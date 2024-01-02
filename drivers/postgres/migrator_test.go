@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy"
-	"github.com/bartventer/gorm-multitenancy/internal"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
+	"github.com/bartventer/gorm-multitenancy/v2/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

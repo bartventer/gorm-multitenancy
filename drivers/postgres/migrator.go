@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	multicontext "github.com/bartventer/gorm-multitenancy/context"
+	multicontext "github.com/bartventer/gorm-multitenancy/v2/context"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 const (
-	defaultSchema = "public" // publicSchema is the public schema name
+	PublicSchemaName = "public" // PublicSchemaName is the name of the public schema
 )
 
 type multitenancyMigrationOption uint
@@ -61,11 +61,10 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 		fmt.Println("[multitenancy] ✅ private tables migrated")
 
 		// prevent this connection to be reutilized with wrong tenant
-		if err := setSearchPath(tx, defaultSchema); err != nil {
+		if err := setSearchPath(tx, PublicSchemaName); err != nil {
 			return err
 		}
 
-		// return nil will commit the whole transaction
 		return nil
 	})
 }

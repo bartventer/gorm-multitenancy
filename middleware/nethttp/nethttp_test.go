@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/internal"
-	mw "github.com/bartventer/gorm-multitenancy/middleware"
+	"github.com/bartventer/gorm-multitenancy/v2/internal"
+	mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
 	"github.com/stretchr/testify/assert"
 )
 

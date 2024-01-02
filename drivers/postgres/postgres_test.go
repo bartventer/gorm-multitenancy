@@ -1,4 +1,3 @@
-// Add other test functions here
 package postgres
 
 import (
@@ -7,14 +6,29 @@ import (
 	"reflect"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy"
-	"github.com/bartventer/gorm-multitenancy/internal"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
+	"github.com/bartventer/gorm-multitenancy/v2/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
 )
 
 type (
+	invalidNonTabler struct {
+		gorm.Model
+		Name string
+	}
+
+	invalidPublicUser struct {
+		gorm.Model
+		Name string
+	}
+
+	invalidPrivateProduct struct {
+		gorm.Model
+		Name string
+	}
+
 	testUser struct {
 		gorm.Model
 		Name string
@@ -26,8 +40,20 @@ type (
 	}
 )
 
+func (invalidPublicUser) TableName() string {
+	return "users" // invalid table name; should be "public.users"
+}
+
+func (invalidPrivateProduct) TableName() string {
+	return fmt.Sprintf("%s.products", PublicSchemaName) // invalid table name; should be "products"
+}
+
+var _ multitenancy.TenantTabler = (*invalidPrivateProduct)(nil)
+
+func (invalidPrivateProduct) IsTenantTable() bool { return true }
+
 func (testUser) TableName() string {
-	return "users"
+	return fmt.Sprintf("%s.users", PublicSchemaName)
 }
 
 func (testProduct) TableName() string {
@@ -63,8 +89,11 @@ func TestOpen(t *testing.T) {
 				models: []interface{}{&testUser{}, &testProduct{}},
 			},
 			want: &Dialector{
-				Dialector:          *postgres.Open(dsn).(*postgres.Dialector),
-				multitenancyConfig: newMultitenancyConfig([]interface{}{&testUser{}, &testProduct{}}),
+				Dialector: *postgres.Open(dsn).(*postgres.Dialector),
+				multitenancyConfig: func() *multitenancyConfig {
+					cfg, _ := newMultitenancyConfig([]interface{}{&testUser{}, &testProduct{}})
+					return cfg
+				}(),
 			},
 		},
 	}
@@ -77,6 +106,16 @@ func TestOpen(t *testing.T) {
 	}
 }
 
+func TestOpen_InvalidModel(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Open() did not panic")
+		}
+	}()
+
+	Open(dsn, &invalidPublicUser{}, &invalidPrivateProduct{}, &invalidNonTabler{})
+}
+
 func TestNew(t *testing.T) {
 	config := Config{
 		DSN: dsn,
@@ -85,8 +124,11 @@ func TestNew(t *testing.T) {
 	models := []interface{}{&testUser{}, &testProduct{}}
 
 	want := &Dialector{
-		Dialector:          *postgres.New(config).(*postgres.Dialector),
-		multitenancyConfig: newMultitenancyConfig(models),
+		Dialector: *postgres.New(config).(*postgres.Dialector),
+		multitenancyConfig: func() *multitenancyConfig {
+			cfg, _ := newMultitenancyConfig(models)
+			return cfg
+		}(),
 	}
 
 	got := New(config, models...)
@@ -96,13 +138,33 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestNew_InvalidModel(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("New() did not panic")
+		}
+	}()
+
+	config := Config{
+		DSN: dsn,
+	}
+
+	models := []interface{}{&invalidPublicUser{}, &invalidPrivateProduct{}, &invalidNonTabler{}}
+
+	New(config, models...)
+}
+
 func TestNewMultitenancyConfig(t *testing.T) {
 	models := []interface{}{&testUser{}, &testProduct{}}
 
 	wantPublicModels := []interface{}{&testUser{}}
 	wantPrivateModels := []interface{}{&testProduct{}}
 
-	got := newMultitenancyConfig(models)
+	// got := newMultitenancyConfig(models)
+	got, err := newMultitenancyConfig(models)
+	if err != nil {
+		t.Errorf("newMultitenancyConfig() error = %v", err)
+	}
 
 	if !reflect.DeepEqual(got.publicModels, wantPublicModels) {
 		t.Errorf("newMultitenancyConfig() got publicModels = %v, want %v", got.publicModels, wantPublicModels)
@@ -114,6 +176,17 @@ func TestNewMultitenancyConfig(t *testing.T) {
 
 	if !reflect.DeepEqual(got.models, models) {
 		t.Errorf("newMultitenancyConfig() got models = %v, want %v", got.models, models)
+	}
+}
+
+func TestNewMultitenancyConfig_InvalidModel(t *testing.T) {
+	models := []interface{}{&invalidPublicUser{}, &invalidPrivateProduct{}, &invalidNonTabler{}}
+
+	for _, model := range models {
+		_, err := newMultitenancyConfig([]interface{}{model})
+		if err == nil {
+			t.Errorf("newMultitenancyConfig() error = %v, wantErr %v", err, true)
+		}
 	}
 }
 
@@ -193,8 +266,9 @@ func TestRegisterModels(t *testing.T) {
 		models []interface{}
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
 		{
 			name: "Test RegisterModels",
@@ -203,10 +277,25 @@ func TestRegisterModels(t *testing.T) {
 				models: []interface{}{&testUser{}, &testProduct{}},
 			},
 		},
+		{
+			name: "Test RegisterModels with invalid model",
+			args: args{
+				db:     db,
+				models: []interface{}{&invalidPublicUser{}, &invalidPrivateProduct{}, &invalidNonTabler{}},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			RegisterModels(tt.args.db, tt.args.models...)
+			err := RegisterModels(tt.args.db, tt.args.models...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RegisterModels() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
 			dialector := db.Dialector.(*Dialector)
 			if !reflect.DeepEqual(dialector.multitenancyConfig.models, tt.args.models) {
 				t.Errorf("RegisterModels() failed, expected models: %v, got: %v", tt.args.models, dialector.multitenancyConfig.models)

@@ -3,7 +3,7 @@ package echo
 import (
 	"net/http"
 
-	mw "github.com/bartventer/gorm-multitenancy/middleware"
+	mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
 	"github.com/labstack/echo/v4"
 )
 

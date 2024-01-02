@@ -1,6 +1,6 @@
 package nethttp
 
-import mw "github.com/bartventer/gorm-multitenancy/middleware"
+import mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
 
 type (
 	// WithTenantConfig defines the config for WithTenant middleware.

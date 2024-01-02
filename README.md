@@ -1,6 +1,6 @@
 # gorm-multitenancy
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy)
 [![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
 [![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml)
@@ -25,18 +25,34 @@ Current supported routers are listed below. Pull requests for other routers are 
 ## Installation
 
 ```bash
-go get -u github.com/bartventer/gorm-multitenancy
+go get -u github.com/bartventer/gorm-multitenancy/v2
 ```
 
 ## Usage
 
 ### PostgreSQL driver
+
+Important notes:
+- The driver uses the `public` schema for public models and the tenant specific schema for tenant specific models
+- All models must implement the `gorm.Tabler` interface
+- The table name for public models must be prefixed with `public.` (e.g. `public.books`), whereas the table name for tenant specific models must not contain any prefix (e.g. only `books`)
+- All tenant specific models must implement the `TenantTabler` interface, which classifies the model as a tenant specific model:
+    - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
+    - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
+    - The `TenantTabler` interface is also used to determine which models to drop when calling `DropSchemaForTenant`
+- Models can be registered in two ways:
+    - When creating the dialect, by passing the models as variadic arguments to `postgres.New` (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling `postgres.Open` (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
+    - By calling `postgres.RegisterModels` (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
+- Migrations can be performed in two ways (after registering the models):
+    - By calling `postgres.MigratePublicSchema` to create the public schema and migrate all public models
+    - By calling `postgres.CreateSchemaForTenant` to create the schema for the tenant and migrate all tenant specific models
+
 For a complete example refer to the [examples](#examples) section.
 ```go
 
 import (
     "gorm.io/gorm"
-    "github.com/bartventer/gorm-multitenancy/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v2/drivers/postgres"
 )
 
 // For models that are tenant specific, ensure that TenantTabler is implemented
@@ -49,7 +65,7 @@ type Tenant struct {
 }
 
 // Implement the gorm.Tabler interface
-func (t *Tenant) TableName() string {return "tenants"}
+func (t *Tenant) TableName() string {return "public.tenants"} // Note the public. prefix
 
 // Book is a tenant specific model
 type Book struct {
@@ -58,10 +74,10 @@ type Book struct {
 }
 
 // Implement the gorm.Tabler interface
-func (b *Book) TableName() string {return "books"}
+func (b *Book) TableName() string {return "books"} // Note the lack of prefix
 
 // Implement the TenantTabler interface
-func (b *Book) IsTenantTable() bool {return true}
+func (b *Book) IsTenantTable() bool {return true} // This classifies the model as a tenant specific model
 
 func main(){
     // Create the database connection
@@ -126,9 +142,9 @@ func main(){
 For a complete example refer to the [PostgreSQL with echo](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/echo) example.
 ```go
 import (
+    multitenancymw "github.com/bartventer/gorm-multitenancy/v2/middleware/echo"
+    "github.com/bartventer/gorm-multitenancy/v2/scopes"
     "github.com/labstack/echo/v4"
-    multitenancymw "github.com/bartventer/gorm-multitenancy/middleware/echo"
-    "github.com/bartventer/gorm-multitenancy/scopes"
     // ...
 )
 
@@ -170,9 +186,9 @@ import (
     "encoding/json"
     "net/http"
 
-    multitenancymw "github.com/bartventer/gorm-multitenancy/middleware/nethttp"
     "github.com/go-chi/chi/v5"
-    "github.com/bartventer/gorm-multitenancy/scopes"
+    multitenancymw "github.com/bartventer/gorm-multitenancy/v2/middleware/nethttp"
+    "github.com/bartventer/gorm-multitenancy/v2/scopes"
     // ...
 )
 

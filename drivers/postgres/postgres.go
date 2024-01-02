@@ -1,7 +1,10 @@
 package postgres
 
 import (
-	multitenancy "github.com/bartventer/gorm-multitenancy"
+	"fmt"
+	"strings"
+
+	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
@@ -24,9 +27,13 @@ var _ gorm.Dialector = (*Dialector)(nil)
 // Open creates a new postgres dialector with multitenancy support
 func Open(dsn string, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
-		Dialector:          *postgres.Open(dsn).(*postgres.Dialector),
-		multitenancyConfig: newMultitenancyConfig(models),
+		Dialector: *postgres.Open(dsn).(*postgres.Dialector),
 	}
+	mtc, err := newMultitenancyConfig(models)
+	if err != nil {
+		panic(err)
+	}
+	d.multitenancyConfig = mtc
 	return d
 }
 
@@ -35,7 +42,11 @@ func New(config Config, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.New(config).(*postgres.Dialector),
 	}
-	d.multitenancyConfig = newMultitenancyConfig(models)
+	mtc, err := newMultitenancyConfig(models)
+	if err != nil {
+		panic(err)
+	}
+	d.multitenancyConfig = mtc
 	return d
 }
 
@@ -60,9 +71,14 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 }
 
 // RegisterModels registers the models for multitenancy
-func RegisterModels(db *gorm.DB, models ...interface{}) {
+func RegisterModels(db *gorm.DB, models ...interface{}) error {
 	dialector := db.Dialector.(*Dialector)
-	dialector.multitenancyConfig = newMultitenancyConfig(models)
+	mtc, err := newMultitenancyConfig(models)
+	if err != nil {
+		return fmt.Errorf("failed to register models: %w", err)
+	}
+	dialector.multitenancyConfig = mtc
+	return nil
 }
 
 // MigratePublicSchema migrates the public tables
@@ -81,22 +97,48 @@ func DropSchemaForTenant(db *gorm.DB, schemaName string) error {
 }
 
 // newMultitenancyConfig creates a new multitenancy config
-func newMultitenancyConfig(models []interface{}) *multitenancyConfig {
+func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 	var (
 		publicModels  = make([]interface{}, 0, len(models))
 		privateModels = make([]interface{}, 0, len(models))
 	)
+	errors := make([]error, 0)
 	for _, m := range models {
+		tn, ok := m.(interface{ TableName() string })
+		if !ok {
+			errors = append(errors, fmt.Errorf("model %T does not implement TableName()", m))
+			continue
+		}
 		tt, ok := m.(multitenancy.TenantTabler)
 		if ok && tt.IsTenantTable() {
+			// ensure that contains no fullstop
+			if strings.Contains(tn.TableName(), ".") {
+				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as tenant table, table name should not contain a fullstop, got '%s'", m, tn.TableName()))
+				continue
+			}
 			privateModels = append(privateModels, m)
 		} else {
+			// Ensure that the public model starts with the default schema (public.)
+			if !strings.HasPrefix(tn.TableName(), fmt.Sprintf("%s.", PublicSchemaName)) {
+				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as public table; table name should start with '%s.', got '%s'", m, PublicSchemaName, tn.TableName()))
+				continue
+			}
 			publicModels = append(publicModels, m)
 		}
 	}
+
+	// if there are errors, panic
+	if len(errors) > 0 {
+		var errMsgs []string
+		for _, err := range errors {
+			errMsgs = append(errMsgs, err.Error())
+		}
+		return nil, fmt.Errorf("failed to create multitenancy config: %s", strings.Join(errMsgs, "; "))
+	}
+
 	return &multitenancyConfig{
 		publicModels: publicModels,
 		tenantModels: privateModels,
 		models:       models,
-	}
+	}, nil
 }

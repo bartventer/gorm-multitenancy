@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	multitenancy_ctx "github.com/bartventer/gorm-multitenancy/context"
+	multitenancy_ctx "github.com/bartventer/gorm-multitenancy/v2/context"
 	"gorm.io/gorm"
 )
 
