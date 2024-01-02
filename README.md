@@ -39,13 +39,13 @@ Important notes:
 - All tenant specific models must implement the `TenantTabler` interface, which classifies the model as a tenant specific model:
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
-    - The `TenantTabler` interface is also used to determine which models to drop when calling `DropSchemaForTenant`
 - Models can be registered in two ways:
     - When creating the dialect, by passing the models as variadic arguments to `postgres.New` (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling `postgres.Open` (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
     - By calling `postgres.RegisterModels` (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
     - By calling `postgres.MigratePublicSchema` to create the public schema and migrate all public models
     - By calling `postgres.CreateSchemaForTenant` to create the schema for the tenant and migrate all tenant specific models
+- To drop a tenant schema, call `postgres.DropSchemaForTenant`; this will drop the schema and all tables in the schema
 
 For a complete example refer to the [examples](#examples) section.
 ```go
