@@ -101,8 +101,8 @@ func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 	var (
 		publicModels  = make([]interface{}, 0, len(models))
 		privateModels = make([]interface{}, 0, len(models))
+		errors        = make([]error, 0)
 	)
-	errors := make([]error, 0)
 	for _, m := range models {
 		tn, ok := m.(interface{ TableName() string })
 		if !ok {
@@ -110,17 +110,18 @@ func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 			continue
 		}
 		tt, ok := m.(multitenancy.TenantTabler)
+		parts := strings.Split(tn.TableName(), ".")
 		if ok && tt.IsTenantTable() {
-			// ensure that contains no fullstop
-			if strings.Contains(tn.TableName(), ".") {
+			// ensure that the private model does not contain a fullstop
+			if len(parts) > 1 {
 				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as tenant table, table name should not contain a fullstop, got '%s'", m, tn.TableName()))
 				continue
 			}
 			privateModels = append(privateModels, m)
 		} else {
-			// Ensure that the public model starts with the default schema (public.)
-			if !strings.HasPrefix(tn.TableName(), fmt.Sprintf("%s.", PublicSchemaName)) {
-				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as public table; table name should start with '%s.', got '%s'", m, PublicSchemaName, tn.TableName()))
+			// ensure that the public model starts with the default schema (public.)
+			if len(parts) != 2 || parts[0] != PublicSchemaName {
+				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as public table, table name should start with '%s.', got '%s'", m, PublicSchemaName, tn.TableName()))
 				continue
 			}
 			publicModels = append(publicModels, m)
