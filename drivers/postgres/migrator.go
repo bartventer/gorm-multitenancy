@@ -71,20 +71,17 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 
 // MigratePublicSchema migrates the public tables
 func (m *Migrator) MigratePublicSchema() error {
-	return m.DB.Transaction(func(tx *gorm.DB) error {
-
-		if len(m.publicModels) == 0 {
-			return errors.New("no public tables to migrate")
-		}
-		fmt.Println("[multitenancy] ⏳ migrating public tables...")
-		if err := tx.
-			Scopes(withMigrationOption(multiMigrationOptionMigratePublicTables)).
-			AutoMigrate(m.publicModels...); err != nil {
-			return err
-		}
-		fmt.Println("[multitenancy] ✅ public tables migrated")
-		return nil
-	})
+	if len(m.publicModels) == 0 {
+		return errors.New("no public tables to migrate")
+	}
+	fmt.Println("[multitenancy] ⏳ migrating public tables...")
+	if err := m.DB.
+		Scopes(withMigrationOption(multiMigrationOptionMigratePublicTables)).
+		AutoMigrate(m.publicModels...); err != nil {
+		return err
+	}
+	fmt.Println("[multitenancy] ✅ public tables migrated")
+	return nil
 }
 
 // AutoMigrate migrates the tables based on the migration options.
