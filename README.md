@@ -32,11 +32,11 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
 
 ### PostgreSQL driver
 
-Important notes:
+#### Important notes
 - The driver uses the `public` schema for public models and the tenant specific schema for tenant specific models
 - All models must implement the `gorm.Tabler` interface
 - The table name for public models must be prefixed with `public.` (e.g. `public.books`), whereas the table name for tenant specific models must not contain any prefix (e.g. only `books`)
-- All tenant specific models must implement the `TenantTabler` interface, which classifies the model as a tenant specific model:
+- All tenant specific models must implement the [TenantTabler](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/#TenantTabler) interface, which classifies the model as a tenant specific model:
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
 - Models can be registered in two ways:
@@ -47,7 +47,11 @@ Important notes:
     - By calling `postgres.CreateSchemaForTenant` to create the schema for the tenant and migrate all tenant specific models
 - To drop a tenant schema, call `postgres.DropSchemaForTenant`; this will drop the schema and all tables in the schema
 
-For a complete example refer to the [examples](#examples) section.
+#### Foregin key constraints between public and tenant specific models
+- Conforming to the [notes above](#important-notes), foreign key constraints between public and tenant specific models can be created just as if you were using approach 1 (shared database, shared schema).
+- The easiest way to get this working is to embed the [postgres.TenantModel](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#TenantModel) struct in your tenant model. This will add the necessary fields for the tenant model (e.g. `DomainURL` and `SchemaName`), you can then create a foreign key constraint between the public and tenant specific models using the `SchemaName` field as the foreign key (e.g. `gorm:"foreignKey:TenantSchema;references:SchemaName"`); off course, you can also create foreign key constraints between any other fields in the models.
+
+#### Brief example of the main concepts (for a complete example refer to the [examples](#examples) section)
 ```go
 
 import (
@@ -71,6 +75,13 @@ func (t *Tenant) TableName() string {return "public.tenants"} // Note the public
 type Book struct {
     gorm.Model // Embed the gorm.Model
     Title string
+
+    // FK to TenantSchema (same as if you were using approach 1; not realy needed if you use 
+    // approach 2 as the schema is constrained to the tenant already, but included to show how 
+    // to create foreign key constraints between public a tenant specific models)
+    TenantSchema string `gorm:"column:tenant_schema"`
+	Tenant       Tenant `gorm:"foreignKey:TenantSchema;references:SchemaName"`
+
 }
 
 // Implement the gorm.Tabler interface
@@ -90,13 +101,15 @@ func main(){
 
     // Register the models
     // Models are categorized as either public or tenant specific, which allow for simpler migrations
-    postgres.RegisterModels(
+    if err := postgres.RegisterModels(
         db,        // Database connection
         // Public models (does not implement TenantTabler or implements TenantTabler with IsTenantTable() returning false)
         &Tenant{},  
         // Tenant specific model (implements TenantTabler)
         &Book{},
-        )
+        ); err != nil {
+        panic(err)
+    }
 
     // Migrate the database
     // Calling AutoMigrate won't work, you must either call MigratePublicSchema or CreateSchemaForTenant
@@ -121,7 +134,7 @@ func main(){
 
     // Migrate the tenant schema
     // This will create the schema and migrate all tenant specific models
-    if err := postgres.CreateSchemaForTenant(db, tenant); err != nil {
+    if err := postgres.CreateSchemaForTenant(db, tenant.SchemaName); err != nil {
         panic(err)
     }
 
@@ -130,7 +143,7 @@ func main(){
 
     // Drop the tenant schema
     // This will drop the schema and all tables in the schema
-    if err := postgres.DropSchemaForTenant(db, tenant); err != nil {
+    if err := postgres.DropSchemaForTenant(db, tenant.SchemaName); err != nil {
         panic(err)
     }
 

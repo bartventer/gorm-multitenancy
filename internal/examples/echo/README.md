@@ -75,11 +75,11 @@ curl -X GET \
 [
   {
     "id": 1,
-    "name": "Book 1"
+    "name": "tenant1 - Book 1"
   },
   {
     "id": 2,
-    "name": "Book 2"
+    "name": "tenant1 - Book 2"
   }
 ]
 ```
@@ -97,7 +97,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -H 'Host: tenant1.example.com' \
   -d '{
-  "name": "Book 3"
+  "name": "tenant1 - Book 3"
 }'
 ```
 
@@ -105,7 +105,7 @@ curl -X POST \
 ```json
 {
   "id": 3,
-  "name": "Book 3"
+  "name": "tenant1 - Book 3"
 }
 ```
 
@@ -140,7 +140,7 @@ curl -X PUT \
   -H 'Content-Type: application/json' \
   -H 'Host: tenant1.example.com' \
   -d '{
-  "name": "Book 2 updated"
+  "name": "tenant1 - Book 2 - Updated"
 }'
 ```
 

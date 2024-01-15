@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
@@ -22,7 +21,7 @@ var (
 
 const (
 	// TableNameTenant is the table name for the tenant model
-	TableNameTenant = "tenants"
+	TableNameTenant = "public.tenants"
 	// TableNameBook is the table name for the book model
 	TableNameBook = "books"
 )
@@ -38,8 +37,10 @@ type Tenant struct {
 
 // Book is the book model
 type Book struct {
-	ID   uint   `gorm:"primarykey" json:"id"`
-	Name string `json:"name"`
+	ID           uint   `gorm:"primarykey" json:"id"`
+	Name         string `json:"name"`
+	TenantSchema string `gorm:"column:tenant_schema"`
+	Tenant       Tenant `gorm:"foreignKey:TenantSchema;references:SchemaName"`
 }
 
 var _ multitenancy.TenantTabler = (*Book)(nil)
@@ -92,7 +93,9 @@ func init() {
 	}
 
 	// register models
-	postgres.RegisterModels(db, &Tenant{}, &Book{})
+	if err := postgres.RegisterModels(db, &Tenant{}, &Book{}); err != nil {
+		panic(err)
+	}
 
 	// create models
 
@@ -127,18 +130,22 @@ func init() {
 		postgres.CreateSchemaForTenant(db, tenant.SchemaName)
 	}
 
-	// Create data for tenant1 (private schema)
+	// Create schema specific data
 	books := []Book{{Name: "Book 1"}, {Name: "Book 2"}}
 	db.Transaction(func(tx *gorm.DB) error {
-		// set search path to tenant
-		tx.Exec(fmt.Sprintf("SET search_path TO %s", tenants[0].SchemaName))
-		for _, book := range books {
-			if err := tx.Where("name = ?", book.Name).FirstOrCreate(&book).Error; err != nil {
-				return err
+		for _, tenant := range tenants {
+			// set search path to tenant
+			tx.Exec(fmt.Sprintf("SET search_path TO %s", tenant.SchemaName))
+			for _, book := range books {
+				book.Tenant = tenant
+				book.Name = fmt.Sprintf("%s - %s", tenant.SchemaName, book.Name)
+				if err := tx.Where("name = ?", book.Name).FirstOrCreate(&book).Error; err != nil {
+					return err
+				}
 			}
+			// Reset search path
+			tx.Exec(fmt.Sprintf("SET search_path TO %s", "public"))
 		}
-		// Reset search path
-		tx.Exec(fmt.Sprintf("SET search_path TO %s", "public"))
 		return nil
 	})
 }
@@ -203,7 +210,7 @@ func createTenantHandler(c echo.Context) error {
 }
 
 func getTenantHandler(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 	// get tenant
 	tenant := &TenantResponse{}
 	if err := db.Table(TableNameTenant).First(tenant, id).Error; err != nil {
@@ -213,7 +220,7 @@ func getTenantHandler(c echo.Context) error {
 }
 
 func deleteTenantHandler(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 	// get tenant
 	tenant := &Tenant{}
 	if err := db.First(tenant, id).Error; err != nil {
@@ -251,6 +258,7 @@ func createBookHandler(c echo.Context) error {
 	if err := c.Bind(&book); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	book.TenantSchema = tenant
 	if err := db.Scopes(scopes.WithTenantSchema(tenant)).Create(&book).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -267,7 +275,7 @@ func deleteBookHandler(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	id, _ := strconv.Atoi(c.Param("id"))
+	id := c.Param("id")
 	// get book
 	var book Book
 	if err := db.Scopes(scopes.WithTenantSchema(tenant)).First(&book, id).Error; err != nil {
