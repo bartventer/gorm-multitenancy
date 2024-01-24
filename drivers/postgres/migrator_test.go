@@ -3,6 +3,7 @@ package postgres
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
@@ -135,6 +136,7 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 			m := &Migrator{
 				Migrator:           tt.fields.Migrator,
 				multitenancyConfig: tt.fields.multitenancyConfig,
+				rw:                 &sync.RWMutex{},
 			}
 			if err := m.CreateSchemaForTenant(tt.args.tenant); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.CreateSchemaForTenant() error = %v, wantErr %v", err, tt.wantErr)
@@ -199,6 +201,7 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 			m := &Migrator{
 				Migrator:           tt.fields.Migrator,
 				multitenancyConfig: tt.fields.multitenancyConfig,
+				rw:                 &sync.RWMutex{},
 			}
 			if err := m.MigratePublicSchema(); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.MigratePublicSchema() error = %v, wantErr %v", err, tt.wantErr)
@@ -251,6 +254,7 @@ func TestMigrator_DropSchemaForTenant(t *testing.T) {
 			m := &Migrator{
 				Migrator:           tt.fields.Migrator,
 				multitenancyConfig: tt.fields.multitenancyConfig,
+				rw:                 &sync.RWMutex{},
 			}
 			// create schema
 			if err := m.DB.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tt.args.tenant)).Error; err != nil {
@@ -360,6 +364,7 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 			m := Migrator{
 				Migrator:           tt.fields.Migrator,
 				multitenancyConfig: tt.fields.multitenancyConfig,
+				rw:                 &sync.RWMutex{},
 			}
 			if err := m.AutoMigrate(tt.args.values...); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.AutoMigrate() error = %v, wantErr %v", err, tt.wantErr)

@@ -3,6 +3,7 @@ package postgres
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	multicontext "github.com/bartventer/gorm-multitenancy/v2/context"
 	"gorm.io/driver/postgres"
@@ -30,14 +31,18 @@ type multitenancyConfig struct {
 
 // Migrator is the struct that implements the Migratorer interface
 type Migrator struct {
-	postgres.Migrator
-	*multitenancyConfig
+	postgres.Migrator                 // gorm postgres migrator
+	*multitenancyConfig               // config to store the models
+	rw                  *sync.RWMutex // mutex to prevent concurrent access to the config
 }
 
 var _ MultitenancyMigrator = (*Migrator)(nil)
 
 // CreateSchemaForTenant creates the schema for the tenant and migrates the private tables
 func (m *Migrator) CreateSchemaForTenant(tenant string) error {
+	m.rw.RLock()
+	defer m.rw.RUnlock()
+
 	return m.DB.Transaction(func(tx *gorm.DB) error {
 		// create schema for tenant
 		if err := tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tenant)).Error; err != nil {
@@ -71,6 +76,9 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 
 // MigratePublicSchema migrates the public tables
 func (m *Migrator) MigratePublicSchema() error {
+	m.rw.RLock()
+	defer m.rw.RUnlock()
+
 	if len(m.publicModels) == 0 {
 		return errors.New("no public tables to migrate")
 	}

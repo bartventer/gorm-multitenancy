@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
@@ -89,6 +90,7 @@ func TestOpen(t *testing.T) {
 				models: []interface{}{&testUser{}, &testProduct{}},
 			},
 			want: &Dialector{
+				rw:        &sync.RWMutex{},
 				Dialector: *postgres.Open(dsn).(*postgres.Dialector),
 				multitenancyConfig: func() *multitenancyConfig {
 					cfg, _ := newMultitenancyConfig([]interface{}{&testUser{}, &testProduct{}})
@@ -124,6 +126,7 @@ func TestNew(t *testing.T) {
 	models := []interface{}{&testUser{}, &testProduct{}}
 
 	want := &Dialector{
+		rw:        &sync.RWMutex{},
 		Dialector: *postgres.New(config).(*postgres.Dialector),
 		multitenancyConfig: func() *multitenancyConfig {
 			cfg, _ := newMultitenancyConfig(models)
@@ -219,6 +222,7 @@ func TestDialector_Migrator(t *testing.T) {
 				db: db,
 			},
 			want: &Migrator{
+				rw: &sync.RWMutex{},
 				Migrator: postgres.Migrator{
 					Migrator: migrator.Migrator{
 						Config: migrator.Config{
@@ -246,6 +250,7 @@ func TestDialector_Migrator(t *testing.T) {
 			dialector := Dialector{
 				Dialector:          tt.fields.Dialector,
 				multitenancyConfig: tt.fields.multitenancyConfig,
+				rw:                 &sync.RWMutex{},
 			}
 			got := dialector.Migrator(tt.args.db)
 			if !compareMigrators(got, tt.want) {

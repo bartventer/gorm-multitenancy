@@ -5,6 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
 [![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_shield&issueType=license)
 
 There are three common approaches to multitenancy in a database:
 - Shared database, shared schema
@@ -51,7 +52,15 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
 - Conforming to the [notes above](#important-notes), foreign key constraints between public and tenant specific models can be created just as if you were using approach 1 (shared database, shared schema).
 - The easiest way to get this working is to embed the [postgres.TenantModel](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#TenantModel) struct in your tenant model. This will add the necessary fields for the tenant model (e.g. `DomainURL` and `SchemaName`), you can then create a foreign key constraint between the public and tenant specific models using the `SchemaName` field as the foreign key (e.g. `gorm:"foreignKey:TenantSchema;references:SchemaName"`); off course, you can also create foreign key constraints between any other fields in the models.
 
-#### Brief example of the main concepts (for a complete example refer to the [examples](#examples) section)
+#### Appoaches to perform operations on tenant specific models
+Outlined below are two approaches to perform operations on tenant specific models. The first approach is for simple operations on tenant specific models, whereas the second approach is for more complex operations on tenant specific models, but does add ~0.200ms overhead per operation.
+| Function | Description |
+| --- | --- |
+| [`WithTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/scopes#WithTenant) | Use this scope function when you want to perform operations on a tenant table, which may include foreign key constraints to a public schema table(s). |
+| [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/schema/postgres#SetSearchPath) | Use this function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables). |
+
+#### Basic example
+For a complete example refer to the [examples](#examples) section)
 ```go
 
 import (
@@ -246,10 +255,13 @@ func main(){
 - [PostgreSQL with echo](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/echo)
 - [PostgreSQL with net/http](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/nethttp)
 
+## Contributing
+
+All contributions are welcome! Open a pull request to request a feature or submit a bug report.
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## Contributing
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_large&issueType=license)
 
-All contributions are welcome! Open a pull request to request a feature or submit a bug report.

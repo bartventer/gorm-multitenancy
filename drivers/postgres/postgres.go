@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
 	"gorm.io/driver/postgres"
@@ -18,6 +19,7 @@ type (
 	Dialector struct {
 		postgres.Dialector
 		*multitenancyConfig
+		rw *sync.RWMutex
 	}
 )
 
@@ -28,6 +30,7 @@ var _ gorm.Dialector = (*Dialector)(nil)
 func Open(dsn string, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.Open(dsn).(*postgres.Dialector),
+		rw:        &sync.RWMutex{},
 	}
 	mtc, err := newMultitenancyConfig(models)
 	if err != nil {
@@ -41,6 +44,7 @@ func Open(dsn string, models ...interface{}) gorm.Dialector {
 func New(config Config, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.New(config).(*postgres.Dialector),
+		rw:        &sync.RWMutex{},
 	}
 	mtc, err := newMultitenancyConfig(models)
 	if err != nil {
@@ -52,6 +56,9 @@ func New(config Config, models ...interface{}) gorm.Dialector {
 
 // Migrator returns the migrator with multitenancy support
 func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
+	dialector.rw.RLock()
+	defer dialector.rw.RUnlock()
+
 	return &Migrator{
 		postgres.Migrator{
 			Migrator: migrator.Migrator{
@@ -67,6 +74,7 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 			tenantModels: dialector.tenantModels,
 			models:       dialector.models,
 		},
+		&sync.RWMutex{},
 	}
 }
 
@@ -77,7 +85,10 @@ func RegisterModels(db *gorm.DB, models ...interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to register models: %w", err)
 	}
+
+	dialector.rw.Lock()
 	dialector.multitenancyConfig = mtc
+	dialector.rw.Unlock()
 	return nil
 }
 
