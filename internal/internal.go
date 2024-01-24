@@ -21,5 +21,5 @@ func NewTestDB() *gorm.DB {
 	if err != nil {
 		panic(errors.Wrap(err, "failed to connect to test database"))
 	}
-	return db.Debug()
+	return db
 }

@@ -67,3 +67,30 @@ func getSchemaNameFromSqlExpr(tableExprSql string) string {
 	schemaName = strings.ReplaceAll(schemaName, "\"", "")
 	return schemaName
 }
+
+// ResetSearchPath is a function that resets the search path to the default value.
+type ResetSearchPath func() error
+
+// SetSearchPath sets the search path to the given schema name.
+// It returns a function that resets the search path to the default value.
+//
+// Example:
+//
+//	resetSearchPath, err := postgres.SetSearchPath(db, "domain1")
+//	if err != nil {
+//		return err
+//	}
+//	defer resetSearchPath()
+func SetSearchPath(db *gorm.DB, schemaName string) (ResetSearchPath, error) {
+	if schemaName == "" {
+		return nil, fmt.Errorf("schema name is empty")
+	}
+
+	err := db.Exec(fmt.Sprintf("SET search_path TO %s", schemaName)).Error
+	if err != nil {
+		return nil, err
+	}
+	return func() error {
+		return db.Exec("SET search_path TO public").Error
+	}, nil
+}

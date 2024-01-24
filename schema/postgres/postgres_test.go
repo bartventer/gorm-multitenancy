@@ -1,8 +1,10 @@
 package postgres
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/bartventer/gorm-multitenancy/v2/internal"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -93,4 +95,73 @@ func TestGetSchemaNameFromDb(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSetSearchPath(t *testing.T) {
+	// Connect to the test database.
+	db := internal.NewTestDB()
+
+	schema := "domain1"
+	// create a new schema if it does not exist
+	err := db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schema)).Error
+	if err != nil {
+		t.Errorf("Create schema failed, expected %v, got %v", nil, err)
+	}
+	defer db.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", schema))
+
+	// Test SetSearchPath with a valid schema name.
+	reset, err := SetSearchPath(db, schema)
+	if err != nil {
+		t.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
+	}
+
+	// Test the returned ResetSearchPath function.
+	err = reset()
+	if err != nil {
+		t.Errorf("ResetSearchPath() failed, expected %v, got %v", nil, err)
+	}
+
+	// Test SetSearchPath with an empty schema name.
+	_, err = SetSearchPath(db, "")
+	if err == nil {
+		t.Errorf("SetSearchPath() with empty schema name did not fail, expected an error, got %v", err)
+	}
+
+}
+
+func BenchmarkSetSearchPath(b *testing.B) {
+	// Connect to the test database.
+	db := internal.NewTestDB()
+
+	schema := "domain1"
+	// create a new schema if it does not exist
+	err := db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schema)).Error
+	if err != nil {
+		b.Errorf("Create schema failed, expected %v, got %v", nil, err)
+	}
+	defer db.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", schema))
+
+	// Benchmark SetSearchPath with a valid schema name.
+	b.Run("SetSearchPath", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, err := SetSearchPath(db, schema)
+			if err != nil {
+				b.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
+			}
+		}
+	})
+
+	// Benchmark ResetSearchPath.
+	b.Run("ResetSearchPath", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			reset, err := SetSearchPath(db, schema)
+			if err != nil {
+				b.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
+			}
+			err = reset()
+			if err != nil {
+				b.Errorf("ResetSearchPath() failed, expected %v, got %v", nil, err)
+			}
+		}
+	})
 }

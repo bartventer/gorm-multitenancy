@@ -7,11 +7,11 @@ services:
       - 8080:8080
     volumes:
       - ../..:/workspaces:cached
-    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - seccomp:unconfined
+    # # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
+    # cap_add:
+    #   - SYS_PTRACE
+    # security_opt:
+    #   - seccomp:unconfined
     depends_on:
       - db
     networks:
