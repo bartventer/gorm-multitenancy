@@ -56,7 +56,7 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
 Outlined below are two approaches to perform operations on tenant specific models. The first approach is for simple operations on tenant specific models, whereas the second approach is for more complex operations on tenant specific models, but does add ~0.200ms overhead per operation.
 | Function | Description |
 | --- | --- |
-| [`WithTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/scopes#WithTenant) | Use this scope function when you want to perform operations on a tenant table, which may include foreign key constraints to a public schema table(s). |
+| [`WithTenantSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/scopes#WithTenantSchema) | Use this scope function when you want to perform operations on a tenant table, which may include foreign key constraints to a public schema table(s). |
 | [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/schema/postgres#SetSearchPath) | Use this function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables). |
 
 #### Basic example
