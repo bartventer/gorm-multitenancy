@@ -1,25 +1,42 @@
 # gorm-multitenancy
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2)
+[![Release](https://img.shields.io/github/release/bartventer/gorm-multitenancy.svg)](https://github.com/bartventer/gorm-multitenancy/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy)
 [![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
 [![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml)
+![GitHub issues](https://img.shields.io/github/issues/bartventer/gorm-multitenancy)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_shield&issueType=license)
+
+<p align="center">
+  <img src="https://i.imgur.com/bOZB8St.png" title="GORM Multitenancy" alt="GORM Multitenancy">
+</p>
+<p align="center">
+  <sub><small>Photo by <a href="https://github.com/ashleymcnamara">Ashley McNamara</a>, via <a href="https://github.com/ashleymcnamara/gophers">ashleymcnamara/gophers</a> (CC BY-NC-SA 4.0)</small></sub>
+</p>
+
+## Multitenancy Approaches
 
 There are three common approaches to multitenancy in a database:
 - Shared database, shared schema
 - Shared database, separate schemas
 - Separate databases
 
-This package implements the shared database, separate schemas approach. It uses the [gorm](https://gorm.io/) ORM to manage the database and provides custom drivers to support multitenancy. It also provides HTTP middleware to retrieve the tenant from the request and set the tenant in context.
+This package implements the shared database, separate schemas approach to multitenancy, providing custom drivers for seamless integration with your existing database setup.
+
+## Features
+
+- **GORM Integration**: Uses the [gorm](https://gorm.io/) ORM to manage the database, allowing for easy integration with your existing GORM setup.
+- **Custom Database Drivers**: Provides custom drivers to support multitenancy, allowing you to easily swap and change with your existing drivers with minimal initialization reconfiguration.
+- **HTTP Middleware**: Includes middleware for seamless integration with certain routers, enabling the retrieval of the tenant from the request and setting the tenant in context.
 
 ## Database compatibility
 Current supported databases are listed below. Pull requests for other drivers are welcome.
 - [PostgreSQL](https://www.postgresql.org/)
 
-## Router compatibility
-Current supported routers are listed below. Pull requests for other routers are welcome.
+## Router Integration
+This package includes middleware that can be utilized with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
 - [echo](https://echo.labstack.com/docs)
 - [net/http](https://golang.org/pkg/net/http/)
 
@@ -33,7 +50,7 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
 
 ### PostgreSQL driver
 
-#### Important notes
+#### Conventions
 - The driver uses the `public` schema for public models and the tenant specific schema for tenant specific models
 - All models must implement the `gorm.Tabler` interface
 - The table name for public models must be prefixed with `public.` (e.g. `public.books`), whereas the table name for tenant specific models must not contain any prefix (e.g. only `books`)
@@ -41,18 +58,19 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
 - Models can be registered in two ways:
-    - When creating the dialect, by passing the models as variadic arguments to `postgres.New` (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling `postgres.Open` (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
-    - By calling `postgres.RegisterModels` (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
+    - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#New)) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#Open)) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
+    - By calling [`postgres.RegisterModels`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#RegisterModels)) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
-    - By calling `postgres.MigratePublicSchema` to create the public schema and migrate all public models
-    - By calling `postgres.CreateSchemaForTenant` to create the schema for the tenant and migrate all tenant specific models
-- To drop a tenant schema, call `postgres.DropSchemaForTenant`; this will drop the schema and all tables in the schema
+    - By calling [`MigratePublicSchema`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#MigratePublicSchema)) to create the public schema and migrate all public models
+    - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
+- To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#DropSchemaForTenant); this will drop the schema and all tables in the schema
 
-#### Foregin key constraints between public and tenant specific models
-- Conforming to the [notes above](#important-notes), foreign key constraints between public and tenant specific models can be created just as if you were using approach 1 (shared database, shared schema).
+#### Foreign Key Constraints
+- Conforming to the [above conventions](#conventions), foreign key constraints between public and tenant specific models can be created just as if you were using approach 1 (shared database, shared schema).
 - The easiest way to get this working is to embed the [postgres.TenantModel](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#TenantModel) struct in your tenant model. This will add the necessary fields for the tenant model (e.g. `DomainURL` and `SchemaName`), you can then create a foreign key constraint between the public and tenant specific models using the `SchemaName` field as the foreign key (e.g. `gorm:"foreignKey:TenantSchema;references:SchemaName"`); off course, you can also create foreign key constraints between any other fields in the models.
 
-#### Appoaches to perform operations on tenant specific models
+#### Operations on Tenant-Specific Models
+
 Outlined below are two approaches to perform operations on tenant specific models. The first approach is for simple operations on tenant specific models, whereas the second approach is for more complex operations on tenant specific models, but does add ~0.200ms overhead per operation.
 | Function | Description |
 | --- | --- |
