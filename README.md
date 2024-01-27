@@ -58,8 +58,8 @@ go get -u github.com/bartventer/gorm-multitenancy/v2
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
 - Models can be registered in two ways:
-    - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#New)) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#Open)) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
-    - By calling [`postgres.RegisterModels`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#RegisterModels)) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
+    - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#New) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#Open) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
+    - By calling [`postgres.RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#RegisterModels) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
     - By calling [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models
     - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
