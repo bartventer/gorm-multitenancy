@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -26,7 +25,6 @@ var domainURLRegex = regexp.MustCompile(domainURLRegexPattern)
 //	}
 //	fmt.Println(subdomain) // test
 func ExtractSubdomain(domainURL string) (string, error) {
-	fmt.Println("domainURL:", domainURL)
 	// Add scheme if absent
 	if !strings.HasPrefix(domainURL, "http://") && !strings.HasPrefix(domainURL, "https://") {
 		domainURL = "http://" + domainURL
@@ -43,7 +41,6 @@ func ExtractSubdomain(domainURL string) (string, error) {
 	}
 
 	hostParts := strings.Split(u.Hostname(), ".")
-	fmt.Println("hostParts:", hostParts)
 	if len(hostParts) > 2 {
 		subdomain := strings.Join(hostParts[:len(hostParts)-2], ".")
 		if strings.HasPrefix(subdomain, "pg_") {
