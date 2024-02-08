@@ -58,21 +58,18 @@ go get -u github.com/bartventer/gorm-multitenancy/v3
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
 - Models can be registered in two ways:
-<<<<<<< HEAD
     - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#New) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#Open) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
     - By calling [`postgres.RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#RegisterModels) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
     - By calling [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models
     - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
 - To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#DropSchemaForTenant); this will drop the schema and all tables in the schema
-=======
     - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#New)) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#Open)) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
     - By calling [`postgres.RegisterModels`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#RegisterModels)) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
     - By calling [`MigratePublicSchema`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#MigratePublicSchema)) to create the public schema and migrate all public models
     - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
-- To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#DropSchemaForTenant); this will drop the schema and all tables in the schema
->>>>>>> 88b3dbd (perf: refactor middleware)
+- To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/drivers/postgres#DropSchemaForTenant); this will drop the schema and cascade all schema tables
 
 #### Foreign Key Constraints
 - Conforming to the [above conventions](#conventions), foreign key constraints between public and tenant specific models can be created just as if you were using approach 1 (shared database, shared schema).
