@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"crypto/tls"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -19,10 +21,11 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 			name: "valid:test-from-subdomain",
 			args: args{
 				r: &http.Request{
-					Method:     http.MethodGet,
-					Header:     map[string][]string{},
-					Host:       "tenant1.example.com",
-					RequestURI: "/",
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "tenant1.example.com",
+					URL:    &url.URL{Path: "/"},
+					TLS:    &tls.ConnectionState{}, // Simulate an https request
 				},
 			},
 			want:    "tenant1",
@@ -32,10 +35,10 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 			name: "invalid:host parts < 2",
 			args: args{
 				r: &http.Request{
-					Method:     http.MethodGet,
-					Header:     map[string][]string{},
-					Host:       "invalid",
-					RequestURI: "/",
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "invalid",
+					URL:    &url.URL{Path: "/"},
 				},
 			},
 			wantErr: true,
@@ -44,10 +47,10 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 			name: "invalid:host empty",
 			args: args{
 				r: &http.Request{
-					Method:     http.MethodGet,
-					Header:     map[string][]string{},
-					Host:       ".invalid",
-					RequestURI: "/",
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   ".invalid",
+					URL:    &url.URL{Path: "/"},
 				},
 			},
 			wantErr: true,

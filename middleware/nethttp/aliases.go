@@ -1,18 +1,8 @@
 package nethttp
 
-import mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
-
-type (
-	// WithTenantConfig defines the config for WithTenant middleware.
-	WithTenantConfig = mw.WithTenantConfig
-)
+import "github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
 
 var (
 	// TenantKey is the key that holds the tenant in a request context.
-	TenantKey = mw.NetHTTPTenantKey
-
-	// DefaultSkipper defines the default skipper function.
-	DefaultSkipper = mw.DefaultSkipper
-	// DefaultTenantGetters represents the default tenant getters
-	DefaultTenantGetters = mw.DefaultTenantGetters
+	TenantKey = tenantcontext.TenantKey
 )

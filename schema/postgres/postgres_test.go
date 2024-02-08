@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v2/internal"
+	"github.com/bartventer/gorm-multitenancy/v3/internal"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 func Test_getSchemaNameFromSqlExpr(t *testing.T) {
 	type args struct {
-		tableExprSql string
+		tableExprSQL string
 	}
 	tests := []struct {
 		name string
@@ -21,28 +21,28 @@ func Test_getSchemaNameFromSqlExpr(t *testing.T) {
 		{
 			name: "Test with schema and table",
 			args: args{
-				tableExprSql: "\"test_domain\".\"mock_private\"",
+				tableExprSQL: "\"test_domain\".\"mock_private\"",
 			},
 			want: "test_domain",
 		},
 		{
 			name: "Test with only table",
 			args: args{
-				tableExprSql: "\"mock_private\"",
+				tableExprSQL: "\"mock_private\"",
 			},
 			want: "",
 		},
 		{
 			name: "Test with empty string",
 			args: args{
-				tableExprSql: "",
+				tableExprSQL: "",
 			},
 			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getSchemaNameFromSqlExpr(tt.args.tableExprSql); got != tt.want {
+			if got := getSchemaNameFromSQLExpr(tt.args.tableExprSQL); got != tt.want {
 				t.Errorf("getSchemaNameFromTableExpreSql() = %v, want %v", got, tt.want)
 			}
 		})

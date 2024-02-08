@@ -6,8 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v2/internal"
-	mw "github.com/bartventer/gorm-multitenancy/v2/middleware"
+	mw "github.com/bartventer/gorm-multitenancy/v3/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +14,7 @@ import (
 func TestWithTenant(t *testing.T) {
 	type args struct {
 		tenant string
-		config mw.WithTenantConfig
+		config WithTenantConfig
 	}
 	tests := []struct {
 		name    string
@@ -27,22 +26,27 @@ func TestWithTenant(t *testing.T) {
 			name: "valid",
 			args: args{
 				tenant: "tenant1",
-				config: mw.WithTenantConfig{
-					DB:            internal.NewTestDB(),
-					Skipper:       mw.DefaultSkipper,
-					TenantGetters: mw.DefaultTenantGetters,
+				config: WithTenantConfig{
+					Skipper: DefaultSkipper,
+					TenantGetters: []func(c echo.Context) (string, error){
+						DefaultTenantFromSubdomain,
+						DefaultTenantFromHeader,
+					},
 				},
 			},
 			want:    "tenant1",
 			wantErr: false,
 		},
 		{
-			name: "invalid:db nil (panic)",
+			name: "invalid: no tenant",
 			args: args{
-				tenant: "tenant1",
-				config: mw.WithTenantConfig{
-					Skipper:       mw.DefaultSkipper,
-					TenantGetters: mw.DefaultTenantGetters,
+				tenant: "",
+				config: WithTenantConfig{
+					Skipper: DefaultSkipper,
+					TenantGetters: []func(c echo.Context) (string, error){
+						DefaultTenantFromSubdomain,
+						DefaultTenantFromHeader,
+					},
 				},
 			},
 			wantErr: true,
@@ -57,7 +61,7 @@ func TestWithTenant(t *testing.T) {
 			c := e.NewContext(req, rr)
 			defer func() {
 				if r := recover(); r != nil {
-					if tt.wantErr && r != mw.ErrDBInvalid.Error() {
+					if tt.wantErr && r != mw.ErrTenantInvalid.Error() {
 						t.Errorf("The code did not panic as expected. Got %v", r)
 					}
 				}
@@ -65,9 +69,9 @@ func TestWithTenant(t *testing.T) {
 
 			h := WithTenant(tt.args.config)(func(c echo.Context) error {
 				// tenant from context, should be same as tenant from search path
-				tenant, err := TenantFromContext(c)
-				if err != nil {
-					return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+				tenant, ok := c.Get(tt.args.config.ContextKey.String()).(string)
+				if !ok {
+					return echo.NewHTTPError(http.StatusInternalServerError, "No tenant in context")
 				}
 				if tenant != tt.want {
 					return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("tenant is not set correctly. Got %s, want %s", tenant, tt.want))
@@ -76,60 +80,10 @@ func TestWithTenant(t *testing.T) {
 			})
 
 			req.Host = tt.args.tenant + ".example.com"
-			assert.NoError(t, h(c))
-
-		})
-	}
-}
-
-func TestTenantFromContext(t *testing.T) {
-	type args struct {
-		ctx echo.Context
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "valid",
-			args: args{
-				ctx: func() echo.Context {
-					e := echo.New()
-					req := httptest.NewRequest(http.MethodGet, "/", nil)
-					rr := httptest.NewRecorder()
-					ctx := e.NewContext(req, rr)
-					ctx.Set(TenantKey.String(), "tenant1")
-					return ctx
-				}(),
-			},
-			want:    "tenant1",
-			wantErr: false,
-		},
-		{
-			name: "invalid tenant",
-			args: args{
-				ctx: func() echo.Context {
-					e := echo.New()
-					req := httptest.NewRequest(http.MethodGet, "/", nil)
-					rr := httptest.NewRecorder()
-					ctx := e.NewContext(req, rr)
-					return ctx
-				}(),
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := TenantFromContext(tt.args.ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TenantFromContext() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("TenantFromContext() = %v, want %v", got, tt.want)
+			if tt.wantErr {
+				assert.Error(t, h(c))
+			} else {
+				assert.NoError(t, h(c))
 			}
 		})
 	}

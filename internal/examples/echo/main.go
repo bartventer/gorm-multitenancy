@@ -6,13 +6,14 @@ import (
 	"os"
 	"strings"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
-	"github.com/bartventer/gorm-multitenancy/v2/drivers/postgres"
-	echomw "github.com/bartventer/gorm-multitenancy/v2/middleware/echo"
-	"github.com/bartventer/gorm-multitenancy/v2/scopes"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v3"
+	"github.com/bartventer/gorm-multitenancy/v3/drivers/postgres"
+	echomw "github.com/bartventer/gorm-multitenancy/v3/middleware/echo"
+	"github.com/bartventer/gorm-multitenancy/v3/scopes"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var (
@@ -38,7 +39,7 @@ type Tenant struct {
 // Book is the book model
 type Book struct {
 	ID           uint   `gorm:"primarykey" json:"id"`
-	Name         string `json:"name"`
+	Name         string `gorm:"column:name;size:255;not null;default:NULL" json:"name"`
 	TenantSchema string `gorm:"column:tenant_schema"`
 	Tenant       Tenant `gorm:"foreignKey:TenantSchema;references:SchemaName"`
 }
@@ -120,7 +121,10 @@ func init() {
 		},
 	}
 	for _, tenant := range tenants {
-		if err := db.Where("domain_url = ?", tenant.DomainURL).FirstOrCreate(&tenant).Error; err != nil {
+		if err := db.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "schema_name"}},
+			DoUpdates: clause.AssignmentColumns([]string{"domain_url"}),
+		}).Model(&tenant).Where("schema_name = ?", tenant.SchemaName).FirstOrCreate(&tenant).Error; err != nil {
 			panic(err)
 		}
 	}
@@ -150,6 +154,15 @@ func init() {
 	})
 }
 
+// TenantFromContext returns the tenant from the context
+func TenantFromContext(c echo.Context) (string, error) {
+	tenant, ok := c.Get(echomw.TenantKey.String()).(string)
+	if !ok {
+		return "", fmt.Errorf("no tenant in context")
+	}
+	return tenant, nil
+}
+
 func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
@@ -157,11 +170,9 @@ func main() {
 
 	// create tenant middleware
 	mw := echomw.WithTenant(echomw.WithTenantConfig{
-		DB: db,
-		Skipper: func(r *http.Request) bool {
-			return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Request().URL.Path, "/tenants") // skip tenant routes
 		},
-		TenantGetters: echomw.DefaultTenantGetters,
 	})
 	e.Use(mw)
 
@@ -192,13 +203,19 @@ func createTenantHandler(c echo.Context) error {
 			SchemaName: strings.Split(body.DomainURL, ".")[0],
 		},
 	}
-
+	// start transaction
+	tx := db.Begin()
+	if tx.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, tx.Error.Error())
+	}
+	// always rollback the transaction
+	defer tx.Rollback()
 	// create tenant
-	if err := db.Create(tenant).Error; err != nil {
+	if err := tx.Create(tenant).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	// create schema for tenant, and migrate "private" tables
-	if err := postgres.CreateSchemaForTenant(db, tenant.SchemaName); err != nil {
+	if err := postgres.CreateSchemaForTenant(tx, tenant.SchemaName); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -226,19 +243,26 @@ func deleteTenantHandler(c echo.Context) error {
 	if err := db.First(tenant, id).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
+	// start transaction
+	tx := db.Begin()
+	if tx.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, tx.Error.Error())
+	}
+	// always rollback the transaction
+	defer tx.Rollback()
 	// delete schema for tenant
-	if err := postgres.DropSchemaForTenant(db, tenant.SchemaName); err != nil {
+	if err := postgres.DropSchemaForTenant(tx, tenant.SchemaName); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	// delete tenant
-	if err := db.Delete(&Tenant{}, id).Error; err != nil {
+	if err := tx.Delete(&Tenant{}, id).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.NoContent(http.StatusNoContent)
 }
 
 func getBooksHandler(c echo.Context) error {
-	tenant, err := echomw.TenantFromContext(c)
+	tenant, err := TenantFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -250,7 +274,7 @@ func getBooksHandler(c echo.Context) error {
 }
 
 func createBookHandler(c echo.Context) error {
-	tenant, err := echomw.TenantFromContext(c)
+	tenant, err := TenantFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -259,7 +283,14 @@ func createBookHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	book.TenantSchema = tenant
-	if err := db.Scopes(scopes.WithTenantSchema(tenant)).Create(&book).Error; err != nil {
+	// start transaction
+	tx := db.Begin()
+	if tx.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, tx.Error.Error())
+	}
+	// always rollback the transaction
+	defer tx.Rollback()
+	if err := tx.Scopes(scopes.WithTenantSchema(tenant)).Create(&book).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -271,25 +302,32 @@ func createBookHandler(c echo.Context) error {
 }
 
 func deleteBookHandler(c echo.Context) error {
-	tenant, err := echomw.TenantFromContext(c)
+	tenant, err := TenantFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	id := c.Param("id")
+	// start transaction
+	tx := db.Begin()
+	if tx.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, tx.Error.Error())
+	}
+	// always rollback the transaction
+	defer tx.Rollback()
 	// get book
 	var book Book
-	if err := db.Scopes(scopes.WithTenantSchema(tenant)).First(&book, id).Error; err != nil {
+	if err := tx.Scopes(scopes.WithTenantSchema(tenant)).First(&book, id).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
 	// delete book
-	if err := db.Scopes(scopes.WithTenantSchema(tenant)).Delete(&Book{}, id).Error; err != nil {
+	if err := tx.Scopes(scopes.WithTenantSchema(tenant)).Delete(&Book{}, id).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.NoContent(http.StatusNoContent)
 }
 
 func updateBookHandler(c echo.Context) error {
-	tenant, err := echomw.TenantFromContext(c)
+	tenant, err := TenantFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -298,13 +336,25 @@ func updateBookHandler(c echo.Context) error {
 	if err := c.Bind(&body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	if body.Name == "" { // this is ugly but just for the sake of the example
+		return echo.NewHTTPError(http.StatusBadRequest, "name is required")
+	}
+	// start transaction
+	tx := db.Begin()
+	if tx.Error != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, tx.Error.Error())
+	}
+	// always rollback the transaction
+	defer tx.Rollback()
 	// get book
 	book := &Book{}
-	if err := db.Scopes(scopes.WithTenantSchema(tenant)).First(book, id).Error; err != nil {
+	if err := tx.Scopes(scopes.WithTenantSchema(tenant)).First(book, id).Error; err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
 	// update book
-	if err := db.Scopes(scopes.WithTenantSchema(tenant)).Model(book).Where("id = ?", id).Updates(body).Error; err != nil {
+	if err := tx.Scopes(scopes.WithTenantSchema(tenant)).Model(book).Updates(Book{
+		Name: body.Name,
+	}).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.NoContent(http.StatusOK)

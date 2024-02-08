@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"sync"
 
-	multicontext "github.com/bartventer/gorm-multitenancy/v2/context"
+	multicontext "github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 const (
-	PublicSchemaName = "public" // PublicSchemaName is the name of the public schema
+	// PublicSchemaName is the name of the public schema
+	PublicSchemaName = "public"
 )
 
 type multitenancyMigrationOption uint
@@ -94,7 +95,7 @@ func (m *Migrator) MigratePublicSchema() error {
 
 // AutoMigrate migrates the tables based on the migration options.
 func (m Migrator) AutoMigrate(values ...interface{}) error {
-	v, ok := m.DB.Get(multicontext.MultitenantMigrationOptions.String())
+	v, ok := m.DB.Get(multicontext.MigrationOptions.String())
 	if !ok {
 		return errors.New("no migration options found")
 	}
@@ -127,7 +128,7 @@ func (m *Migrator) DropSchemaForTenant(tenant string) error {
 
 func withMigrationOption(option multitenancyMigrationOption) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Set(multicontext.MultitenantMigrationOptions.String(), option)
+		return db.Set(multicontext.MigrationOptions.String(), option)
 	}
 }
 

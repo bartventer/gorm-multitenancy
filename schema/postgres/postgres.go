@@ -38,7 +38,7 @@ func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
 		return "", fmt.Errorf("table expression is nil")
 	}
 	// get the schema name from the table expression sql
-	schemaName := getSchemaNameFromSqlExpr(tx.Statement.TableExpr.SQL)
+	schemaName := getSchemaNameFromSQLExpr(tx.Statement.TableExpr.SQL)
 	// if the schema name is empty, return an error
 	if schemaName == "" {
 		return "", fmt.Errorf("schema name is empty")
@@ -46,7 +46,7 @@ func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
 	return schemaName, nil
 }
 
-// getSchemaNameFromSqlExpr extracts the schema name from a SQL expression.
+// getSchemaNameFromSQLExpr extracts the schema name from a SQL expression.
 // It splits the input string by the dot; if the length is 1, then there is no schema name.
 // Otherwise, it retrieves the first element and removes any backslashes and double quotes before returning the schema name.
 //
@@ -54,9 +54,9 @@ func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
 //
 //	"\"test_domain\".\"mock_private\"" -> "test_domain"
 //	"\"mock_private\"" -> ""
-func getSchemaNameFromSqlExpr(tableExprSql string) string {
+func getSchemaNameFromSQLExpr(tableExprSQL string) string {
 	// split the string by the dot
-	split := strings.Split(tableExprSql, ".")
+	split := strings.Split(tableExprSQL, ".")
 	// if the length is 1, then there is no schema name
 	if len(split) == 1 {
 		return ""

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"

@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	multitenancy "github.com/bartventer/gorm-multitenancy/v2"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v3"
 )
 
 // MultitenancyMigrator is the interface for the postgres migrator with multitenancy support
