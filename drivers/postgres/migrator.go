@@ -58,13 +58,13 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 		if len(m.tenantModels) == 0 {
 			return errors.New("no private tables to migrate")
 		}
-		fmt.Println("[multitenancy] ⏳ migrating private tables...")
+		fmt.Printf("[multitenancy] ⏳ migrating private tables for tenant %s...\n", tenant)
 		if err := tx.
 			Scopes(withMigrationOption(multiMigrationOptionMigrateTenantTables)).
 			AutoMigrate(m.tenantModels...); err != nil {
 			return err
 		}
-		fmt.Println("[multitenancy] ✅ private tables migrated")
+		fmt.Printf("[multitenancy] ✅ private tables migrated for tenant %s", tenant)
 
 		// prevent this connection to be reutilized with wrong tenant
 		if err := setSearchPath(tx, PublicSchemaName); err != nil {
