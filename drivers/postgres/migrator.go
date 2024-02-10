@@ -64,7 +64,7 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 			AutoMigrate(m.tenantModels...); err != nil {
 			return err
 		}
-		fmt.Printf("[multitenancy] ✅ private tables migrated for tenant %s", tenant)
+		fmt.Printf("[multitenancy] ✅ private tables migrated for tenant %s\n", tenant)
 
 		// prevent this connection to be reutilized with wrong tenant
 		if err := setSearchPath(tx, PublicSchemaName); err != nil {
