@@ -120,7 +120,7 @@ func (m *Migrator) DropSchemaForTenant(tenant string) error {
 		if err := tx.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", tenant)).Error; err != nil {
 			return fmt.Errorf("[multitenancy] failed to drop schema for tenant %s: %w", tenant, err)
 		}
-		fmt.Println("[multitenancy] ✅ schema dropped")
+		fmt.Printf("[multitenancy] ✅ schema dropped for tenant %s\n", tenant)
 
 		return nil
 	})
