@@ -1,9 +1,12 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
+	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
 	"gorm.io/gorm"
 )
 
@@ -71,26 +74,51 @@ func getSchemaNameFromSQLExpr(tableExprSQL string) string {
 // ResetSearchPath is a function that resets the search path to the default value.
 type ResetSearchPath func() error
 
-// SetSearchPath sets the search path to the given schema name.
-// It returns a function that resets the search path to the default value.
+const (
+	schemaNameRegexStr = `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`
+	pgPrefixRegexStr   = `^pg_`
+)
+
+var (
+	schemaNameRegex = regexp.MustCompile(schemaNameRegexStr)
+	pgPrefixRegex   = regexp.MustCompile(pgPrefixRegexStr)
+)
+
+// SetSearchPath sets the search path for the given database connection to the specified schema.
+// It also sets the tenant in the context of the database connection (using the [TenantKey] from the tenantcontext package).
+// Additionally, it returns a function that can be used to reset the search path to the default "public" schema and clear the tenant from the context.
+// The function takes a *gorm.DB object and a schemaName string as input parameters.
+// It returns a modified *gorm.DB object, a ResetSearchPath function, and an error (if any).
+// The ResetSearchPath function can be called to clear the tenant from the context and reset the search path to "public".
+// If the schemaName is invalid or starts with "pg_", an error will be returned.
 //
 // Example:
 //
-//	resetSearchPath, err := postgres.SetSearchPath(db, "domain1")
-//	if err != nil {
-//		return err
-//	}
-//	defer resetSearchPath()
-func SetSearchPath(db *gorm.DB, schemaName string) (ResetSearchPath, error) {
-	if schemaName == "" {
-		return nil, fmt.Errorf("schema name is empty")
+//		db, resetSearchPath, err := postgres.SetSearchPath(db, "domain1")
+//		if err != nil {
+//			fmt.Println(err) // nil
+//		}
+//		defer resetSearchPath()
+//	 // ... do something with the database connection
+//
+// After calling SetSearchPath, the tenant (in this case, "domain1") will be set in the context of the db object.
+// This can be useful for multi-tenant applications where each tenant has its own schema.
+//
+// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/tenantcontext#TenantKey
+func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath, error) {
+	if !schemaNameRegex.MatchString(schemaName) || pgPrefixRegex.MatchString(schemaName) {
+		return nil, nil, fmt.Errorf("invalid schema name")
 	}
-
+	db = db.WithContext(context.WithValue(db.Statement.Context, tenantcontext.TenantKey, schemaName)) // set the tenant in the context
 	err := db.Exec(fmt.Sprintf("SET search_path TO %s", schemaName)).Error
 	if err != nil {
-		return nil, err
+		// return nil, err
+		return nil, nil, err
 	}
-	return func() error {
+	return db, func() error {
+		// clear the tenant from the context
+		db = db.WithContext(context.WithValue(db.Statement.Context, tenantcontext.TenantKey, ""))
+		// reset the search path to the default "public" schema
 		return db.Exec("SET search_path TO public").Error
 	}, nil
 }
