@@ -1,14 +1,16 @@
 package scopes
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 
+	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
 	"gorm.io/gorm"
 )
 
 // WithTenantSchema alters the table name to prefix it with the tenant schema.
-// Intended to be used with a postgres database.
+// It will also set the tenant in the context using the [TenantKey] key.
 //
 // The table name is retrieved from the statement if set manually, otherwise
 // attempts to get it from the model or destination.
@@ -35,6 +37,8 @@ import (
 //
 //	db.Model(&Book{}).Scopes(scopes.WithTenantSchema("tenant3")).Find(&Book{}) // model is set manually.
 //	// SELECT * FROM tenant3.books;
+//
+// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/tenantcontext#TenantKey
 func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		var (
@@ -53,6 +57,7 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 		}
 
 		if tableName != "" {
+			db = db.WithContext(context.WithValue(db.Statement.Context, tenantcontext.TenantKey, tenant)) // set the tenant in the context
 			return db.Table(fmt.Sprintf("%s.%s", tenant, tableName))
 		}
 		// otherwise, return an error
