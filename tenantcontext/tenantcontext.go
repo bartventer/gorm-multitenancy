@@ -24,7 +24,7 @@ type contextKey struct {
 
 // String returns the string representation of the context key.
 func (c contextKey) String() string {
-	return fmt.Sprintf("gorm-multitenancy/v2/tenantcontext/%s", c.name)
+	return fmt.Sprintf("gorm-multitenancy/tenantcontext/%s", c.name)
 }
 
 var (
