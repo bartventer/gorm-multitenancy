@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 const (
@@ -55,41 +53,14 @@ func DefaultTenantFromHeader(r *http.Request) (string, error) {
 	return tenant, nil
 }
 
-// WithTenantConfig represents the config for the tenant middleware
-//
-// Deprecated: This type is no longer used as of version 3.0.0; use either [echomw.WithTenantConfig] or [nethttp.WithTenantConfig] instead.
-//
-// [echomw.WithTenantConfig]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware/echo#WithTenantConfig
-// [nethttp.WithTenantConfig]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware/nethttp#WithTenantConfig
-type WithTenantConfig struct {
-	DB            *gorm.DB                                // DB is the database connection
-	Skipper       func(r *http.Request) bool              // Skipper defines a function to skip middleware
-	TenantGetters []func(r *http.Request) (string, error) // TenantGetters gets the tenant from the request; overrides the default getter
-}
-
 var (
 	// DefaultSkipper represents the default skipper
 	DefaultSkipper = func(r *http.Request) bool {
 		return false
-	}
-
-	// DefaultTenantGetters represents the default tenant getters
-	//
-	// Deprecated: This variable no longer used as of version 3.0.0; use either [echomw.DefaultWithTenantConfig.TenantGetters] or [nethttp.DefaultWithTenantConfig.TenantGetters] instead.
-	//
-	// [echomw.DefaultWithTenantConfig.TenantGetters]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware/echo#DefaultWithTenantConfig
-	// [nethttp.DefaultWithTenantConfig.TenantGetters]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware/nethttp#DefaultWithTenantConfig
-	DefaultTenantGetters = []func(r *http.Request) (string, error){
-		DefaultTenantFromSubdomain,
-		DefaultTenantFromHeader,
 	}
 )
 
 var (
 	// ErrTenantInvalid represents an error when the tenant is invalid or not found
 	ErrTenantInvalid = fmt.Errorf("invalid tenant or tenant not found")
-	// ErrDBInvalid represents an error when the database connection is invalid
-	//
-	// Deprecated: This error is no longer used as of version 3.0.0.
-	ErrDBInvalid = gorm.ErrInvalidDB
 )
