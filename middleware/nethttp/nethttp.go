@@ -5,8 +5,8 @@ import (
 	"context"
 	"net/http"
 
-	mw "github.com/bartventer/gorm-multitenancy/v3/middleware"
-	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	mw "github.com/bartventer/gorm-multitenancy/v4/middleware"
+	"github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 )
 
 // DefaultSkipper returns false which processes the middleware.

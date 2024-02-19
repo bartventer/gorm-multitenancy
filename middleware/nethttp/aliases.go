@@ -1,6 +1,6 @@
 package nethttp
 
-import "github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+import "github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 
 var (
 	// TenantKey is the key that holds the tenant in a request context.

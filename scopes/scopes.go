@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	"github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +38,7 @@ import (
 //	db.Model(&Book{}).Scopes(scopes.WithTenantSchema("tenant3")).Find(&Book{}) // model is set manually.
 //	// SELECT * FROM tenant3.books;
 //
-// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/tenantcontext#TenantKey
+// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/tenantcontext#TenantKey
 func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		var (

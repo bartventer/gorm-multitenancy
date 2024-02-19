@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	multicontext "github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	multicontext "github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

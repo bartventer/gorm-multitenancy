@@ -19,7 +19,7 @@ const (
 //
 // This function calls the [ExtractSubdomain] function to extract the subdomain from the host.
 //
-// [ExtractSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware#ExtractSubdomain
+// [ExtractSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/middleware#ExtractSubdomain
 func DefaultTenantFromSubdomain(r *http.Request) (string, error) {
 	// Extract the host from the request
 	host := r.Host

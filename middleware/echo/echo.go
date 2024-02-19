@@ -4,15 +4,15 @@ package echo
 import (
 	"net/http"
 
-	mw "github.com/bartventer/gorm-multitenancy/v3/middleware"
-	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	mw "github.com/bartventer/gorm-multitenancy/v4/middleware"
+	"github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 	"github.com/labstack/echo/v4"
 )
 
 // DefaultSkipper returns false which processes the middleware.
 // It calls the default [DefaultSkipper] function to determine if the middleware should be skipped.
 //
-// [DefaultSkipper]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware#DefaultSkipper
+// [DefaultSkipper]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/middleware#DefaultSkipper
 func DefaultSkipper(c echo.Context) bool {
 	return mw.DefaultSkipper(c.Request())
 }
@@ -20,7 +20,7 @@ func DefaultSkipper(c echo.Context) bool {
 // DefaultTenantFromSubdomain extracts the subdomain from the given HTTP request's
 // host. It calls the default [DefaultTenantFromSubdomain] function to extract the subdomain from the host.
 //
-// [DefaultTenantFromSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware#DefaultTenantFromSubdomain
+// [DefaultTenantFromSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/middleware#DefaultTenantFromSubdomain
 func DefaultTenantFromSubdomain(c echo.Context) (string, error) {
 	return mw.DefaultTenantFromSubdomain(c.Request())
 }
@@ -28,7 +28,7 @@ func DefaultTenantFromSubdomain(c echo.Context) (string, error) {
 // DefaultTenantFromHeader extracts the tenant from the X-Tenant header in the HTTP request.
 // It calls the default [DefaultTenantFromHeader] function to extract the tenant from the header.
 //
-// [DefaultTenantFromHeader]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/middleware#DefaultTenantFromHeader
+// [DefaultTenantFromHeader]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/middleware#DefaultTenantFromHeader
 func DefaultTenantFromHeader(c echo.Context) (string, error) {
 	return mw.DefaultTenantFromHeader(c.Request())
 }

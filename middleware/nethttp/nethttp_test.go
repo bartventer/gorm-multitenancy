@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	"github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/bartventer/gorm-multitenancy/v3/tenantcontext"
+	"github.com/bartventer/gorm-multitenancy/v4/tenantcontext"
 	"gorm.io/gorm"
 )
 
@@ -104,7 +104,7 @@ var (
 // After calling SetSearchPath, the tenant (in this case, "domain1") will be set in the context of the db object.
 // This can be useful for multi-tenant applications where each tenant has its own schema.
 //
-// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v3/tenantcontext#TenantKey
+// [TenantKey]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v4/tenantcontext#TenantKey
 func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath, error) {
 	if !schemaNameRegex.MatchString(schemaName) || pgPrefixRegex.MatchString(schemaName) {
 		return nil, nil, fmt.Errorf("invalid schema name")
