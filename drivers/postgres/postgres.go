@@ -107,17 +107,23 @@ func DropSchemaForTenant(db *gorm.DB, schemaName string) error {
 	return db.Migrator().(*Migrator).DropSchemaForTenant(schemaName)
 }
 
-// newMultitenancyConfig creates a new multitenancy config
+// newMultitenancyConfig creates a new multitenancy configuration based on the provided models.
+// It separates the models into public models and private models based on their table names.
+// Public models are those that have a table name starting with the default schema name (PublicSchemaName),
+// while private models are those that implement the TenantTabler interface and have a table name without a fullstop.
+// If any model does not meet the required criteria, an error message is appended to the errStrings slice.
+// If there are any errors, the function returns nil and an error. Otherwise, it returns a new multitenancyConfig
+// containing the public models, private models, and all the models.
 func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 	var (
 		publicModels  = make([]interface{}, 0, len(models))
 		privateModels = make([]interface{}, 0, len(models))
-		errors        = make([]error, 0)
+		errStrings    = make([]string, 0)
 	)
 	for _, m := range models {
 		tn, ok := m.(interface{ TableName() string })
 		if !ok {
-			errors = append(errors, fmt.Errorf("model %T does not implement TableName()", m))
+			errStrings = append(errStrings, fmt.Sprintf("model %T does not implement TableName()", m))
 			continue
 		}
 		tt, ok := m.(multitenancy.TenantTabler)
@@ -125,14 +131,14 @@ func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 		if ok && tt.IsTenantTable() {
 			// ensure that the private model does not contain a fullstop
 			if len(parts) > 1 {
-				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as tenant table, table name should not contain a fullstop, got '%s'", m, tn.TableName()))
+				errStrings = append(errStrings, fmt.Sprintf("invalid table name for model %T labeled as tenant table, table name should not contain a fullstop, got '%s'", m, tn.TableName()))
 				continue
 			}
 			privateModels = append(privateModels, m)
 		} else {
 			// ensure that the public model starts with the default schema (public.)
 			if len(parts) != 2 || parts[0] != PublicSchemaName {
-				errors = append(errors, fmt.Errorf("invalid table name for model %T labeled as public table, table name should start with '%s.', got '%s'", m, PublicSchemaName, tn.TableName()))
+				errStrings = append(errStrings, fmt.Sprintf("invalid table name for model %T labeled as public table, table name should start with '%s.', got '%s'", m, PublicSchemaName, tn.TableName()))
 				continue
 			}
 			publicModels = append(publicModels, m)
@@ -140,12 +146,8 @@ func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 	}
 
 	// if there are errors, panic
-	if len(errors) > 0 {
-		var errMsgs []string
-		for _, err := range errors {
-			errMsgs = append(errMsgs, err.Error())
-		}
-		return nil, fmt.Errorf("failed to create multitenancy config: %s", strings.Join(errMsgs, "; "))
+	if len(errStrings) > 0 {
+		return nil, fmt.Errorf("failed to create multitenancy config: %s", strings.Join(errStrings, "; "))
 	}
 
 	return &multitenancyConfig{
