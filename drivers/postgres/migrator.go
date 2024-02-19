@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -45,29 +46,36 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 	defer m.rw.RUnlock()
 
 	return m.DB.Transaction(func(tx *gorm.DB) error {
+		var err error
 		// create schema for tenant
-		if err := tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tenant)).Error; err != nil {
+		if err = tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tenant)).Error; err != nil {
 			return fmt.Errorf("failed to create schema for tenant %s: %w", tenant, err)
 		}
 		// set search path to tenant
-		if err := setSearchPath(tx, tenant); err != nil {
+		if err = setSearchPath(tx, tenant); err != nil {
 			return err
 		}
+		defer func() {
+			setSearchPath(tx, PublicSchemaName)
+		}()
 
 		// migrate private tables
 		if len(m.tenantModels) == 0 {
 			return errors.New("no private tables to migrate")
 		}
-		fmt.Printf("[multitenancy] ⏳ migrating private tables for tenant %s...\n", tenant)
-		if err := tx.
+		if tx.Config.Logger != nil {
+			tx.Config.Logger.Info(context.Background(), "[multitenancy] ⏳ migrating private tables for tenant '%s'...\n", tenant)
+			defer func() {
+				if err != nil {
+					tx.Config.Logger.Error(context.Background(), "[multitenancy] failed to migrate private tables for tenant '%s': %v\n", tenant, err)
+				} else {
+					tx.Config.Logger.Info(context.Background(), "[multitenancy] ✅ private tables migrated for tenant 'ss'\n", tenant)
+				}
+			}()
+		}
+		if err = tx.
 			Scopes(withMigrationOption(multiMigrationOptionMigrateTenantTables)).
 			AutoMigrate(m.tenantModels...); err != nil {
-			return err
-		}
-		fmt.Printf("[multitenancy] ✅ private tables migrated for tenant %s\n", tenant)
-
-		// prevent this connection to be reutilized with wrong tenant
-		if err := setSearchPath(tx, PublicSchemaName); err != nil {
 			return err
 		}
 
@@ -83,13 +91,22 @@ func (m *Migrator) MigratePublicSchema() error {
 	if len(m.publicModels) == 0 {
 		return errors.New("no public tables to migrate")
 	}
-	fmt.Println("[multitenancy] ⏳ migrating public tables...")
-	if err := m.DB.
+	var err error
+	if m.DB.Config.Logger != nil {
+		m.DB.Config.Logger.Info(context.Background(), "[multitenancy] ⏳ migrating public tables...\n")
+		defer func() {
+			if err != nil {
+				m.DB.Config.Logger.Error(context.Background(), "[multitenancy] failed to migrate public tables: %v\n", err)
+			} else {
+				m.DB.Config.Logger.Info(context.Background(), "[multitenancy] ✅ public tables migrated\n")
+			}
+		}()
+	}
+	if err = m.DB.
 		Scopes(withMigrationOption(multiMigrationOptionMigratePublicTables)).
 		AutoMigrate(m.publicModels...); err != nil {
 		return err
 	}
-	fmt.Println("[multitenancy] ✅ public tables migrated")
 	return nil
 }
 
@@ -114,14 +131,20 @@ func (m Migrator) AutoMigrate(values ...interface{}) error {
 // DropSchemaForTenant drops the schema for the tenant (CASCADING tables)
 func (m *Migrator) DropSchemaForTenant(tenant string) error {
 	return m.DB.Transaction(func(tx *gorm.DB) error {
-
-		// drop schema for tenant
-		fmt.Printf("[multitenancy] ⏳ dropping schema for tenant %s...\n", tenant)
-		if err := tx.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", tenant)).Error; err != nil {
+		var err error
+		if tx.Config.Logger != nil {
+			tx.Config.Logger.Info(context.Background(), "[multitenancy] ⏳ dropping schema for tenant `%s`...\n", tenant)
+			defer func() {
+				if err != nil {
+					tx.Config.Logger.Error(context.Background(), "[multitenancy] failed to drop schema for tenant `%s`: %v\n", tenant, err)
+				} else {
+					tx.Config.Logger.Info(context.Background(), "[multitenancy] ✅ schema dropped for tenant `%s`\n", tenant)
+				}
+			}()
+		}
+		if err = tx.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", tenant)).Error; err != nil {
 			return fmt.Errorf("[multitenancy] failed to drop schema for tenant %s: %w", tenant, err)
 		}
-		fmt.Printf("[multitenancy] ✅ schema dropped for tenant %s\n", tenant)
-
 		return nil
 	})
 }
