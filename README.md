@@ -224,36 +224,42 @@ func main(){
 }
 
 ```
-
 ### net/http middleware
 For a complete example refer to the [PostgreSQL with net/http](https://github.com/bartventer/gorm-multitenancy/tree/master/internal/examples/nethttp) example.
 ```go
 import (
     "encoding/json"
     "net/http"
-
-    "github.com/go-chi/chi/v5"
     multitenancymw "github.com/bartventer/gorm-multitenancy/v4/middleware/nethttp"
     "github.com/bartventer/gorm-multitenancy/v4/scopes"
     // ...
 )
 
+type MiddlewareHandler struct {
+    handlerFunc func(http.ResponseWriter, *http.Request)
+    mw          func(http.Handler) http.Handler
+}
+
+func (m MiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    handler := m.mw(http.HandlerFunc(m.handlerFunc))
+    handler.ServeHTTP(w, r)
+}
+
 func main(){
     // ...
-    r := chi.NewRouter() // your router of choice
-    // ... other middleware
-    // Add the multitenancy middleware
-    r.Use(multitenancymw.WithTenant(multitenancymw.WithTenantConfig{
+    mux := http.NewServeMux() // or use a router of your choice
+
+    // create tenant middleware
+    mw := multitenancymw.WithTenant(multitenancymw.WithTenantConfig{
         DB: db,
         Skipper: func(r *http.Request) bool {
             return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
         },
         TenantGetters: multitenancymw.DefaultTenantGetters, 
-    }))
-    // ... other middleware
+    })
 
-    // ... routes
-    r.Get("/books", func(w http.ResponseWriter, r *http.Request) {
+    // ... routes (using go 1.22 routing syntax)
+    mux.Handle("GET /books", MiddlewareHandler{func(w http.ResponseWriter, r *http.Request) {
         // Get the tenant from context
         tenant, _ := multitenancymw.TenantFromContext(r.Context())
         var books []Book
@@ -266,7 +272,7 @@ func main(){
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
-    })
+    }, mw})
 
     // ... rest of code
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/bartventer/gorm-multitenancy/v4/drivers/postgres"
 	nethttpmw "github.com/bartventer/gorm-multitenancy/v4/middleware/nethttp"
 	"github.com/bartventer/gorm-multitenancy/v4/scopes"
-	"github.com/go-chi/chi/v5"
-	middleware "github.com/go-chi/chi/v5/middleware"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -165,10 +163,20 @@ func TenantFromContext(ctx context.Context) (string, error) {
 	return tenant, nil
 }
 
+type MiddlewareHandler struct {
+	handlerFunc func(http.ResponseWriter, *http.Request)
+	mw          func(http.Handler) http.Handler
+}
+
+func (m MiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Apply middleware to the handler
+	handler := m.mw(http.HandlerFunc(m.handlerFunc))
+
+	// Call the handler
+	handler.ServeHTTP(w, r)
+}
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	mux := http.NewServeMux()
 
 	// create tenant middleware
 	mw := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
@@ -177,20 +185,17 @@ func main() {
 		},
 	})
 
-	r.Use(mw)
-
 	// routes
-	r.Post("/tenants", createTenantHandler)
-	r.Get("/tenants/{id}", getTenantHandler)
-	r.Delete("/tenants/{id}", deleteTenantHandler)
+	mux.Handle("POST /tenants", MiddlewareHandler{createTenantHandler, mw})
+	mux.Handle("GET /tenants/{id}", MiddlewareHandler{getTenantHandler, mw})
+	mux.Handle("DELETE /tenants/{id}", MiddlewareHandler{deleteTenantHandler, mw})
+	mux.Handle("POST /books", MiddlewareHandler{createBookHandler, mw})
+	mux.Handle("GET /books", MiddlewareHandler{getBooksHandler, mw})
+	mux.Handle("DELETE /books/{id}", MiddlewareHandler{deleteBookHandler, mw})
+	mux.Handle("PUT /books/{id}", MiddlewareHandler{updateBookHandler, mw})
 
-	r.Post("/books", createBookHandler)
-	r.Get("/books", getBooksHandler)
-	r.Delete("/books/{id}", deleteBookHandler)
-	r.Put("/books/{id}", updateBookHandler)
-
-	// start chi server
-	http.ListenAndServe(":8080", r)
+	// start server
+	http.ListenAndServe(":8080", mux)
 }
 
 func createTenantHandler(w http.ResponseWriter, r *http.Request) {
@@ -236,7 +241,7 @@ func createTenantHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTenantHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.PathValue("id")
 	tenant := &TenantResponse{}
 	if err := db.Table(TableNameTenant).First(tenant, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -249,7 +254,7 @@ func getTenantHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteTenantHandler(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.PathValue("id")
 	// get tenant
 	tenant := &Tenant{}
 	if err := db.First(tenant, id).Error; err != nil {
@@ -335,7 +340,7 @@ func deleteBookHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	id := chi.URLParam(r, "id")
+	id := r.PathValue("id")
 	// start transaction
 	tx := db.Begin()
 	if tx.Error != nil {
@@ -364,7 +369,7 @@ func updateBookHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	id := chi.URLParam(r, "id")
+	id := r.PathValue("id")
 	var body UpdateBookBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
