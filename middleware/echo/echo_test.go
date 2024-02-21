@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mw "github.com/bartventer/gorm-multitenancy/v4/middleware"
+	mw "github.com/bartventer/gorm-multitenancy/v5/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )

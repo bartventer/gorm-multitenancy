@@ -8,10 +8,10 @@ import (
 	"os"
 	"strings"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v4"
-	"github.com/bartventer/gorm-multitenancy/v4/drivers/postgres"
-	nethttpmw "github.com/bartventer/gorm-multitenancy/v4/middleware/nethttp"
-	"github.com/bartventer/gorm-multitenancy/v4/scopes"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
+	"github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/v5/middleware/nethttp"
+	"github.com/bartventer/gorm-multitenancy/v5/scopes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v4"
-	"github.com/bartventer/gorm-multitenancy/v4/internal"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
+	"github.com/bartventer/gorm-multitenancy/v5/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
