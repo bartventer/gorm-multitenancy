@@ -1,6 +1,6 @@
 PKG_NAME := main
 
-# Commands
+# Commands 
 GO := go
 GOFMT := gofmt
 GOLINT := golint
