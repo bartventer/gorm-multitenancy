@@ -22,7 +22,7 @@ jobs:
       DB_HOST: localhost
     services:
       db:
-        image: postgres:latest
+        image: postgres:15
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
