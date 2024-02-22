@@ -55,6 +55,58 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "valid:test-from-subdomain-with-port",
+			args: args{
+				r: &http.Request{
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "tenant1.example.com:8080",
+					URL:    &url.URL{Path: "/"},
+					TLS:    &tls.ConnectionState{}, // Simulate an https request
+				},
+			},
+			want:    "tenant1",
+			wantErr: false,
+		},
+		{
+			name: "valid:test-from-subdomain-with-multiple-subdomains",
+			args: args{
+				r: &http.Request{
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "tenant1.sub.example.com",
+					URL:    &url.URL{Path: "/"},
+					TLS:    &tls.ConnectionState{}, // Simulate an https request
+				},
+			},
+			want:    "tenant1",
+			wantErr: false,
+		},
+		{
+			name: "invalid:no-subdomain",
+			args: args{
+				r: &http.Request{
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "example.com",
+					URL:    &url.URL{Path: "/"},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid:host-is-ip",
+			args: args{
+				r: &http.Request{
+					Method: http.MethodGet,
+					Header: map[string][]string{},
+					Host:   "192.168.1.1",
+					URL:    &url.URL{Path: "/"},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
