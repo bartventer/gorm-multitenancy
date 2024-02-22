@@ -1,13 +1,13 @@
 package nethttp
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestWithTenant(t *testing.T) {
@@ -25,19 +25,56 @@ func TestWithTenant(t *testing.T) {
 			name: "test-with-tenant-search-path",
 			args: args{
 				tenant: "tenant1",
+				config: WithTenantConfig{},
+			},
+			want:    "tenant1",
+			wantErr: false,
+		},
+		{
+			name: "test-with-skipper",
+			args: args{
 				config: WithTenantConfig{
-					Skipper: DefaultSkipper,
-					TenantGetters: []func(r *http.Request) (string, error){
-						DefaultTenantFromSubdomain,
-						DefaultTenantFromHeader,
-					},
-					ContextKey: tenantcontext.TenantKey,
-					ErrorHandler: func(w http.ResponseWriter, r *http.Request, _ error) {
-						http.Error(w, "Invalid tenant", http.StatusInternalServerError)
+					Skipper: func(r *http.Request) bool {
+						return true
 					},
 				},
 			},
-			want:    "tenant1",
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "test-with-error-handler",
+			args: args{
+				config: WithTenantConfig{
+					TenantGetters: []func(r *http.Request) (string, error){
+						func(r *http.Request) (string, error) {
+							return "", errors.New("forced error")
+						},
+					},
+					ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+						http.Error(w, "forced error", http.StatusInternalServerError)
+					},
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "test-with-success-handler",
+			args: args{
+				tenant: "tenant1",
+				config: WithTenantConfig{
+					TenantGetters: []func(r *http.Request) (string, error){
+						func(r *http.Request) (string, error) {
+							return "tenant1", nil
+						},
+					},
+					SuccessHandler: func(w http.ResponseWriter, r *http.Request) {
+						fmt.Fprint(w, "success: ")
+					},
+				},
+			},
+			want:    "success: tenant1",
 			wantErr: false,
 		},
 	}
@@ -49,12 +86,13 @@ func TestWithTenant(t *testing.T) {
 			// setup the handler
 			handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// tenant from context, should be same as tenant from search path
-				tenant, ok := r.Context().Value(tt.args.config.ContextKey).(string)
-				if !ok {
-					http.Error(w, "No tenant in context", http.StatusInternalServerError)
+				tenant, ok := r.Context().Value(tenantcontext.TenantKey).(string)
+				if !ok && tt.args.config.Skipper != nil && tt.args.config.Skipper(r) {
+					// If Skipper is not nil and returns true, we don't expect a tenant in the context
+					fmt.Fprint(w, "")
 					return
 				}
-				if tenant != tt.want {
+				if tt.args.config.SuccessHandler == nil && tenant != tt.want {
 					http.Error(w, fmt.Sprintf("expected tenant %s, got %s", tt.want, tenant), http.StatusInternalServerError)
 					return
 				}
@@ -73,11 +111,22 @@ func TestWithTenant(t *testing.T) {
 			handler.ServeHTTP(rr, req)
 
 			// Check the status code is what we expect.
-			assert.Equal(t, http.StatusOK, rr.Code)
+			expectedStatus := http.StatusOK
+			if tt.wantErr {
+				expectedStatus = http.StatusInternalServerError
+			}
+			if status := rr.Code; status != expectedStatus {
+				t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
+			}
 
 			// Check the response body is what we expect.
-			assert.Equal(t, tt.want, rr.Body.String())
-
+			expectedBody := tt.want
+			if tt.wantErr {
+				expectedBody = "forced error\n"
+			}
+			if rr.Body.String() != expectedBody {
+				t.Errorf("handler returned unexpected body: got %v want %v", rr.Body.String(), expectedBody)
+			}
 		})
 	}
 }

@@ -1,12 +1,12 @@
 package echo
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	mw "github.com/bartventer/gorm-multitenancy/v5/middleware"
+	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,68 +23,107 @@ func TestWithTenant(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid",
+			name: "test-with-tenant-search-path",
+			args: args{
+				tenant: "tenant1",
+				config: WithTenantConfig{},
+			},
+			want:    "tenant1",
+			wantErr: false,
+		},
+		{
+			name: "test-with-skipper",
+			args: args{
+				config: WithTenantConfig{
+					Skipper: func(c echo.Context) bool {
+						return true
+					},
+				},
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "test-with-error-handler",
+			args: args{
+				config: WithTenantConfig{
+					TenantGetters: []func(c echo.Context) (string, error){
+						func(c echo.Context) (string, error) {
+							return "", errors.New("forced error")
+						},
+					},
+					ErrorHandler: func(c echo.Context, err error) error {
+						return echo.NewHTTPError(http.StatusInternalServerError, "forced error")
+					},
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "test-with-success-handler",
 			args: args{
 				tenant: "tenant1",
 				config: WithTenantConfig{
-					Skipper: DefaultSkipper,
 					TenantGetters: []func(c echo.Context) (string, error){
-						DefaultTenantFromSubdomain,
-						DefaultTenantFromHeader,
+						func(c echo.Context) (string, error) {
+							return "tenant1", nil
+						},
+					},
+					SuccessHandler: func(c echo.Context) {
+						t.Log("success")
 					},
 				},
 			},
 			want:    "tenant1",
 			wantErr: false,
 		},
-		{
-			name: "invalid: no tenant",
-			args: args{
-				tenant: "",
-				config: WithTenantConfig{
-					Skipper: DefaultSkipper,
-					TenantGetters: []func(c echo.Context) (string, error){
-						DefaultTenantFromSubdomain,
-						DefaultTenantFromHeader,
-					},
-				},
-			},
-			wantErr: true,
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := echo.New()
-			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			rr := httptest.NewRecorder()
-			c := e.NewContext(req, rr)
-			defer func() {
-				if r := recover(); r != nil {
-					if tt.wantErr && r != mw.ErrTenantInvalid.Error() {
-						t.Errorf("The code did not panic as expected. Got %v", r)
-					}
-				}
-			}()
-
-			h := WithTenant(tt.args.config)(func(c echo.Context) error {
+			// setup the middleware
+			middleware := WithTenant(tt.args.config)
+			// setup the handler
+			handler := middleware(func(c echo.Context) error {
 				// tenant from context, should be same as tenant from search path
-				tenant, ok := c.Get(tt.args.config.ContextKey.String()).(string)
-				if !ok {
-					return echo.NewHTTPError(http.StatusInternalServerError, "No tenant in context")
+				tenantValue := c.Get(tenantcontext.TenantKey.String())
+				tenant, _ := tenantValue.(string) // type assertion is safe because we check if tenantValue is nil
+
+				if tt.args.config.Skipper != nil && tt.args.config.Skipper(c) {
+					// If Skipper is not nil and returns true, we don't expect a tenant in the context
+					c.Response().Write([]byte(""))
+					return nil
 				}
-				if tenant != tt.want {
-					return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("tenant is not set correctly. Got %s, want %s", tenant, tt.want))
+
+				if tt.args.config.SuccessHandler == nil && tenant != tt.want {
+					return echo.NewHTTPError(http.StatusInternalServerError, "expected tenant "+tt.want+", got "+tenant)
 				}
-				return c.String(http.StatusOK, tenant)
+				c.Response().Write([]byte(tenant))
+				return nil
 			})
 
+			// Create a request to pass to our handler.
+			req := httptest.NewRequest(echo.GET, "/", nil)
 			req.Host = tt.args.tenant + ".example.com"
+			rec := httptest.NewRecorder()
+			c := echo.New().NewContext(req, rec)
+
 			if tt.wantErr {
-				assert.Error(t, h(c))
-			} else {
-				assert.NoError(t, h(c))
+				he := handler(c).(*echo.HTTPError)
+				assert.Equal(t, http.StatusInternalServerError, he.Code)
+				assert.Equal(t, "forced error", he.Message)
+				return
 			}
+
+			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+			if err := handler(c); (err != nil) != tt.wantErr {
+				t.Errorf("Handler error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, tt.want, rec.Body.String())
 		})
 	}
 }
