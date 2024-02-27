@@ -48,13 +48,11 @@ func TestMain(m *testing.M) {
 	m.Run()
 
 	// drop public tables
-	fmt.Println("[multitenancy] ⏳ tearing down... dropping public tables")
 	testDb.Exec(fmt.Sprintf("SET search_path TO %s", "public"))
 	testDb.Migrator().DropTable(
 		&testPublicTable{},
 		&testTenantTable{},
 	)
-	fmt.Println("[multitenancy] ✅ teardown complete")
 }
 
 func TestMigrator_CreateSchemaForTenant(t *testing.T) {
@@ -327,7 +325,7 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 		{
 			name: "valid: with valid migrate option",
 			fields: fields{
-				Migrator: testDb.Scopes(withMigrationOption(multiMigrationOptionMigratePublicTables)).Migrator().(postgres.Migrator),
+				Migrator: testDb.Scopes(withMigrationOption(migrationOptionPublicTables)).Migrator().(postgres.Migrator),
 				multitenancyConfig: &multitenancyConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
@@ -344,7 +342,7 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 		{
 			name: "invalid: with invalid migrate option",
 			fields: fields{
-				Migrator: testDb.Scopes(withMigrationOption(multitenancyMigrationOption(0))).Migrator().(postgres.Migrator),
+				Migrator: testDb.Scopes(withMigrationOption(migrationOption(0))).Migrator().(postgres.Migrator),
 				multitenancyConfig: &multitenancyConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},

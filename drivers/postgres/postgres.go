@@ -26,7 +26,10 @@ type (
 // Check interface
 var _ gorm.Dialector = (*Dialector)(nil)
 
-// Open creates a new postgres dialector with multitenancy support
+// Open opens a connection to a PostgreSQL database using the provided DSN (Data Source Name) and models.
+// It returns a gorm.Dialector that can be used to interact with the database.
+// The models parameter is optional and can be used to specify the database models that should be registered.
+// If an error occurs while creating the multitenancy configuration, it panics.
 func Open(dsn string, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.Open(dsn).(*postgres.Dialector),
@@ -40,7 +43,12 @@ func Open(dsn string, models ...interface{}) gorm.Dialector {
 	return d
 }
 
-// New creates a new postgres dialector with multitenancy support
+// New creates a new PostgreSQL dialector with multitenancy support.
+// It takes a Config struct as the first parameter and variadic models as the second parameter.
+// The Config struct contains the necessary configuration for connecting to the PostgreSQL database.
+// The models parameter is a list of GORM models that will be used for multitenancy configuration.
+// It returns a gorm.Dialector that can be used with GORM.
+// If there is an error during the creation of the multitenancy configuration, it will panic.
 func New(config Config, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.New(config).(*postgres.Dialector),
@@ -54,7 +62,10 @@ func New(config Config, models ...interface{}) gorm.Dialector {
 	return d
 }
 
-// Migrator returns the migrator with multitenancy support
+// Migrator returns a gorm.Migrator implementation for the Dialector.
+// It creates a new instance of Migrator with the provided database connection and dialector.
+// It also includes a multitenancyConfig that contains information about public models, tenant models, and all models.
+// The Migrator is thread-safe and uses a sync.RWMutex for synchronization.
 func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 	dialector.rw.RLock()
 	defer dialector.rw.RUnlock()
@@ -78,7 +89,10 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 	}
 }
 
-// RegisterModels registers the models for multitenancy
+// RegisterModels registers the given models with the provided gorm.DB instance for multitenancy support.
+// It initializes the multitenancy configuration for the database dialector.
+// The models parameter should be a variadic list of model structs.
+// Returns an error if there is a failure in registering the models or initializing the multitenancy configuration.
 func RegisterModels(db *gorm.DB, models ...interface{}) error {
 	dialector := db.Dialector.(*Dialector)
 	mtc, err := newMultitenancyConfig(models)
@@ -92,17 +106,24 @@ func RegisterModels(db *gorm.DB, models ...interface{}) error {
 	return nil
 }
 
-// MigratePublicSchema migrates the public tables
+// MigratePublicSchema migrates the public schema in the database.
+// It takes a *gorm.DB as input and returns an error if any.
 func MigratePublicSchema(db *gorm.DB) error {
 	return db.Migrator().(*Migrator).MigratePublicSchema()
 }
 
-// CreateSchemaForTenant creates the schema for the tenant, and migrates the private tables
+// CreateSchemaForTenant creates a new schema for a specific tenant in the PostgreSQL database,
+// and migrates the private tables for the tenant.
+// It takes a gorm.DB instance and the name of the schema as parameters.
+// Returns an error if the schema creation fails.
 func CreateSchemaForTenant(db *gorm.DB, schemaName string) error {
 	return db.Migrator().(*Migrator).CreateSchemaForTenant(schemaName)
 }
 
-// DropSchemaForTenant drops the schema for the tenant (CASCADING tables)
+// DropSchemaForTenant drops the schema for a specific tenant in the PostgreSQL
+// database (CASCADING all objects in the schema).
+// It takes a *gorm.DB instance and the name of the schema as parameters.
+// Returns an error if there was a problem dropping the schema.
 func DropSchemaForTenant(db *gorm.DB, schemaName string) error {
 	return db.Migrator().(*Migrator).DropSchemaForTenant(schemaName)
 }
