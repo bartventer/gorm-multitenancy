@@ -54,12 +54,12 @@ jobs:
 
     - name: Get dependencies
       run: go mod download
+      
+    - name: Install golint
+      run: go get -u golang.org/x/lint/golint
 
     - name: Format code
       run: make fmt
-
-    - name: Install golint
-      run: go get -u golang.org/x/lint/golint
 
     - name: Lint
       run: make lint
