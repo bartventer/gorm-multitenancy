@@ -58,10 +58,7 @@ jobs:
     - name: Build
       run: make build
 
-    - name: Test
-      run: make test
-
-    - name: Coverage
+    - name: Test and Coverage
       run: make cover
       
     - uses: shogo82148/actions-goveralls@v1
