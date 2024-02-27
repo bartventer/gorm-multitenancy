@@ -55,12 +55,27 @@ jobs:
     - name: Get dependencies
       run: go mod download
 
+    - name: Format code
+      run: make fmt
+
+    - name: Lint
+      run: make lint
+
+    - name: Vet
+      run: make vet
+
+    - name: Build
+      run: make build
+
     - name: Test
-      run: go test -v -coverprofile=./profile.cov `go list ./... | grep -v /internal/`
+      run: make test
+
+    - name: Coverage
+      run: make cover
       
     - uses: shogo82148/actions-goveralls@v1
       with:
-        path-to-profile: ./profile.cov
+        path-to-profile: ./tmp/cover.out
 
     - name: Install FOSSA
       run: |
