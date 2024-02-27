@@ -163,6 +163,7 @@ func TenantFromContext(ctx context.Context) (string, error) {
 	return tenant, nil
 }
 
+// MiddlewareHandler is a custom middleware handler
 type MiddlewareHandler struct {
 	handlerFunc func(http.ResponseWriter, *http.Request)
 	mw          func(http.Handler) http.Handler
