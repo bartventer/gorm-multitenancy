@@ -1,4 +1,4 @@
-name: Go
+name: CI
 
 on:
   push:
@@ -65,20 +65,25 @@ jobs:
       with:
         path-to-profile: ./tmp/cover.out
 
-    - name: Install FOSSA
-      run: |
-        curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
-
-    - name: Run FOSSA analysis
-      run: fossa analyze
-      env:
-        FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-
-    - name: Check FOSSA status
-      run: fossa test
-      env:
-        FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-
+  license-scan:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FOSSA
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+  
+      - name: Run FOSSA analysis
+        run: fossa analyze
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+  
+      - name: Check FOSSA status
+        run: fossa test
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+  
   semantic-release:
     needs: [build]
     runs-on: ubuntu-latest
