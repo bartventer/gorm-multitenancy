@@ -33,12 +33,12 @@ jobs:
         volumes:
           - db-data:/var/lib/postgresql/data
     steps:
+    - uses: actions/checkout@v4
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
       id: go
-    - uses: actions/checkout@v4
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
@@ -62,7 +62,9 @@ jobs:
         path-to-profile: ./tmp/cover.out
 
   license-scan:
+    name: License scan
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     needs: [build]
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +83,7 @@ jobs:
         run: fossa test
   
   semantic-release:
+    name: Semantic Release
     needs: [license-scan]
     runs-on: ubuntu-latest
     permissions: 
