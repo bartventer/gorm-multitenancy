@@ -1,38 +1,29 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: 'fix(<scope>): <your bug>'
 labels: ''
 assignees: ''
 
 ---
 
-**Describe the bug**
+> [!IMPORTANT]
+> Please use a title that follows [semantic release conventions](https://www.conventionalcommits.org/). Start with the type of the commit (fix, etc.) and an optional scope of the affected package between parenthesis, followed by a colon, then a short summary of the issue. If the issue affects all packages, use "all". Example: `fix(middleware): not setting context correctly`.
+
+### Describe the bug
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+### To Reproduce
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
 
-**Expected behavior**
+## Expected behavior
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+### Screenshots
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+### Version
+Which version(s) of the `gorm-multitenancy` modules are you seeing the bug with?
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
+### Additional context
 Add any other context about the problem here.
