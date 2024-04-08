@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	pgschema "github.com/bartventer/gorm-multitenancy/v5/schema/postgres"
 	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -52,15 +53,16 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 
 	return m.DB.Transaction(func(tx *gorm.DB) error {
 		// create schema for tenant
-		if err := tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tenant)).Error; err != nil {
+		if err := tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tx.Statement.Quote(tenant))).Error; err != nil {
 			return fmt.Errorf("failed to create schema for tenant %s: %w", tenant, err)
 		}
-		// set search path to tenant
-		if err := setSearchPath(tx, tenant); err != nil {
-			return err
+		// // set search path to tenant
+		tx, resetSearchPath := pgschema.SetSearchPath(tx, tenant)
+		if tx.Error != nil {
+			return fmt.Errorf("failed to set search path to tenant %s: %w", tenant, tx.Error)
 		}
 		defer func() {
-			_ = setSearchPath(tx, PublicSchemaName)
+			_ = resetSearchPath()
 		}()
 
 		// migrate private tables
@@ -171,12 +173,4 @@ func withMigrationOption(option migrationOption) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Set(tenantcontext.MigrationOptions.String(), option)
 	}
-}
-
-// setSearchPath sets the search path for the given database connection to the specified schema.
-// It executes the SQL command "SET search_path TO <schema>" to set the search path.
-// The schema parameter specifies the name of the schema to set as the search path.
-// Returns an error if there was a problem executing the SQL command.
-func setSearchPath(db *gorm.DB, schema string) error {
-	return db.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error
 }

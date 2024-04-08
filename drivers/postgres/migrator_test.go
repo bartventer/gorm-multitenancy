@@ -273,41 +273,6 @@ func TestMigrator_DropSchemaForTenant(t *testing.T) {
 	}
 }
 
-func Test_setSearchPath(t *testing.T) {
-	type args struct {
-		db     *gorm.DB
-		schema string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "valid",
-			args: args{
-				db:     testDb,
-				schema: "public",
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid",
-			args: args{
-				db: testDbWithError,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := setSearchPath(tt.args.db, tt.args.schema); (err != nil) != tt.wantErr {
-				t.Errorf("setSearchPath() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestMigrator_AutoMigrate(t *testing.T) {
 	type fields struct {
 		Migrator           postgres.Migrator
