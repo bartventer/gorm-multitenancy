@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/release/bartventer/gorm-multitenancy.svg)](https://github.com/bartventer/gorm-multitenancy/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy)
 [![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
-[![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/go.yml)
+[![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml)
 ![GitHub issues](https://img.shields.io/github/issues/bartventer/gorm-multitenancy)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_shield&issueType=license)
@@ -58,12 +58,12 @@ go get -u github.com/bartventer/gorm-multitenancy/v5
     - The `TenantTabler` interface has a single method `IsTenantTable() bool` which returns `true` if the model is tenant specific and `false` otherwise
     - The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`
 - Models can be registered in two ways:
-    - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#New) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#Open) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
-    - By calling [`postgres.RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#RegisterModels) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
+    - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#New) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#Open) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
+    - By calling [`postgres.RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
-    - By calling [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models
-    - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
-- To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v2/drivers/postgres#DropSchemaForTenant); this will drop the schema and all tables in the schema
+    - By calling [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models
+    - By calling [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#CreateSchemaForTenant) to create the schema for the tenant and migrate all tenant specific models
+- To drop a tenant schema, call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#DropSchemaForTenant); this will drop the schema and all tables in the schema
     - When creating the dialect, by passing the models as variadic arguments to [`postgres.New`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#New)) (e.g. `postgres.New(postgres.Config{...}, &Book{}, &Tenant{})`) or by calling [`postgres.Open`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#Open)) (e.g. `postgres.Open("postgres://...", &Book{}, &Tenant{})`)
     - By calling [`postgres.RegisterModels`]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels)) (e.g. `postgres.RegisterModels(db, &Book{}, &Tenant{})`)
 - Migrations can be performed in two ways (after registering the models):
@@ -214,7 +214,7 @@ func main(){
         tenant, _ := multitenancymw.TenantFromContext(c)
         var books []Book
         // Query the tenant specific schema
-        if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
+        if err := db.Scopes(scopes.WithTenantSchema(tenant)).Find(&books).Error; err != nil {
             return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
         }
         return c.JSON(http.StatusOK, books)
@@ -264,7 +264,7 @@ func main(){
         tenant, _ := multitenancymw.TenantFromContext(r.Context())
         var books []Book
         // Query the tenant specific schema
-        if err := db.Scopes(scopes.WithTenant(tenant)).Find(&books).Error; err != nil {
+        if err := db.Scopes(scopes.WithTenantSchema(tenant)).Find(&books).Error; err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)
             return
         }
