@@ -1,33 +1,28 @@
 {
     "name": "Gorm Multi-Tenancy",
-    "dockerComposeFile": [
-        "docker-compose.yml"
-    ],
-    "service": "app",
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "image": "archlinux:base",
     "customizations": {
         "vscode": {
             "extensions": [
-                "GitHub.copilot",
-                "GitHub.copilot-chat",
-                "golang.go",
                 "cweijan.vscode-postgresql-client2",
                 "github.vscode-github-actions"
             ]
         }
     },
     "features": {
-        "ghcr.io/devcontainers/features/common-utils:2": {
-            "installZsh": true,
+        "ghcr.io/bartventer/devcontainer-features/common-utils:latest": {
             "configureZshAsDefaultShell": true,
-            "installOhMyZsh": true,
-            "installOhMyZshConfig": true,
-            "upgradePackages": true
+            "installOhMyZshConfig": false,
+            "additionalPackages": "curl make jq go nodejs npm yarn"
         },
-        "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {
-            "plugins": "zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search",
-            "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions.git https://github.com/zsh-users/zsh-syntax-highlighting.git https://github.com/zsh-users/zsh-history-substring-search.git"
-        },
-        "ghcr.io/devcontainers/features/aws-cli:1": {}
-    }
+        "ghcr.io/bartventer/devcontainer-features/docker-in-docker:latest": {}
+    },
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.vscode-server,target=/home/vscode/.vscode-server-insiders/extensions,type=bind,consistency=cached"
+    ],
+    "runArgs": [
+        "--env-file",
+        "./.devcontainer/.env"
+    ]
 }
