@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.21.x, 1.22.x]
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Build
+      shell: bash
+      run: make build
+
+    - name: Test and Coverage
+      shell: bash
+      run: make cover
+      
+    - name: Coveralls
+      uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: ./cover.out
+
+  license-scan:
+    name: License scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FOSSA
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+  
+      - name: Run FOSSA analysis
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: fossa analyze
+
+      - name: Check FOSSA status
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+        run: fossa test
+  
+  semantic-release:
+    name: Semantic Release
+    needs: [license-scan]
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run semantic-release
+        if: github.repository == 'bartventer/gorm-multitenancy' && github.event_name == 'push'
+        run: |
+          yarn global add semantic-release@17
+          semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
