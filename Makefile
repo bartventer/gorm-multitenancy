@@ -1,66 +1,76 @@
+.SHELLFLAGS = -ecuo pipefail
+SHELL = /bin/bash
+
+# Variables
 PKG_NAME := main
+ENVFILE_PATH := ./.devcontainer/.env
+COVERAGE_PROFILE := cover.out
+BINARY := $(PKG_NAME)
+DEPS_SCRIPT := ./internal/testing/start_local_deps.sh
 
 # Commands 
 GO := go
 GOFMT := gofmt
-GOLINT := golint
+GOLINT := golangci-lint
 GOVET := go vet
 GOTEST := go test
 GOCOVER := go tool cover
-TEMP_DIR := ./tmp
-COVERAGE_PROFILE := cover.out
-BINARY := $(TEMP_DIR)/$(PKG_NAME)
 
 # Flags
 GOFLAGS := -v
 GOFMTFLAGS := -s
-GOLINTFLAGS := -set_exit_status
+GOLINTFLAGS := run --verbose
 GOVETFLAGS := -all
 GOTESTFLAGS := -v
 GOCOVERFLAGS := -html
 
+# Include environment variables
+include $(ENVFILE_PATH)
+export $(shell sed 's/=.*//' $(ENVFILE_PATH))
+
+.PHONY: help
+help: ## Display this help message.
+	@echo "Usage: make [TARGET]"
+	@echo "Targets:"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m    %-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "Variables:"
+	@awk 'BEGIN {FS = "##"} /^[a-zA-Z_-]+\s*\?=\s*.*?## / {split($$1, a, "\\s*\\?=\\s*"); printf "\033[33m   %-30s\033[0m %s\n", a[1], $$2}' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "Variable Values:"
+	@awk 'BEGIN {FS = "[ ?=]"} /^[a-zA-Z_-]+[ \t]*[?=]/ {print $$1}' $(MAKEFILE_LIST) | \
+	while read -r var; do \
+		printf "\033[35m    %-30s\033[0m %s\n" "$$var" "$$(make -s -f $(firstword $(MAKEFILE_LIST)) print-$$var)"; \
+	done
+
+.PHONY: print-%
+print-%: ## Helper target to print a variable. Usage: make print-VARIABLE
+	@printf '%s' "$($*)" | sed 's/^[[:space:]]*//'
+
 .PHONY: all
-all: build test
+all: build test ## Run all targets
 
 .PHONY: fmt
-fmt:
+fmt: ## Run gofmt on all files
 	$(GOFMT) $(GOFMTFLAGS) -w .
 
 .PHONY: lint
-lint:
+lint: ## Run golint on all files
 	$(GOLINT) $(GOLINTFLAGS) ./...
 
 .PHONY: vet
-vet:
+vet: ## Run go vet on all files
 	$(GOVET) $(GOVETFLAGS) ./...
-
 
 .PHONY: build
 build: vet
 	$(GO) build $(GOFLAGS) -o $(BINARY)
 
 .PHONY: test
-test:
-	$(GOTEST) $(GOTESTFLAGS) ./...
+test: vet ## Run tests
+	$(DEPS_SCRIPT)
+	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) `go list ./... | grep -v ./internal`
 
 .PHONY: cover
-cover:
-	mkdir -p $(TEMP_DIR)
-	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) -outputdir=$(TEMP_DIR) `go list ./... | grep -v ./internal`
-	$(GOCOVER) $(GOCOVERFLAGS) $(TEMP_DIR)/$(COVERAGE_PROFILE)
-
-
-.PHONY: help
-help:
-	@echo "Usage: make <target>"
-	@echo "Targets:"
-	@echo "  all     - build and test"
-	@echo "  build   - build the binary"
-	@echo "  test    - run tests"
-	@echo "  cover   - run tests with coverage"
-	@echo "  fmt     - run gofmt"
-	@echo "  lint    - run golint"
-	@echo "  vet     - run go vet"
-	@echo "  clean   - clean up"
-	@echo "  run     - build and run"
-	@echo "  help    - show this help"
+cover: test ## Run tests with coverage
+	$(GOCOVER) $(GOCOVERFLAGS) $(COVERAGE_PROFILE)

@@ -1,3 +1,4 @@
+// Package internal provides internal utilities for the application.
 package internal
 
 import (
@@ -9,15 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewTestDB creates a new database connection (for internal use)
+// GetDSN returns the data source name for the database connection.
+func GetDSN() string {
+	return fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_PASSWORD"),
+	)
+}
+
+// NewTestDB creates a new database connection (for internal use).
 func NewTestDB() *gorm.DB {
-	db, err := gorm.Open(postgres.Open(fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PASSWORD"),
-	)), &gorm.Config{PrepareStmt: true})
+	db, err := gorm.Open(postgres.Open(GetDSN()), &gorm.Config{PrepareStmt: true})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to connect to test database"))
 	}
