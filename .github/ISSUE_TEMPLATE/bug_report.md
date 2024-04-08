@@ -1,14 +1,15 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: 'fix(<scope>): <your bug>'
 labels: ''
 assignees: ''
 
 ---
 
 > [!IMPORTANT]
-> Please use a title that follows [semantic release conventions](https://www.conventionalcommits.org/). Start with the type of the commit (fix, etc.) and an optional scope of the affected package between parenthesis, followed by a colon, then a short summary of the issue. If the issue affects all packages, use "all". Example: `fix(middleware): not setting context correctly`.
+> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the issue. Example: `middleware/echo: not setting context correctly`.
+
+You have the option to utilize `go bug` for an automatically populated bug report template, or you can manually complete the template provided below.
 
 ### Describe the bug
 A clear and concise description of what the bug is.
