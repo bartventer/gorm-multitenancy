@@ -55,12 +55,12 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 			return db.Table(fmt.Sprintf("%s.%s", tenant, tableName))
 		}
 		// otherwise, return an error
-		db.AddError(gorm.ErrModelValueRequired)
+		_ = db.AddError(gorm.ErrModelValueRequired)
 		return db
 	}
 }
 
-// getTableName returns the table name from the model
+// getTableName returns the table name from the model.
 func getTableName(val interface{}) (string, bool) {
 	if s, ok := val.(interface{ TableName() string }); ok {
 		return s.TableName(), true
@@ -69,6 +69,7 @@ func getTableName(val interface{}) (string, bool) {
 }
 
 func tableNameFromReflectValue(val interface{}) string {
+	//nolint:exhaustive // this function is only concerned with structs and slices, no need for default case.
 	switch value := reflect.Indirect(reflect.ValueOf(val)); value.Kind() {
 	case reflect.Struct:
 		newElem := reflect.New(value.Type()).Interface()

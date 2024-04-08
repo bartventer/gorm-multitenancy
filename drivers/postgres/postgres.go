@@ -12,10 +12,10 @@ import (
 )
 
 type (
-	// Config is the configuration for the postgres driver
+	// Config is the configuration for the postgres driver.
 	Config = postgres.Config
 
-	// Dialector is the postgres dialector with multitenancy support
+	// Dialector is the postgres dialector with multitenancy support.
 	Dialector struct {
 		postgres.Dialector
 		*multitenancyConfig
@@ -23,7 +23,7 @@ type (
 	}
 )
 
-// Check interface
+// Check interface.
 var _ gorm.Dialector = (*Dialector)(nil)
 
 // Open opens a connection to a PostgreSQL database using the provided DSN (Data Source Name) and models.

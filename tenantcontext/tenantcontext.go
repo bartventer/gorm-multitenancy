@@ -12,7 +12,7 @@ type ContextKey interface {
 	fmt.Stringer
 }
 
-// implement the ContextKey interface
+// implement the ContextKey interface.
 var _ ContextKey = contextKey{}
 
 // contextKey is the context key for the tenant. It's used as a pointer so it
@@ -28,8 +28,8 @@ func (c contextKey) String() string {
 }
 
 var (
-	// TenantKey is the context key for the tenant
+	// TenantKey is the context key for the tenant.
 	TenantKey = &contextKey{"tenant"}
-	// MigrationOptions is the context key for the migration options
+	// MigrationOptions is the context key for the migration options.
 	MigrationOptions = &contextKey{"migration_options"}
 )

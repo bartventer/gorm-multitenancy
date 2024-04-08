@@ -111,7 +111,7 @@ func TestSetSearchPath(t *testing.T) {
 
 	// Test SetSearchPath with a valid schema name.
 	db, reset := SetSearchPath(db, schema)
-	if err := db.Error; err != nil {
+	if err = db.Error; err != nil {
 		t.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
 	}
 
@@ -123,10 +123,9 @@ func TestSetSearchPath(t *testing.T) {
 
 	// Test SetSearchPath with an empty schema name.
 	db, _ = SetSearchPath(db, "")
-	if err := db.Error; err == nil {
+	if err = db.Error; err == nil {
 		t.Errorf("SetSearchPath() with empty schema name did not fail, expected an error, got %v", err)
 	}
-
 }
 
 func BenchmarkSetSearchPath(b *testing.B) {
@@ -145,7 +144,7 @@ func BenchmarkSetSearchPath(b *testing.B) {
 	b.Run("SetSearchPath", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			db, _ = SetSearchPath(db, schema)
-			if err := db.Error; err != nil {
+			if err = db.Error; err != nil {
 				b.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
 			}
 		}
@@ -154,8 +153,9 @@ func BenchmarkSetSearchPath(b *testing.B) {
 	// Benchmark ResetSearchPath.
 	b.Run("ResetSearchPath", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			db, reset := SetSearchPath(db, schema)
-			if err := db.Error; err != nil {
+			var reset ResetSearchPath
+			db, reset = SetSearchPath(db, schema)
+			if err = db.Error; err != nil {
 				b.Errorf("SetSearchPath() with valid schema name failed, expected %v, got %v", nil, err)
 			}
 			err = reset()

@@ -64,7 +64,6 @@ func replaceQuoteInSQL(sql string) string {
 }
 
 func TestWithTenantSchema(t *testing.T) {
-
 	tests := []struct {
 		name     string
 		queryFn  func(tx *gorm.DB) *gorm.DB

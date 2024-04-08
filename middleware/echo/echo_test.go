@@ -92,14 +92,14 @@ func TestWithTenant(t *testing.T) {
 
 				if tt.args.config.Skipper != nil && tt.args.config.Skipper(c) {
 					// If Skipper is not nil and returns true, we don't expect a tenant in the context
-					c.Response().Write([]byte(""))
+					_, _ = c.Response().Write([]byte(""))
 					return nil
 				}
 
 				if tt.args.config.SuccessHandler == nil && tenant != tt.want {
 					return echo.NewHTTPError(http.StatusInternalServerError, "expected tenant "+tt.want+", got "+tenant)
 				}
-				c.Response().Write([]byte(tenant))
+				_, _ = c.Response().Write([]byte(tenant))
 				return nil
 			})
 

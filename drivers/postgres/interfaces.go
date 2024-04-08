@@ -4,7 +4,7 @@ import (
 	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
 )
 
-// MultitenancyMigrator is the interface for the postgres migrator with multitenancy support
+// MultitenancyMigrator is the interface for the postgres migrator with multitenancy support.
 type MultitenancyMigrator interface {
 	multitenancy.Migrator
 

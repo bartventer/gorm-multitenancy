@@ -11,7 +11,7 @@ package postgres
 //	}
 type TenantModel struct {
 	// DomainURL is the domain URL of the tenant
-	DomainURL string `gorm:"column:domain_url;uniqueIndex;size:128" json:"domainURL"`
+	DomainURL string `json:"domainURL" gorm:"column:domain_url;uniqueIndex;size:128"`
 
 	// SchemaName is the schema name of the tenant.
 	//
@@ -21,5 +21,5 @@ type TenantModel struct {
 	// 	- unique index
 	// 	- size: 63
 	// 	- check: schema_name ~ '^[_a-zA-Z][_a-zA-Z0-9]{2,}$' AND schema_name !~ '^pg_' (to prevent invalid schema names)
-	SchemaName string `gorm:"column:schema_name;uniqueIndex;->;<-:create;size:63;check:schema_name ~ '^[_a-zA-Z][_a-zA-Z0-9]{2,}$' AND schema_name !~ '^pg_'" json:"schemaName"`
+	SchemaName string `json:"schemaName" gorm:"column:schema_name;uniqueIndex;->;<-:create;size:63;check:schema_name ~ '^[_a-zA-Z][_a-zA-Z0-9]{2,}$' AND schema_name !~ '^pg_'"`
 }

@@ -100,7 +100,7 @@ func TestWithTenant(t *testing.T) {
 			}))
 
 			// Create a request to pass to our handler.
-			req, err := http.NewRequest("GET", "/", nil)
+			req, err := http.NewRequest(http.MethodGet, "/", nil)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -39,7 +39,7 @@ var (
 	testDb = internal.NewTestDB()
 
 	testDbWithError = internal.NewTestDB().Scopes(func(d *gorm.DB) *gorm.DB {
-		d.AddError(errors.New("invalid db"))
+		_ = d.AddError(errors.New("invalid db"))
 		return d
 	})
 )
@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 
 	// drop public tables
 	testDb.Exec(fmt.Sprintf("SET search_path TO %s", "public"))
-	testDb.Migrator().DropTable(
+	_ = testDb.Migrator().DropTable(
 		&testPublicTable{},
 		&testTenantTable{},
 	)
@@ -207,7 +207,7 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 			t.Cleanup(func() {
 				if !tt.wantErr { // cleanup; drop schema if test passed
 					// drop table
-					testDb.Migrator().DropTable(
+					_ = testDb.Migrator().DropTable(
 						&testPublicTable{},
 						&testTenantTable{},
 					)

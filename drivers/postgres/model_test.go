@@ -18,9 +18,9 @@ func (mockTenantModel) TableName() string {
 
 func TestTenantModelCheckConstraints(t *testing.T) {
 	db := internal.NewTestDB()
-	db.AutoMigrate(&mockTenantModel{}) // create table
-	t.Cleanup(func() {                 // clean up
-		db.Migrator().DropTable(&mockTenantModel{})
+	_ = db.AutoMigrate(&mockTenantModel{}) // create table
+	t.Cleanup(func() {                     // clean up
+		_ = db.Migrator().DropTable(&mockTenantModel{})
 	})
 
 	type args struct {
@@ -116,5 +116,4 @@ func TestTenantModelCheckConstraints(t *testing.T) {
 			}
 		})
 	}
-
 }

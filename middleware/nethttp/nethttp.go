@@ -73,7 +73,6 @@ type WithTenantConfig struct {
 // The retrieved tenant is then set in the request context using the ContextKey.
 // Finally, the SuccessHandler function is called if provided, and the next handler is invoked.
 func WithTenant(config WithTenantConfig) func(http.Handler) http.Handler {
-
 	if config.Skipper == nil {
 		config.Skipper = DefaultWithTenantConfig.Skipper
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// XTenantHeader is the header key for the tenant
+	// XTenantHeader is the header key for the tenant.
 	XTenantHeader = "X-Tenant"
 )
 
@@ -54,13 +54,13 @@ func DefaultTenantFromHeader(r *http.Request) (string, error) {
 }
 
 var (
-	// DefaultSkipper represents the default skipper
+	// DefaultSkipper represents the default skipper.
 	DefaultSkipper = func(r *http.Request) bool {
 		return false
 	}
 )
 
 var (
-	// ErrTenantInvalid represents an error when the tenant is invalid or not found
+	// ErrTenantInvalid represents an error when the tenant is invalid or not found.
 	ErrTenantInvalid = fmt.Errorf("invalid tenant or tenant not found")
 )

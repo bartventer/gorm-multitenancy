@@ -12,16 +12,16 @@ import (
 )
 
 const (
-	// PublicSchemaName is the name of the public schema
+	// PublicSchemaName is the name of the public schema.
 	PublicSchemaName = "public"
 )
 
 type migrationOption uint
 
 const (
-	// migrationOptionPublicTables migrates the public tables
+	// migrationOptionPublicTables migrates the public tables.
 	migrationOptionPublicTables migrationOption = iota + 1
-	// migrationOptionTenantTables migrates the tenant tables
+	// migrationOptionTenantTables migrates the tenant tables.
 	migrationOptionTenantTables
 )
 
@@ -31,7 +31,7 @@ type multitenancyConfig struct {
 	models       []interface{} // models are all models
 }
 
-// Migrator is the struct that implements the [MultitenancyMigrator] interface
+// Migrator is the struct that implements the [MultitenancyMigrator] interface.
 type Migrator struct {
 	postgres.Migrator                 // gorm postgres migrator
 	*multitenancyConfig               // config to store the models
@@ -60,7 +60,7 @@ func (m *Migrator) CreateSchemaForTenant(tenant string) error {
 			return err
 		}
 		defer func() {
-			setSearchPath(tx, PublicSchemaName)
+			_ = setSearchPath(tx, PublicSchemaName)
 		}()
 
 		// migrate private tables

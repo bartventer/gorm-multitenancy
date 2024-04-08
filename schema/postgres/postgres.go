@@ -37,11 +37,11 @@ func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
 	var reset ResetSearchPath
 	// to avoid
 	if !schemaNameRegex.MatchString(schemaName) || pgPrefixRegex.MatchString(schemaName) {
-		db.AddError(fmt.Errorf("invalid schema name; schema name must match the regex %s and must not start with 'pg_'", schemaNameRegexStr))
+		_ = db.AddError(fmt.Errorf("invalid schema name; schema name must match the regex %s and must not start with 'pg_'", schemaNameRegexStr))
 		return db, reset
 	}
 	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", schemaName)).Error; err != nil {
-		db.AddError(err)
+		_ = db.AddError(err)
 		return db, reset
 	}
 	reset = func() error {
