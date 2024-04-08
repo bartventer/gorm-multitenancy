@@ -1,5 +1,3 @@
 # Temp folder
 /tmp
-
-# Environment variables
-.env
+cover.out
