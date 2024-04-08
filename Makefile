@@ -12,9 +12,9 @@ DEPS_SCRIPT := ./internal/testing/start_local_deps.sh
 GO := go
 GOFMT := gofmt
 GOLINT := golangci-lint
-GOVET := go vet
-GOTEST := go test
-GOCOVER := go tool cover
+GOVET := $(GO) vet
+GOTEST := $(GO) test
+GOCOVER := $(GO) tool cover
 
 # Flags
 GOFLAGS := -v
