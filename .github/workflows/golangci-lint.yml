@@ -1,0 +1,25 @@
+name: golangci-lint
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+
+jobs:
+    golangci:
+        strategy:
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: 'Set up Go'
+              uses: actions/setup-go@v5
+              with:
+                  go-version: '1.22'
+
+            - name: 'Run golangci-lint on ${{ matrix.os }}'
+              uses: golangci/golangci-lint-action@v4
+              with:
+                  version: v1.57.2
