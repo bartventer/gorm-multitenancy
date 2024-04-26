@@ -3,8 +3,8 @@ module github.com/bartventer/gorm-multitenancy/v5/examples/nethttp
 go 1.22.2
 
 require (
-	github.com/bartventer/gorm-multitenancy/v5 v5.10.0
-	gorm.io/gorm v1.25.9
+	github.com/bartventer/gorm-multitenancy/v5 v5.10.1
+	gorm.io/gorm v1.25.10
 )
 
 require (
