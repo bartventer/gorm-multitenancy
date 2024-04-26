@@ -11,16 +11,17 @@ DEPS_SCRIPT := ./internal/testing/start_local_deps.sh
 # Commands 
 GO := go
 GOFMT := gofmt
-GOLINT := golangci-lint
-GOVET := $(GO) vet
+GOLANGCILINT := golangci-lint
 GOTEST := $(GO) test
 GOCOVER := $(GO) tool cover
 
 # Flags
 GOFLAGS := -v
 GOFMTFLAGS := -s
-GOLINTFLAGS := run --verbose
-GOVETFLAGS := -all
+GOLANGCILINTFLAGS := run --verbose
+ifeq ($(CI),)
+	GOLANGCILINTFLAGS += --fix --color always
+endif
 GOTESTFLAGS := -v
 GOCOVERFLAGS := -html
 
@@ -56,18 +57,14 @@ fmt: ## Run gofmt on all files
 
 .PHONY: lint
 lint: ## Run golint on all files
-	$(GOLINT) $(GOLINTFLAGS) ./...
-
-.PHONY: vet
-vet: ## Run go vet on all files
-	$(GOVET) $(GOVETFLAGS) ./...
+	$(GOLANGCILINT) $(GOLANGCILINTFLAGS) ./...
 
 .PHONY: build
-build: vet
+build:
 	$(GO) build $(GOFLAGS) -o $(BINARY)
 
 .PHONY: test
-test: vet ## Run tests
+test: ## Run tests
 	$(DEPS_SCRIPT)
 	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) `go list ./... | grep -v ./internal`
 
