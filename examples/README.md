@@ -7,26 +7,23 @@ This directory contains examples of how to use the `gorm-multitenancy` package w
 
 ## Getting Started
 
-To run these examples, you have two options:
+Clone the main repository and navigate to the relevant example directory:
 
-1. Clone the main repository and navigate to the relevant example directory:
+```bash
+git clone https://github.com/bartventer/gorm-multitenancy.git
+cd gorm-multitenancy
+```
+
+-   _Echo_:
 
     ```bash
-    go get -u github.com/bartventer/gorm-multitenancy/v5
+    cd ./examples/echo
     ```
 
-2. Or just clone the relevant example directory directly:
-
-    _Echo example_:
+-   _net/http_:
 
     ```bash
-    go get -u github.com/bartventer/gorm-multitenancy/v5/examples/echo
-    ```
-
-    _net/http example_:
-
-    ```bash
-    go get -u github.com/bartventer/gorm-multitenancy/v5/examples/nethttp
+    cd ./examples/nethttp
     ```
 
 ## Running the Server
