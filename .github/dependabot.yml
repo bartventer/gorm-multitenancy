@@ -2,27 +2,35 @@ version: 2
 updates:
     - package-ecosystem: 'gomod'
       directory: '/'
+      reviewers:
+          - bartventer
+      assignees:
+          - bartventer
       schedule:
           interval: 'weekly'
       commit-message:
-          prefix: 'chore(deps)'
+          prefix: 'fix(deps)'
 
     - package-ecosystem: 'gomod'
       directory: '/examples/echo'
       schedule:
           interval: 'weekly'
       commit-message:
-          prefix: 'chore(example-deps)'
+          prefix: 'chore(examples/deps)'
 
     - package-ecosystem: 'gomod'
       directory: '/examples/nethttp'
       schedule:
           interval: 'weekly'
       commit-message:
-          prefix: 'chore(example-deps)'
+          prefix: 'chore(examples/deps)'
 
     - package-ecosystem: 'github-actions'
       directory: '/'
+      assignees:
+          - bartventer
+      reviewers:
+          - bartventer
       commit-message:
           prefix: 'ci(workflows/deps)'
       schedule:
