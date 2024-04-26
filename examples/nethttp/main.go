@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
 	"github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
 	nethttpmw "github.com/bartventer/gorm-multitenancy/v5/middleware/nethttp"
 	"github.com/bartventer/gorm-multitenancy/v5/scopes"
+	"github.com/urfave/negroni"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -163,40 +165,39 @@ func TenantFromContext(ctx context.Context) (string, error) {
 	return tenant, nil
 }
 
-// MiddlewareHandler is a custom middleware handler
-type MiddlewareHandler struct {
-	handlerFunc func(http.ResponseWriter, *http.Request)
-	mw          func(http.Handler) http.Handler
-}
-
-func (m MiddlewareHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Apply middleware to the handler
-	handler := m.mw(http.HandlerFunc(m.handlerFunc))
-
-	// Call the handler
-	handler.ServeHTTP(w, r)
-}
 func main() {
 	mux := http.NewServeMux()
 
-	// create tenant middleware
-	mw := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
+	// routes
+	mux.HandleFunc("POST /tenants", createTenantHandler)
+	mux.HandleFunc("GET /tenants/{id}", getTenantHandler)
+	mux.HandleFunc("DELETE /tenants/{id}", deleteTenantHandler)
+	mux.HandleFunc("POST /books", createBookHandler)
+	mux.HandleFunc("GET /books", getBooksHandler)
+	mux.HandleFunc("DELETE /books/{id}", deleteBookHandler)
+	mux.HandleFunc("PUT /books/{id}", updateBookHandler)
+
+	// Global middleware
+	tenantMw := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
 		Skipper: func(r *http.Request) bool {
-			return strings.HasPrefix(r.URL.Path, "/tenants") // skip tenant routes
+			return strings.HasPrefix(r.URL.Path, "/tenants")
 		},
 	})
+	tenantMux := tenantMw(mux)
+	n := negroni.Classic()
+	n.UseHandler(tenantMux)
 
-	// routes
-	mux.Handle("POST /tenants", MiddlewareHandler{createTenantHandler, mw})
-	mux.Handle("GET /tenants/{id}", MiddlewareHandler{getTenantHandler, mw})
-	mux.Handle("DELETE /tenants/{id}", MiddlewareHandler{deleteTenantHandler, mw})
-	mux.Handle("POST /books", MiddlewareHandler{createBookHandler, mw})
-	mux.Handle("GET /books", MiddlewareHandler{getBooksHandler, mw})
-	mux.Handle("DELETE /books/{id}", MiddlewareHandler{deleteBookHandler, mw})
-	mux.Handle("PUT /books/{id}", MiddlewareHandler{updateBookHandler, mw})
-
-	// start server
-	http.ListenAndServe(":8080", mux)
+	// Start server
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      n,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	fmt.Println("server started", "address", server.Addr)
+	if err := server.ListenAndServe(); err != nil {
+		fmt.Println("server error", "error", err)
+	}
 }
 
 func createTenantHandler(w http.ResponseWriter, r *http.Request) {
