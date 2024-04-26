@@ -1,5 +1,5 @@
-github.com/bartventer/gorm-multitenancy/v5 v5.9.0 h1:c+BFUFxbL7Uvqo25mJD4SRsU3uU2eDICy2cs5E7azmI=
-github.com/bartventer/gorm-multitenancy/v5 v5.9.0/go.mod h1:FX5LlGCh7AqCWZP155ZKFGXGNlfPvN9pK/TRujtU7cc=
+github.com/bartventer/gorm-multitenancy/v5 v5.10.1 h1:JluGRZNcjkkYjTKFGr0lZxPFJ4Pw2ImO3mqWu1kLxr0=
+github.com/bartventer/gorm-multitenancy/v5 v5.10.1/go.mod h1:1t2r554djkF9eGSBk1ng/5Fn+iZW8Zfyons8jiCdFI8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
