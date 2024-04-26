@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/bartventer/gorm-multitenancy/v5 v5.9.0
 	github.com/labstack/echo/v4 v4.12.0
-	gorm.io/gorm v1.25.9
+	gorm.io/gorm v1.25.10
 )
 
 require (
