@@ -1,64 +1,57 @@
 version: '3.9'
 
 services:
-  app:
-    image: mcr.microsoft.com/devcontainers/go:1.22-bullseye
-    ports:
-      - 8080:8080
-    volumes:
-      - ../..:/workspaces:cached
-    # # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
-    # cap_add:
-    #   - SYS_PTRACE
-    # security_opt:
-    #   - seccomp:unconfined
-    depends_on:
-      - db
-    networks:
-      - backend
-    command: sleep infinity
-    environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+    app:
+        image: mcr.microsoft.com/devcontainers/go:1.22-bullseye
+        ports:
+            - 8080:8080
+        volumes:
+            - ../..:/workspaces:cached
+        depends_on:
+            - db
+        networks:
+            - backend
+        command: sleep infinity
+        environment:
+            - DB_HOST=${DB_HOST}
+            - DB_PORT=${DB_PORT}
+            - DB_NAME=${DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_PASSWORD=${DB_PASSWORD}
 
-  db:
-    image: postgres:15.4-alpine
-    restart: always
-    hostname: ${DB_HOST}
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    ports:
-      - 5432:${DB_PORT}
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend
+    db:
+        image: postgres:15-alpine
+        restart: always
+        environment:
+            - POSTGRES_DB=${DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+        ports:
+            - 5432:${DB_PORT}
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - backend
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - 5050:80
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    networks:
-      - backend
-    depends_on:
-      - db
-    
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        restart: always
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+            - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+        ports:
+            - 5050:80
+        volumes:
+            - pgadmin-data:/var/lib/pgadmin
+        networks:
+            - backend
+        depends_on:
+            - db
 
 volumes:
-  db-data:
-  pgadmin-data:
+    db-data:
+    pgadmin-data:
 
 networks:
-  backend:
-    driver: bridge
+    backend:
+        driver: bridge
