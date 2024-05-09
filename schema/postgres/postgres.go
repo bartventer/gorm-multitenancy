@@ -1,3 +1,6 @@
+/*
+Package postgres provides utilities for managing PostgreSQL schemas in a multi-tenant application.
+*/
 package postgres
 
 import (
@@ -8,18 +11,31 @@ import (
 	"gorm.io/gorm"
 )
 
+const schemaNameRegexStr = `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`
+
+var schemaNameRegex = regexp.MustCompile(schemaNameRegexStr)
+
+// ValidateTenantName checks the validity of a provided tenant name.
+// A tenant name is considered valid if it:
+//  1. Matches the pattern `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`. This means it must start with an underscore or a letter, followed by at least two characters that can be underscores, letters, or numbers.
+//  2. Does not start with "pg_". The prefix "pg_" is reserved for system schemas in PostgreSQL.
+//
+// If the tenant name is invalid, the function returns an error with a detailed explanation.
+func ValidateTenantName(tenant string) error {
+	if !schemaNameRegex.MatchString(tenant) {
+		return fmt.Errorf(`
+invalid tenant name: '%s'. Tenant name must match the following pattern: '%s'.
+This means it must start with an underscore or a letter, followed by at least two characters that can be underscores, letters, or numbers`,
+			tenant, schemaNameRegexStr)
+	}
+	if strings.HasPrefix(tenant, "pg_") {
+		return fmt.Errorf("invalid tenant name: %s. Tenant name must not start with 'pg_' as it is reserved for system schemas in PostgreSQL", tenant)
+	}
+	return nil
+}
+
 // ResetSearchPath is a function that resets the search path to the default value.
 type ResetSearchPath func() error
-
-const (
-	schemaNameRegexStr = `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`
-	pgPrefixRegexStr   = `^pg_`
-)
-
-var (
-	schemaNameRegex = regexp.MustCompile(schemaNameRegexStr)
-	pgPrefixRegex   = regexp.MustCompile(pgPrefixRegexStr)
-)
 
 // SetSearchPath sets the search path for the given database connection to the specified schema name.
 // It returns the modified database connection and a function that can be used to reset the search path to the default 'public' schema.
@@ -35,9 +51,8 @@ var (
 //	// ... do something with the database connection (with the search path set to 'domain1')
 func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
 	var reset ResetSearchPath
-	// to avoid
-	if !schemaNameRegex.MatchString(schemaName) || pgPrefixRegex.MatchString(schemaName) {
-		_ = db.AddError(fmt.Errorf("invalid schema name; schema name must match the regex %s and must not start with 'pg_'", schemaNameRegexStr))
+	if err := ValidateTenantName(schemaName); err != nil {
+		_ = db.AddError(err)
 		return db, reset
 	}
 	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", db.Statement.Quote(schemaName))).Error; err != nil {
