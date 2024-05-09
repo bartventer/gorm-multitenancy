@@ -154,10 +154,11 @@ import (
     "gorm.io/gorm"
     "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
 )
-db, err := gorm.Open(postgres.New(postgres.Config{
+
+db, _ := gorm.Open(postgres.New(postgres.Config{
         DSN: "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable",
     }), &gorm.Config{})
-postgres.RegisterModels(db, &Tenant{}, &Book{})
+err := postgres.RegisterModels(db, &Tenant{}, &Book{})
 ```
 
 _Further documentation [here](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels)_
@@ -199,7 +200,11 @@ After all models have been [registered](#model-registration), we can perform tab
 Call [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models.
 
 ```go
-db.MigratePublicSchema()
+import (
+    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+)
+
+err := postgres.MigratePublicSchema(db)
 ```
 
 ###### Tenant/Schema Tables
@@ -207,7 +212,11 @@ db.MigratePublicSchema()
 Call [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#CreateSchemaForTenant) to create the schema for a tenant and migrate all tenant-specific models.
 
 ```go
-db.CreateSchemaForTenant(tenantSchemaName)
+import (
+    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+)
+
+err := postgres.CreateSchemaForTenant(db, tenantSchemaName)
 ```
 
 ##### Dropping Schemas
@@ -215,7 +224,11 @@ db.CreateSchemaForTenant(tenantSchemaName)
 Call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#DropSchemaForTenant) to drop the schema and cascade all schema tables.
 
 ```go
-db.DropSchemaForTenant(tenantSchemaName)
+import (
+    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+)
+
+err := postgres.DropSchemaForTenant(db, tenantSchemaName)
 ```
 
 ##### Foreign Key Constraints
@@ -276,7 +289,7 @@ import (
     "gorm.io/gorm"
 )
 db, resetSearchPath := pgschema.SetSearchPath(db, tenantSchemaName)
-if db.Error() != nil {
+if err := db.Error(); err != nil {
     // handle error
 }
 defer resetSearchPath()
