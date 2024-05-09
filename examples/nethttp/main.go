@@ -1,3 +1,6 @@
+//go:build gormmultitenancy_example
+// +build gormmultitenancy_example
+
 package main
 
 import (
@@ -178,12 +181,11 @@ func main() {
 	mux.HandleFunc("PUT /books/{id}", updateBookHandler)
 
 	// Global middleware
-	tenantMw := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
+	tenantMux := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
 		Skipper: func(r *http.Request) bool {
 			return strings.HasPrefix(r.URL.Path, "/tenants")
 		},
-	})
-	tenantMux := tenantMw(mux)
+	})(mux)
 	n := negroni.Classic()
 	n.UseHandler(tenantMux)
 
@@ -196,7 +198,7 @@ func main() {
 	}
 	fmt.Println("server started", "address", server.Addr)
 	if err := server.ListenAndServe(); err != nil {
-		fmt.Println("server error", "error", err)
+		panic(fmt.Sprintf("failed to start server: %v", err))
 	}
 }
 

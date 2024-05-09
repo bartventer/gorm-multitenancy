@@ -1,3 +1,6 @@
+//go:build gormmultitenancy_example
+// +build gormmultitenancy_example
+
 package main
 
 import (
