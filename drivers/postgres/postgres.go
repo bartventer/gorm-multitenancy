@@ -1,3 +1,52 @@
+/*
+Package postgres provides a PostgreSQL driver for GORM, offering tools to facilitate the construction and management of multi-tenant applications.
+
+It enables the isolation of tenant data in separate PostgreSQL schemas.
+
+Example:
+
+	import (
+
+		"github.com/bartventer/gorm-multitenancy/v5"
+		"github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+		"gorm.io/gorm"
+
+	)
+
+	func main() {
+		db, err := gorm.Open(postgres.Open("your connection string"), &gorm.Config{})
+		if err != nil {
+			panic(err)
+		}
+
+		// Register your tenant model
+		if err := postgres.RegisterModels(db, &Tenant{}); err != nil {
+			panic(err)
+		}
+
+		// Create public schema
+		if err := postgres.MigratePublicSchema(db); err != nil {
+			panic(err)
+		}
+
+		// Create a new tenant
+		tenant := Tenant{
+			TenantModel: postgres.TenantModel{
+				DomainURL:  "tenant1.example.com",
+				SchemaName: "tenant1",
+			},
+		}
+		if err := db.Create(&tenant).Error; err != nil {
+			panic(err)
+		}
+
+		// Create schema for the new tenant
+		postgres.CreateSchemaForTenant(db, tenant.SchemaName)
+
+		// Drop schema for the tenant
+		postgres.DropSchemaForTenant(db, tenant.SchemaName)
+	}
+*/
 package postgres
 
 import (
@@ -26,6 +75,14 @@ type (
 // Check interface.
 var _ gorm.Dialector = (*Dialector)(nil)
 
+func initializeDialector(d *Dialector, models ...interface{}) {
+	mtc, err := newMultitenancyConfig(models)
+	if err != nil {
+		panic(err)
+	}
+	d.multitenancyConfig = mtc
+}
+
 // Open opens a connection to a PostgreSQL database using the provided DSN (Data Source Name) and models.
 // It returns a gorm.Dialector that can be used to interact with the database.
 // The models parameter is optional and can be used to specify the database models that should be registered.
@@ -35,11 +92,7 @@ func Open(dsn string, models ...interface{}) gorm.Dialector {
 		Dialector: *postgres.Open(dsn).(*postgres.Dialector),
 		rw:        &sync.RWMutex{},
 	}
-	mtc, err := newMultitenancyConfig(models)
-	if err != nil {
-		panic(err)
-	}
-	d.multitenancyConfig = mtc
+	initializeDialector(d, models...)
 	return d
 }
 
@@ -54,11 +107,7 @@ func New(config Config, models ...interface{}) gorm.Dialector {
 		Dialector: *postgres.New(config).(*postgres.Dialector),
 		rw:        &sync.RWMutex{},
 	}
-	mtc, err := newMultitenancyConfig(models)
-	if err != nil {
-		panic(err)
-	}
-	d.multitenancyConfig = mtc
+	initializeDialector(d, models...)
 	return d
 }
 

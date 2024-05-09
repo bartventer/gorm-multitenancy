@@ -1,3 +1,6 @@
+/*
+Package scopes provides a set of predefined GORM scopes for managing multi-tenant applications using the gorm-multitenancy library.
+*/
 package scopes
 
 import (
