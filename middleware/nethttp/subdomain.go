@@ -1,4 +1,4 @@
-package middleware
+package nethttp
 
 import (
 	"errors"
@@ -12,25 +12,7 @@ const domainURLRegexPattern = `^(https?:\/\/)?([_a-zA-Z][_a-zA-Z0-9-]{2,}\.)+[a-
 var domainURLRegex = regexp.MustCompile(domainURLRegexPattern)
 
 // ExtractSubdomain extracts the first part of the subdomain from a given domain URL.
-// It adds the scheme if absent and checks if the URL is valid.
-// If the subdomain starts with "pg_", it returns an error indicating an invalid subdomain for schema name.
-// If the URL has no subdomain, it returns an error indicating that there is no subdomain.
-// Otherwise, it returns the extracted subdomain.
 // If the URL has multiple subdomains, it only returns the first part.
-//
-// Example:
-//
-//	subdomain, err := middleware.ExtractSubdomain("http://test.domain.com")
-//	if err != nil {
-//		fmt.Println(err) // nil
-//	}
-//	fmt.Println(subdomain) // test
-//
-//	subdomain, err = middleware.ExtractSubdomain("http://test.sub.domain.com")
-//	if err != nil {
-//		fmt.Println(err) // nil
-//	}
-//	fmt.Println(subdomain) // test
 func ExtractSubdomain(domainURL string) (string, error) {
 	// Add scheme if absent
 	if !strings.HasPrefix(domainURL, "http://") && !strings.HasPrefix(domainURL, "https://") {
@@ -47,14 +29,17 @@ func ExtractSubdomain(domainURL string) (string, error) {
 		return "", err
 	}
 
+	// Split the hostname into parts
 	hostParts := strings.Split(u.Hostname(), ".")
 	if len(hostParts) > 2 {
 		subdomain := hostParts[0]
+		// Check if subdomain starts with "pg_"
 		if strings.HasPrefix(subdomain, "pg_") {
 			return "", errors.New("invalid subdomain for schema name, subdomain starts with `pg_`")
 		}
+		// Return the first part of the subdomain
 		return subdomain, nil
 	}
-
+	// Return an error if no subdomain is found
 	return "", errors.New("no subdomain found")
 }

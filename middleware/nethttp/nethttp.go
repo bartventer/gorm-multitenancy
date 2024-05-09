@@ -1,30 +1,92 @@
-// Package nethttp provides a middleware for the net/http package.
+/*
+Package nethttp provides a middleware for the net/http package.
+
+Example usage:
+
+	import (
+	    "net/http"
+
+	    nethttpmw "github.com/bartventer/gorm-multitenancy/v5/middleware/nethttp"
+	    "github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
+	)
+
+	func main() {
+	    mux := http.NewServeMux()
+
+	    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	        tenant := r.Context().Value(tenantcontext.TenantKey).(string)
+	        fmt.Fprintf(w, "Hello, %s", tenant)
+	    })
+
+	    handler := nethttpmw.WithTenant(nethttpmw.DefaultWithTenantConfig)(mux)
+
+	    http.ListenAndServe(":8080", handler)
+	}
+*/
 package nethttp
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
-	mw "github.com/bartventer/gorm-multitenancy/v5/middleware"
 	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
 )
 
-// DefaultSkipper returns false which processes the middleware.
-// It calls the default [DefaultSkipper] function to determine if the middleware should be skipped.
+const (
+	// XTenantHeader is the header key for the tenant.
+	XTenantHeader = "X-Tenant"
+)
+
+var (
+	// ErrTenantInvalid represents an error when the tenant is invalid or not found.
+	ErrTenantInvalid = fmt.Errorf("invalid tenant or tenant not found")
+)
+
+// DefaultSkipper represents the default skipper.
 func DefaultSkipper(r *http.Request) bool {
-	return mw.DefaultSkipper(r)
+	return false
 }
 
-// DefaultTenantFromSubdomain extracts the subdomain from the given HTTP request's
-// host. It calls the default [DefaultTenantFromSubdomain] function to extract the subdomain from the host.
+// DefaultTenantFromSubdomain extracts the subdomain from the given HTTP request's host.
+// It removes the port from the host if present and adds a scheme to the host for parsing.
+// The function then parses the URL and extracts the subdomain.
+// It returns the extracted subdomain as a string and any error encountered during the process.
+//
+// This function calls the [ExtractSubdomain] function to extract the subdomain from the host.
 func DefaultTenantFromSubdomain(r *http.Request) (string, error) {
-	return mw.DefaultTenantFromSubdomain(r)
+	// Extract the host from the request
+	host := r.Host
+
+	// If the host includes a port, remove it
+	if strings.Contains(host, ":") {
+		host = strings.Split(host, ":")[0]
+	}
+
+	// Add a scheme to the host so it can be parsed by url.Parse
+	urlStr := fmt.Sprintf("https://%s", host)
+
+	// Parse the URL
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the subdomain
+	return ExtractSubdomain(u.String())
 }
 
-// DefaultTenantFromHeader extracts the tenant from the X-Tenant header in the HTTP request.
-// It calls the default [DefaultTenantFromHeader] function to extract the tenant from the header.
+// DefaultTenantFromHeader extracts the tenant from the [XTenantHeader] header in the HTTP request.
+// It returns the extracted tenant as a string and an error if the header is empty or missing.
 func DefaultTenantFromHeader(r *http.Request) (string, error) {
-	return mw.DefaultTenantFromHeader(r)
+	tenant := r.Header.Get(XTenantHeader)
+	tenant = strings.TrimSpace(tenant)
+	if tenant == "" {
+		return "", fmt.Errorf("failed to get tenant from `%s` header, header is empty", XTenantHeader)
+	}
+	return tenant, nil
 }
 
 var (
@@ -38,7 +100,7 @@ var (
 		},
 		ContextKey: tenantcontext.TenantKey,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, _ error) {
-			http.Error(w, mw.ErrTenantInvalid.Error(), http.StatusInternalServerError)
+			http.Error(w, ErrTenantInvalid.Error(), http.StatusInternalServerError)
 		},
 	}
 )
