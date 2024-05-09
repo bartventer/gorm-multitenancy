@@ -10,14 +10,12 @@ DEPS_SCRIPT := ./internal/testing/start_local_deps.sh
 
 # Commands 
 GO := go
-GOFMT := gofmt
 GOLANGCILINT := golangci-lint
 GOTEST := $(GO) test
 GOCOVER := $(GO) tool cover
 
 # Flags
 GOFLAGS := -v
-GOFMTFLAGS := -s
 GOLANGCILINTFLAGS := run --verbose
 ifeq ($(CI),)
 	GOLANGCILINTFLAGS += --fix --color always
@@ -50,10 +48,6 @@ print-%: ## Helper target to print a variable. Usage: make print-VARIABLE
 
 .PHONY: all
 all: build test ## Run all targets
-
-.PHONY: fmt
-fmt: ## Run gofmt on all files
-	$(GOFMT) $(GOFMTFLAGS) -w .
 
 .PHONY: lint
 lint: ## Run golint on all files
