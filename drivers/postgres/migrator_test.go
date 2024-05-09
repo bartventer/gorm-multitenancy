@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
-	"github.com/bartventer/gorm-multitenancy/v5/internal"
+	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -36,9 +36,9 @@ var _ multitenancy.TenantTabler = (*testTenantTable)(nil)
 func (testTenantTable) IsTenantTable() bool { return true }
 
 var (
-	testDb = internal.NewTestDB()
+	testDb = testutil.NewTestDB()
 
-	testDbWithError = internal.NewTestDB().Scopes(func(d *gorm.DB) *gorm.DB {
+	testDbWithError = testutil.NewTestDB().Scopes(func(d *gorm.DB) *gorm.DB {
 		_ = d.AddError(errors.New("invalid db"))
 		return d
 	})

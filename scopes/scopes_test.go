@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v5/internal"
+	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
 	"gorm.io/gorm"
 )
 
-var DB = internal.NewTestDB()
+var DB = testutil.NewTestDB()
 
 type Book struct {
 	ID    uint

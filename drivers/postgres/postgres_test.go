@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v5"
-	"github.com/bartventer/gorm-multitenancy/v5/internal"
+	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
@@ -64,7 +64,7 @@ var _ multitenancy.TenantTabler = (*testProduct)(nil)
 
 func (testProduct) IsTenantTable() bool { return true }
 
-var dsn = internal.GetDSN()
+var dsn = testutil.GetDSN()
 
 func TestOpen(t *testing.T) {
 	type args struct {
@@ -194,7 +194,7 @@ func TestDialector_Migrator(t *testing.T) {
 	type args struct {
 		db *gorm.DB
 	}
-	db := internal.NewTestDB()
+	db := testutil.NewTestDB()
 	tests := []struct {
 		name   string
 		fields fields

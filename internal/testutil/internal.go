@@ -1,5 +1,5 @@
-// Package internal provides internal utilities for the application.
-package internal
+// Package testutil provides internal testing utilities for the application.
+package testutil
 
 import (
 	"fmt"

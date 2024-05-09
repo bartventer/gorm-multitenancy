@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v5/internal"
+	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +17,7 @@ func (mockTenantModel) TableName() string {
 }
 
 func TestTenantModelCheckConstraints(t *testing.T) {
-	db := internal.NewTestDB()
+	db := testutil.NewTestDB()
 	_ = db.AutoMigrate(&mockTenantModel{}) // create table
 	t.Cleanup(func() {                     // clean up
 		_ = db.Migrator().DropTable(&mockTenantModel{})

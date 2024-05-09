@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v5/internal"
+	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -99,7 +99,7 @@ func TestGetSchemaNameFromDb(t *testing.T) {
 
 func TestSetSearchPath(t *testing.T) {
 	// Connect to the test database.
-	db := internal.NewTestDB()
+	db := testutil.NewTestDB()
 
 	schema := "domain1"
 	// create a new schema if it does not exist
@@ -130,7 +130,7 @@ func TestSetSearchPath(t *testing.T) {
 
 func BenchmarkSetSearchPath(b *testing.B) {
 	// Connect to the test database.
-	db := internal.NewTestDB()
+	db := testutil.NewTestDB()
 
 	schema := "domain1"
 	// create a new schema if it does not exist
