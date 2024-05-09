@@ -10,7 +10,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_shield&issueType=license)
 
 <p align="center">
-  <img src="https://i.imgur.com/bOZB8St.png" title="GORM Multitenancy" alt="GORM Multitenancy">
+  <img src="https://i.imgur.com/bOZB8St.png" title="GORM Multitenancy" alt="GORM Multitenancy" style="width: 50%;">
 </p>
 <p align="center">
   <sub><small>Photo by <a href="https://github.com/ashleymcnamara">Ashley McNamara</a>, via <a href="https://github.com/ashleymcnamara/gophers">ashleymcnamara/gophers</a> (CC BY-NC-SA 4.0)</small></sub>
@@ -18,50 +18,34 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Multitenancy Approaches](#multitenancy-approaches)
-- [Features](#features)
-- [Database compatibility](#database-compatibility)
-- [Router Integration](#router-integration)
-- [Installation](#installation)
-- [Usage](#usage)
-    <details>
-    <summary><a href="#postgresql-driver">PostgreSQL driver</a></summary>
-
-    <ul>
-    <li><a href="#conventions">Conventions</a></li>
-      <ul>
-      <li><a href="#tablename">TableName</a></li>
-        <ul>
-        <li><a href="#public-model">Public Model</a></li>
-        <li><a href="#tenant-model">Tenant Model</a></li>
-        </ul>
-      <li><a href="#tenanttabler">TenantTabler</a></li>
-      <li><a href="#model-registration">Model Registration</a></li>
-        <ul>
-        <li><a href="#postgresregistermodels">postgres.RegisterModels</a></li>
-        <li><a href="#postgresnew">postgres.New</a></li>
-        <li><a href="#postgresopen">postgres.Open</a></li>
-        </ul>
-      <li><a href="#migrations">Migrations</a></li>
-        <ul>
-        <li><a href="#public-tables">Public Tables</a></li>
-        <li><a href="#tenantschema-tables">Tenant/Schema Tables</a></li>
-        </ul>
-      <li><a href="#dropping-schemas">Dropping Schemas</a></li>
-      <li><a href="#foreign-key-constraints">Foreign Key Constraints</a></li>
-      <li><a href="#operations-on-tenant-specific-models">Operations on Tenant-Specific Models</a></li>
-        <ul>
-        <li><a href="#withtenantschema">WithTenantSchema</a></li>
-        <li><a href="#setsearchpath">SetSearchPath</a></li>
-        </ul>
-      <li><a href="#basic-example">Basic Example</a></li>
-      <li><a href="#complete-examples">Complete Examples</a></li>
-      </ul>
-    </ul>
-
-  </details>
-- [Contributing](#contributing)
+- [Introduction](#introduction)  
+- [Multitenancy Approaches](#multitenancy-approaches)  
+- [Features](#features)  
+- [Database compatibility](#database-compatibility)  
+- [Router Integration](#router-integration)  
+- [Installation](#installation)  
+- [Usage](#usage)  
+  - [PostgreSQL driver](#postgresql-driver)
+    - [Conventions](#conventions)
+    - [TableName](#tablename)
+      - [Public Model](#public-model)
+      - [Tenant Model](#tenant-model)
+    - [TenantTabler](#tenanttabler)
+    - [Model Registration](#model-registration)
+      - [postgres.RegisterModels](#postgresregistermodels)
+      - [postgres.New](#postgresnew)
+      - [postgres.Open](#postgresopen)
+    - [Migrations](#migrations)
+      - [Public Tables](#public-tables)
+      - [Tenant/Schema Tables](#tenantschema-tables)
+    - [Dropping Schemas](#dropping-schemas)
+    - [Foreign Key Constraints](#foreign-key-constraints)
+    - [Operations on Tenant-Specific Models](#operations-on-tenant-specific-models)
+      - [WithTenantSchema](#withtenantschema)
+      - [SetSearchPath](#setsearchpath)
+    - [Basic Example](#basic-example)
+    - [Complete Examples](#complete-examples)
+- [Contributing](#contributing)  
 - [License](#license)
 
 ## Introduction
@@ -166,13 +150,17 @@ Models can be registered by either calling [`postgres.RegisterModels`](#postgres
 ###### postgres.RegisterModels
 
 ```go
+import (
+    "gorm.io/gorm"
+    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+)
 db, err := gorm.Open(postgres.New(postgres.Config{
         DSN: "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable",
     }), &gorm.Config{})
 postgres.RegisterModels(db, &Tenant{}, &Book{})
 ```
 
-_Further documentation [here]((https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels))_
+_Further documentation [here](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels)_
 
 ###### postgres.New
 
