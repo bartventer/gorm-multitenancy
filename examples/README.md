@@ -2,8 +2,8 @@
 
 This directory contains examples of how to use the `gorm-multitenancy` package with different frameworks:
 
--   [Echo](echo/README.md)
--   [net/http](nethttp/README.md)
+- [Echo](echo/README.md)
+- [net/http](nethttp/README.md)
 
 ## Getting Started
 
@@ -14,13 +14,13 @@ git clone https://github.com/bartventer/gorm-multitenancy.git
 cd gorm-multitenancy
 ```
 
--   _Echo_:
+- _Echo_:
 
     ```bash
     cd ./examples/echo
     ```
 
--   _net/http_:
+- _net/http_:
 
     ```bash
     cd ./examples/nethttp

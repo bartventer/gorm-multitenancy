@@ -2,10 +2,10 @@
 
 #### Create tenant
 
--   Parse the request body into a CreateTenantBody struct
--   Create the tenant in the database (public schema)
--   Create the schema for the tenant
--   Return the HTTP status code 201 and the tenant in the response body
+- Parse the request body into a CreateTenantBody struct
+- Create the tenant in the database (public schema)
+- Create the schema for the tenant
+- Return the HTTP status code 201 and the tenant in the response body
 
 ##### Request
 
@@ -29,8 +29,8 @@ curl -X POST \
 
 #### Get tenant
 
--   Get the tenant from the database
--   Return the HTTP status code 200 and the tenant in the response body
+- Get the tenant from the database
+- Return the HTTP status code 200 and the tenant in the response body
 
 ##### Request
 
@@ -50,10 +50,10 @@ curl -X GET \
 
 #### Delete tenant
 
--   Get the tenant from the database
--   Delete the schema for the tenant
--   Delete the tenant from the database
--   Return the HTTP status code 204
+- Get the tenant from the database
+- Delete the schema for the tenant
+- Delete the tenant from the database
+- Return the HTTP status code 204
 
 ##### Request
 
@@ -70,9 +70,9 @@ curl -X DELETE \
 
 #### Get books
 
--   Get the tenant from the request host or header
--   Get all books for the tenant
--   Return the HTTP status code 200 and the books in the response body
+- Get the tenant from the request host or header
+- Get all books for the tenant
+- Return the HTTP status code 200 and the books in the response body
 
 ##### Request
 
@@ -99,10 +99,10 @@ curl -X GET \
 
 #### Create book
 
--   Get the tenant from the request host or header
--   Parse the request body into a Book struct
--   Create the book for the tenant in the database
--   Return the HTTP status code 201 and the book in the response body
+- Get the tenant from the request host or header
+- Parse the request body into a Book struct
+- Create the book for the tenant in the database
+- Return the HTTP status code 201 and the book in the response body
 
 ##### Request
 
@@ -127,10 +127,10 @@ curl -X POST \
 
 #### Delete book
 
--   Get the tenant from the request host or header
--   Get the book from the database
--   Delete the book from the database
--   Return the HTTP status code 204
+- Get the tenant from the request host or header
+- Get the book from the database
+- Delete the book from the database
+- Return the HTTP status code 204
 
 ##### Request
 
@@ -148,11 +148,11 @@ curl -X DELETE \
 
 #### Update book
 
--   Get the tenant from the request host or header
--   Get the book from the database
--   Parse the request body into a UpdateBookBody struct
--   Update the book in the database
--   Return the HTTP status code 200
+- Get the tenant from the request host or header
+- Get the book from the database
+- Parse the request body into a UpdateBookBody struct
+- Update the book in the database
+- Return the HTTP status code 200
 
 ##### Request
 
