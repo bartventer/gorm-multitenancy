@@ -2,6 +2,7 @@ package echo
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +11,27 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+func ExampleWithTenant() {
+	e := echo.New()
+
+	e.Use(WithTenant(DefaultWithTenantConfig))
+
+	e.GET("/", func(c echo.Context) error {
+		tenant := c.Get(tenantcontext.TenantKey.String()).(string)
+		fmt.Println("Tenant:", tenant)
+		return c.String(http.StatusOK, "Hello, "+tenant)
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Host = "tenant.example.com"
+	rec := httptest.NewRecorder()
+
+	// Execute the request
+	e.ServeHTTP(rec, req)
+
+	// Output: Tenant: tenant
+}
 
 func TestWithTenant(t *testing.T) {
 	type args struct {
