@@ -55,7 +55,8 @@ func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
 		_ = db.AddError(err)
 		return db, reset
 	}
-	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", db.Statement.Quote(schemaName))).Error; err != nil {
+	sql := "SET search_path TO " + db.Statement.Quote(schemaName)
+	if err := db.Exec(sql).Error; err != nil {
 		_ = db.AddError(err)
 		return db, reset
 	}
@@ -102,26 +103,4 @@ func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
 		return "", fmt.Errorf("schema name is empty")
 	}
 	return schemaName, nil
-}
-
-// getSchemaNameFromSQLExpr extracts the schema name from a SQL expression.
-// It splits the input string by the dot; if the length is 1, then there is no schema name.
-// Otherwise, it retrieves the first element and removes any backslashes and double quotes before returning the schema name.
-//
-// Example:
-//
-//	"\"test_domain\".\"mock_private\"" -> "test_domain"
-//	"\"mock_private\"" -> ""
-func getSchemaNameFromSQLExpr(tableExprSQL string) string {
-	// split the string by the dot
-	split := strings.Split(tableExprSQL, ".")
-	// if the length is 1, then there is no schema name
-	if len(split) == 1 {
-		return ""
-	}
-	// get the first element
-	schemaName := split[0]
-	// remove the backslash and double quotes
-	schemaName = strings.ReplaceAll(schemaName, "\"", "")
-	return schemaName
 }
