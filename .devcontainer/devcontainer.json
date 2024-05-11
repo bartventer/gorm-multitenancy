@@ -1,6 +1,6 @@
 {
     "name": "Gorm Multi-Tenancy",
-    "image": "archlinux:base",
+    "image": "ghcr.io/bartventer/devcontainer-images/base-archlinux:latest",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -10,11 +10,6 @@
         }
     },
     "features": {
-        "ghcr.io/bartventer/devcontainer-features/common-utils:latest": {
-            "configureZshAsDefaultShell": true,
-            "installOhMyZshConfig": false,
-            "additionalPackages": "curl make jq go nodejs npm yarn"
-        },
         "ghcr.io/bartventer/devcontainer-features/docker-in-docker:latest": {}
     },
     "mounts": [
@@ -23,6 +18,10 @@
     ],
     "runArgs": [
         "--env-file",
-        "./.devcontainer/.env"
-    ]
+        "./.devcontainer/dev.env"
+    ],
+    "forwardPorts": [
+        8080
+    ],
+    "remoteUser": "vscode"
 }
