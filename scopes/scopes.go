@@ -4,10 +4,11 @@ Package scopes provides a set of predefined GORM scopes for managing multi-tenan
 package scopes
 
 import (
-	"fmt"
 	"reflect"
+	"sync"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // WithTenantSchema alters the table name to prefix it with the tenant schema.
@@ -55,7 +56,7 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 		}
 
 		if tableName != "" {
-			return db.Table(fmt.Sprintf("%s.%s", tenant, tableName))
+			return db.Table(tenant + "." + tableName)
 		}
 		// otherwise, return an error
 		_ = db.AddError(gorm.ErrModelValueRequired)
@@ -65,26 +66,61 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 
 // getTableName returns the table name from the model.
 func getTableName(val interface{}) (string, bool) {
-	if s, ok := val.(interface{ TableName() string }); ok {
+	if s, ok := val.(schema.Tabler); ok {
 		return s.TableName(), true
 	}
 	return "", false
 }
 
+var (
+	tableNameCache = make(map[string]string)
+	cacheMutex     = &sync.RWMutex{}
+)
+
 func tableNameFromReflectValue(val interface{}) string {
-	//nolint:exhaustive // this function is only concerned with structs and slices, no need for default case.
-	switch value := reflect.Indirect(reflect.ValueOf(val)); value.Kind() {
+	// Check if val implements the gorm.Tabler interface
+	if tabler, ok := val.(schema.Tabler); ok {
+		return tabler.TableName()
+	}
+
+	// Otherwise, use reflection
+	value := reflect.Indirect(reflect.ValueOf(val))
+
+	// Generate a key for the cache
+	key := value.Type().PkgPath() + "." + value.Type().Name()
+
+	// Check if the table name is in the cache
+	cacheMutex.RLock()
+	tableName, ok := tableNameCache[key]
+	cacheMutex.RUnlock()
+
+	if ok {
+		// If the table name is in the cache, return it
+		return tableName
+	}
+
+	// Otherwise, calculate the table name
+	var name string
+	switch value.Kind() { //nolint:exhaustive // this function is only concerned with structs and slices, no need for default case.
 	case reflect.Struct:
 		newElem := reflect.New(value.Type()).Interface()
-		if name, ok := getTableName(newElem); ok {
-			return name
+		if n, ok := getTableName(newElem); ok {
+			name = n
 		}
 	case reflect.Slice:
 		elemType := value.Type().Elem()
 		newElem := reflect.New(elemType).Interface()
-		if name, ok := getTableName(newElem); ok {
-			return name
+		if n, ok := getTableName(newElem); ok {
+			name = n
 		}
 	}
-	return ""
+
+	if name != "" {
+		// Store the table name in the cache
+		cacheMutex.Lock()
+		tableNameCache[key] = name
+		cacheMutex.Unlock()
+	}
+
+	return name
 }
