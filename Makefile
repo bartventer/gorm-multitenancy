@@ -3,10 +3,13 @@ SHELL = /bin/bash
 
 # Variables
 PKG_NAME := main
-ENVFILE_PATH := ./.devcontainer/.env
+ENVFILE_PATH := ./.devcontainer/dev.env
 COVERAGE_PROFILE := cover.out
 BINARY := $(PKG_NAME)
-DEPS_SCRIPT := ./internal/testing/start_local_deps.sh
+SCRIPTS_DIR := ./scripts
+DEPS_SCRIPT := $(SCRIPTS_DIR)/start_local_deps.sh
+DEPS_HEALTH_SCRIPT := $(SCRIPTS_DIR)/check_services.sh
+SKIP_DEPS ?= false
 
 # Commands 
 GO := go
@@ -57,10 +60,20 @@ lint: ## Run golint on all files
 build:
 	$(GO) build $(GOFLAGS) -o $(BINARY)
 
-.PHONY: test
-test: ## Run tests
+.PHONY: deps
+deps: ## Start local dependencies
+ifneq ($(SKIP_DEPS), true)
 	$(DEPS_SCRIPT)
-	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) `go list ./... | grep -v ./internal`
+	$(DEPS_HEALTH_SCRIPT) "pgadmin"
+endif
+
+.PHONY: test
+test: deps ## Run tests
+	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) ./...
+
+.PHONY: bench
+bench: deps ## Run benchmarks
+	$(GOTEST) $(GOTESTFLAGS) -bench=. -benchmem -run="^Benchmark" ./...
 
 .PHONY: cover
 cover: test ## Run tests with coverage
