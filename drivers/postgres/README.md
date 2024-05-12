@@ -202,11 +202,11 @@ db.Scopes(WithTenantSchema(tenantID)).Find(&Book{})
 
 #### `SetSearchPath`
 
-Use the [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/schema/postgres#SetSearchPath) function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables). _This is for more complex operations but does add ~0.200ms overhead per operation._
+Use the [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema#SetSearchPath) function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables).
 
 ```go
 import (
-    pgschema "github.com/bartventer/gorm-multitenancy/v5/schema/postgres"
+    pgschema "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema"
     "gorm.io/gorm"
 )
 db, resetSearchPath := pgschema.SetSearchPath(db, tenantSchemaName)
@@ -217,32 +217,38 @@ defer resetSearchPath()
 // No need to use any tenant scopes as the search path has been changed to the tenant's schema
 db.Find(&Book{})
 ```
-
+<!-- from tmp/bench/BenchmarkScopingQueries.md -->
 #### Benchmarks
 
-The benchmarks were run on a machine with the following specifications:
+- goos: linux
+- goarch: amd64
+- pkg: github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema
+- cpu: Intel(R) Core(TM) i5-7360U CPU @ 2.30GHz
+- date: 2024-05-12
 
-- OS: Linux
-- Architecture: amd64
-- CPU: AMD EPYC 7763 64-Core Processor
-- Environment: VS Code Codespace with 16GB RAM
-
-These benchmarks compare the performance of `WithTenantSchema` and `SetSearchPath` in terms of time per operation, memory per operation, and memory allocations per operation.
-
-| Function         | Time per operation (ns) | Memory per operation (B) | Memory allocations per operation |
-| ---------------- | ----------------------- | ------------------------ | -------------------------------- |
-| WithTenantSchema | 7405038                 | 15861                    | 205                              |
-| SetSearchPath    | 7700503                 | 17475                    | 225                              |
+| Benchmark | ns/op | B/op | allocs/op |
+|-----------|-------|------|-----------|
+| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 52052621 | 16382 | 207 |
+| BenchmarkScopingQueries/Create/SetSearchPath-4 | 156505 | 1672 | 25 |
+| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 161192 | 4917 | 86 |
+| BenchmarkScopingQueries/Find/SetSearchPath-4 | 328485 | 6375 | 102 |
+| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 42719279 | 13418 | 203 |
+| BenchmarkScopingQueries/Update/SetSearchPath-4 | 341492 | 6392 | 104 |
+| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 40143705 | 10822 | 178 |
+| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 44092282 | 12146 | 187 |
+<!-- end from tmp/bench/BenchmarkScopingQueries.md -->
 
 ## Basic Example
 
 Here's a simplified example of how to use the `gorm-multitenancy` package with the PostgreSQL driver:
 
 ```go
+package main
 
 import (
     "gorm.io/gorm"
     "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/scopes"
 )
 
 // Tenant is a public model
@@ -269,6 +275,7 @@ func (b *Book) TableName() string {return "books"} // Note the lack of prefix
 func (b *Book) IsTenantTable() bool {return true} // This classifies the model as a tenant specific model
 
 func main(){
+    // Open a connection to the database
     db, err := gorm.Open(postgres.New(postgres.Config{
         DSN: "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable",
     }), &gorm.Config{})
@@ -276,14 +283,17 @@ func main(){
         panic(err)
     }
 
+    // Register models
     if err := postgres.RegisterModels(db, &Tenant{}, &Book{}); err != nil {
         panic(err)
     }
 
+    // Migrate the public schema
     if err := postgres.MigratePublicSchema(db); err != nil {
         panic(err)
     }
 
+    // Create a tenant
     tenant := &Tenant{
         TenantModel: postgres.TenantModel{
             DomainURL: "tenant1.example.com",
@@ -294,10 +304,21 @@ func main(){
         panic(err)
     }
 
+    // Create the schema for the tenant
     if err := postgres.CreateSchemaForTenant(db, tenant.SchemaName); err != nil {
         panic(err)
     }
 
+    // Create a book for the tenant
+    b := &Book{
+        Title: "Book 1",
+        TenantSchema: tenant.SchemaName,
+    }
+    if err := db.Scopes(scopes.WithTenantSchema(tenant.SchemaName)).Create(b).Error; err != nil {
+        panic(err)
+    }
+
+    // Drop the schema for the tenant
     if err := postgres.DropSchemaForTenant(db, tenant.SchemaName); err != nil {
         panic(err)
     }
