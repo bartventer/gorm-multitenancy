@@ -7,34 +7,30 @@ This directory contains examples of how to use the `gorm-multitenancy` package w
 
 ## Getting Started
 
-Clone the main repository and navigate to the relevant example directory:
+To run these examples on your local machine, follow these steps:
+
+### 1. Clone the main repository and run the following commands:
 
 ```bash
 git clone https://github.com/bartventer/gorm-multitenancy.git
 cd gorm-multitenancy
 ```
 
-- _Echo_:
+### 2. Run the desired example:
 
-    ```bash
-    cd ./examples/echo
-    ```
+Run one of the following to spin up the necessary services and start the server.
 
-- _net/http_:
-
-    ```bash
-    cd ./examples/nethttp
-    ```
-
-## Running the Server
-
-Run the following command from the relevant example directory:
+#### Echo
 
 ```bash
-./run.sh
+make echo_example
 ```
 
-This will setup the database and run the server.
+#### net/http
+
+```bash
+make nethttp_example
+```
 
 ## API Usage
 
