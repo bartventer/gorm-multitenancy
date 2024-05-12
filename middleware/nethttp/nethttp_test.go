@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
+	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
 )
 
 func ExampleDefaultTenantFromSubdomain() {

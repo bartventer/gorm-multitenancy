@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
+	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
 	"gorm.io/gorm"
 )
 
