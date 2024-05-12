@@ -92,3 +92,7 @@ echo_example: deps## Run the echo example
 .PHONY: nethttp_example
 nethttp_example: deps ## Run the nethttp example
 	$(GO) run -C ./examples/nethttp -tags $(EXAMPLE_BUILDTAG) .
+
+.PHONY: update
+update: ## Update dependencies
+	$(SCRIPTS_DIR)/update_deps.sh -tags $(EXAMPLE_BUILDTAG)
