@@ -40,14 +40,14 @@ This package implements the shared database, separate schemas approach to multit
 
 Current supported databases are listed below. Pull requests for other drivers are welcome.
 
-- [PostgreSQL](https://www.postgresql.org/)
+- PostgreSQL
 
 ## Router Integration
 
 This package includes middleware that can be utilized with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
 
-- [Echo](https://echo.labstack.com/docs)
-- [net/http](https://golang.org/pkg/net/http/)
+- Echo
+- Net/HTTP
 
 ## Installation
 
