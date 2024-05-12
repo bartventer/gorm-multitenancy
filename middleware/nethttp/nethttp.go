@@ -1,5 +1,5 @@
 /*
-Package nethttp provides a middleware for the net/http package.
+Package nethttp provides a middleware for the [net/http] package, which adds multi-tenancy support.
 
 Example usage:
 
@@ -22,6 +22,8 @@ Example usage:
 
 	    http.ListenAndServe(":8080", handler)
 	}
+
+[net/http]: https://golang.org/pkg/net/http/
 */
 package nethttp
 
