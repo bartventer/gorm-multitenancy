@@ -1,6 +1,6 @@
 # gorm-multitenancy
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6)
 [![Release](https://img.shields.io/github/release/bartventer/gorm-multitenancy.svg)](https://github.com/bartventer/gorm-multitenancy/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy)
 [![Coverage Status](https://coveralls.io/repos/github/bartventer/gorm-multitenancy/badge.svg?branch=master)](https://coveralls.io/github/bartventer/gorm-multitenancy?branch=master)
@@ -52,7 +52,7 @@ This package includes middleware that can be utilized with the routers listed be
 ## Installation
 
 ```bash
-go get -u github.com/bartventer/gorm-multitenancy/v5
+go get -u github.com/bartventer/gorm-multitenancy/v6
 ```
 
 ## Getting Started

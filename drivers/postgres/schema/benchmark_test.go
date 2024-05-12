@@ -3,10 +3,10 @@ package schema_test
 import (
 	"testing"
 
-	pgdriver "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
-	pgschema "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema"
-	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
-	scopes "github.com/bartventer/gorm-multitenancy/v5/scopes"
+	pgdriver "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
+	pgschema "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema"
+	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
+	scopes "github.com/bartventer/gorm-multitenancy/v6/scopes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"

@@ -7,8 +7,8 @@ Example (PostgreSQL):
 
 	import (
 		"gorm.io/gorm"
-		"github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
-		"github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/scopes"
+		"github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
+		"github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/scopes"
 	)
 
 	// Tenant is a public model

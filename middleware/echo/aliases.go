@@ -1,7 +1,7 @@
 package echo
 
 import (
-	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
+	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
 )
 
 var (

@@ -11,8 +11,8 @@ For missing or invalid tenant information, it sends "500 - Internal Server Error
 import (
     "net/http"
 
-    echomw "github.com/bartventer/gorm-multitenancy/v5/middleware/echo"
-    "github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
+    echomw "github.com/bartventer/gorm-multitenancy/v6/middleware/echo"
+    "github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
     "github.com/labstack/echo/v4"
 )
 

@@ -1,6 +1,6 @@
 # PostgreSQL driver
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres)
 
 The PostgreSQL driver provides multitenancy support for PostgreSQL databases using the `gorm` ORM.
 
@@ -46,7 +46,7 @@ func (Book) TableName() string {
 
 ### TenantTabler
 
-All tenant-specific models must implement the [TenantTabler](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/#TenantTabler) interface, which classifies the model as a tenant-specific model. The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`.
+All tenant-specific models must implement the [TenantTabler](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/#TenantTabler) interface, which classifies the model as a tenant-specific model. The `TenantTabler` interface is used to determine which models to migrate when calling `MigratePublicSchema` or `CreateSchemaForTenant`.
 
 ```go
 type Book struct {
@@ -63,12 +63,12 @@ func (Book) IsTenantTable() bool {
 
 #### After DB Initialization
 
-Call [`RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#RegisterModels) after initializing the database to register all models.
+Call [`RegisterModels`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#RegisterModels) after initializing the database to register all models.
 
 ```go
 import (
     "gorm.io/gorm"
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 db, err := gorm.Open(postgres.New(postgres.Config{
@@ -82,12 +82,12 @@ err := postgres.RegisterModels(db, &Tenant{}, &Book{})
 
 #### During DB Initialization
 
-Alternatively, you can pass the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#New) when creating the dialect.
+Alternatively, you can pass the models as variadic arguments to [`postgres.New`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#New) when creating the dialect.
 
 ```go
 import (
     "gorm.io/gorm"
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 db, err := gorm.Open(postgres.New(postgres.Config{
@@ -98,12 +98,12 @@ if err != nil {
 }
 ```
 
-Or pass the models as variadic arguments to [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#Open) when creating the dialect.
+Or pass the models as variadic arguments to [`postgres.Open`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#Open) when creating the dialect.
 
 ```go
 import (
     "gorm.io/gorm"
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 db, err := gorm.Open(postgres.Open(dsn, &Tenant{}, &Book{}), &gorm.Config{})
@@ -118,11 +118,11 @@ After all models have been [registered](#model-registration), we can perform tab
 
 #### Public Tables
 
-Call [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models.
+Call [`MigratePublicSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#MigratePublicSchema) to create the public schema and migrate all public models.
 
 ```go
 import (
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 err := postgres.MigratePublicSchema(db)
@@ -130,11 +130,11 @@ err := postgres.MigratePublicSchema(db)
 
 #### Tenant Tables
 
-Call [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#CreateSchemaForTenant) to create the schema for a tenant and migrate all tenant-specific models.
+Call [`CreateSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#CreateSchemaForTenant) to create the schema for a tenant and migrate all tenant-specific models.
 
 ```go
 import (
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 err := postgres.CreateSchemaForTenant(db, tenantSchemaName)
@@ -142,11 +142,11 @@ err := postgres.CreateSchemaForTenant(db, tenantSchemaName)
 
 ### Dropping Tenant Schemas
 
-Call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#DropSchemaForTenant) to drop the schema and cascade all schema tables.
+Call [`DropSchemaForTenant`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#DropSchemaForTenant) to drop the schema and cascade all schema tables.
 
 ```go
 import (
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
 )
 
 err := postgres.DropSchemaForTenant(db, tenantSchemaName)
@@ -156,13 +156,13 @@ err := postgres.DropSchemaForTenant(db, tenantSchemaName)
 
 Conforming to the above conventions, foreign key constraints between public and tenant-specific models can be created just as if you were using a shared database and schema.
 
-You can embed the [postgres.TenantModel](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres#TenantModel) struct in your tenant model to add the necessary fields for the tenant model.
+You can embed the [postgres.TenantModel](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres#TenantModel) struct in your tenant model to add the necessary fields for the tenant model.
 
 Then create a foreign key constraint between the public and tenant-specific models using the `SchemaName` field as the foreign key.
 
 ```go
 import (
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
     "gorm.io/gorm"
 )
 
@@ -194,7 +194,7 @@ func (Book) TableName() string {
 
 #### `WithTenantSchema`
 
-Use the [`WithTenantSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/scopes#WithTenantSchema) scope function when you want to perform operations on a tenant specific table, which may include foreign key constraints to a public schema table(s).
+Use the [`WithTenantSchema`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/scopes#WithTenantSchema) scope function when you want to perform operations on a tenant specific table, which may include foreign key constraints to a public schema table(s).
 
 ```go
 db.Scopes(WithTenantSchema(tenantID)).Find(&Book{})
@@ -202,11 +202,11 @@ db.Scopes(WithTenantSchema(tenantID)).Find(&Book{})
 
 #### `SetSearchPath`
 
-Use the [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema#SetSearchPath) function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables).
+Use the [`SetSearchPath`](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema#SetSearchPath) function when the tenant schema table has foreign key constraints you want to access belonging to other tables in the same tenant schema (and or foreign key relations to public tables).
 
 ```go
 import (
-    pgschema "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema"
+    pgschema "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema"
     "gorm.io/gorm"
 )
 db, resetSearchPath := pgschema.SetSearchPath(db, tenantSchemaName)
@@ -222,7 +222,7 @@ db.Find(&Book{})
 
 - goos: linux
 - goarch: amd64
-- pkg: github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema
+- pkg: github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema
 - cpu: Intel(R) Core(TM) i5-7360U CPU @ 2.30GHz
 - date: 2024-05-12
 
@@ -247,8 +247,8 @@ package main
 
 import (
     "gorm.io/gorm"
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres"
-    "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/scopes"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
+    "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/scopes"
 )
 
 // Tenant is a public model

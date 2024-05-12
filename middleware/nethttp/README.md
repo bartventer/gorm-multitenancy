@@ -10,8 +10,8 @@ For valid tenant information, it calls the next handler. For missing or invalid 
 import (
     "net/http"
 
-    nethttpmw "github.com/bartventer/gorm-multitenancy/v5/middleware/nethttp"
-    "github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
+    nethttpmw "github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp"
+    "github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
 )
 
 func main() {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	pgschema "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema"
-	"github.com/bartventer/gorm-multitenancy/v5/internal/testutil"
+	pgschema "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema"
+	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
