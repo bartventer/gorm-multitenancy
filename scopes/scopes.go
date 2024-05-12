@@ -4,9 +4,6 @@ Package scopes provides a set of predefined GORM scopes for managing multi-tenan
 package scopes
 
 import (
-	"reflect"
-	"sync"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
@@ -41,22 +38,19 @@ import (
 func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		var (
-			tableName string
+			tn string
 		)
 		switch {
 		case db.Statement.Table != "":
-			// if the table name is set manually, use it
-			tableName = db.Statement.Table
+			tn = db.Statement.Table
 		case db.Statement.Model != nil:
-			// if the table name is not set manually, try to get it from the model
-			tableName = tableNameFromReflectValue(db.Statement.Model)
+			tn = tableNameFromReflectValue(db.Statement.Model)
 		case db.Statement.Dest != nil:
-			// if the table name is not set manually, try to get it from the model
-			tableName = tableNameFromReflectValue(db.Statement.Dest)
+			tn = tableNameFromReflectValue(db.Statement.Dest)
 		}
 
-		if tableName != "" {
-			return db.Table(tenant + "." + tableName)
+		if tn != "" {
+			return db.Table(tenant + "." + tn)
 		}
 		// otherwise, return an error
 		_ = db.AddError(gorm.ErrModelValueRequired)
@@ -64,63 +58,10 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-// getTableName returns the table name from the model.
-func getTableName(val interface{}) (string, bool) {
-	if s, ok := val.(schema.Tabler); ok {
-		return s.TableName(), true
-	}
-	return "", false
-}
-
-var (
-	tableNameCache = make(map[string]string)
-	cacheMutex     = &sync.RWMutex{}
-)
-
+// tableNameFromReflectValue returns the table name from the model.
 func tableNameFromReflectValue(val interface{}) string {
-	// Check if val implements the gorm.Tabler interface
-	if tabler, ok := val.(schema.Tabler); ok {
-		return tabler.TableName()
+	if s, ok := val.(schema.Tabler); ok {
+		return s.TableName()
 	}
-
-	// Otherwise, use reflection
-	value := reflect.Indirect(reflect.ValueOf(val))
-
-	// Generate a key for the cache
-	key := value.Type().PkgPath() + "." + value.Type().Name()
-
-	// Check if the table name is in the cache
-	cacheMutex.RLock()
-	tableName, ok := tableNameCache[key]
-	cacheMutex.RUnlock()
-
-	if ok {
-		// If the table name is in the cache, return it
-		return tableName
-	}
-
-	// Otherwise, calculate the table name
-	var name string
-	switch value.Kind() { //nolint:exhaustive // this function is only concerned with structs and slices, no need for default case.
-	case reflect.Struct:
-		newElem := reflect.New(value.Type()).Interface()
-		if n, ok := getTableName(newElem); ok {
-			name = n
-		}
-	case reflect.Slice:
-		elemType := value.Type().Elem()
-		newElem := reflect.New(elemType).Interface()
-		if n, ok := getTableName(newElem); ok {
-			name = n
-		}
-	}
-
-	if name != "" {
-		// Store the table name in the cache
-		cacheMutex.Lock()
-		tableNameCache[key] = name
-		cacheMutex.Unlock()
-	}
-
-	return name
+	return ""
 }
