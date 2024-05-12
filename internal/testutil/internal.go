@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -54,7 +55,10 @@ func GetDSN(opts ...DSNOption) string {
 // NewTestDB creates a new database connection (for internal use).
 func NewTestDB(opts ...DSNOption) *gorm.DB {
 	dsn := GetDSN(opts...)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{PrepareStmt: true})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		PrepareStmt: true,
+		Logger:      logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to connect to test database"))
 	}
