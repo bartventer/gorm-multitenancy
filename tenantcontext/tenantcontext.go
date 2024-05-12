@@ -1,13 +1,11 @@
-// Package tenantcontext provides a context key for the tenant.
-//
-// It is used to store the tenant in the request context.
+/*
+Package tenantcontext provides context keys for the tenant and migration options.
+*/
 package tenantcontext
 
 import "fmt"
 
-// ContextKey represents a context key which implements the [Stringer] interface.
-//
-// [Stringer]: https://pkg.go.dev/fmt#Stringer
+// ContextKey represents a context key which implements the [fmt.Stringer] interface.
 type ContextKey interface {
 	fmt.Stringer
 }
