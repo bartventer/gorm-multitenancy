@@ -1,3 +1,6 @@
 # Temp folder
 /tmp
 cover.out
+
+# Go files
+go.work*
