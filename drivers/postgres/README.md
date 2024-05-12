@@ -4,8 +4,7 @@
 
 The PostgreSQL driver provides multitenancy support for PostgreSQL databases using the `gorm` ORM.
 
-> [!NOTE]
-> The driver is a thin wrapper around the [gorm.io/driver/postgres](https://pkg.go.dev/gorm.io/driver/postgres) driver, enhancing it with multitenancy support while preserving all the functionalities of the original driver.
+> The package is a thin wrapper around the [gorm.io/driver/postgres](https://pkg.go.dev/gorm.io/driver/postgres) driver, enhancing it with multitenancy support.
 
 ## Conventions
 
