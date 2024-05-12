@@ -18,7 +18,7 @@
 
 ## Introduction
 
-Gorm-multitenancy is a Go package that provides a framework for implementing multitenancy in your applications using GORM.
+Gorm-multitenancy is a package that provides a framework for implementing multitenancy in Go applications using GORM.
 
 ## Multitenancy Approaches
 
@@ -46,7 +46,7 @@ Current supported databases are listed below. Pull requests for other drivers ar
 
 This package includes middleware that can be utilized with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
 
-- [echo](https://echo.labstack.com/docs)
+- [Echo](https://echo.labstack.com/docs)
 - [net/http](https://golang.org/pkg/net/http/)
 
 ## Installation
