@@ -1,7 +1,7 @@
 /*
-Package postgres provides utilities for managing PostgreSQL schemas in a multi-tenant application.
+Package schema provides utilities for managing PostgreSQL schemas in a multi-tenant application.
 */
-package postgres
+package schema
 
 import (
 	"fmt"

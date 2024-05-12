@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	pgschema "github.com/bartventer/gorm-multitenancy/v5/schema/postgres"
+	pgschema "github.com/bartventer/gorm-multitenancy/v5/drivers/postgres/schema"
 	"github.com/bartventer/gorm-multitenancy/v5/tenantcontext"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
