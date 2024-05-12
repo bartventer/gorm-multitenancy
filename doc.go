@@ -1,5 +1,5 @@
 /*
-Package multitenancy provides a framework for implementing multitenancy in Go applications using GORM.
+Package multitenancy provides a framework for implementing multitenancy in Go applications using [GORM].
 
 Example (PostgreSQL):
 
@@ -87,5 +87,6 @@ Example (PostgreSQL):
 Learn more about the package from the [README].
 
 [README]: https://github.com/bartventer/gorm-multitenancy/blob/master/README.md
+[GORM]: https://gorm.io
 */
 package multitenancy
