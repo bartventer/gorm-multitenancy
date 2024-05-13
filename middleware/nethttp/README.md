@@ -1,5 +1,7 @@
 # NetHTTP Middleware for Multitenancy
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp)
+
 NetHTTP middleware provides multitenancy support for the [net/http](https://golang.org/pkg/net/http/) package in Go.
 
 For valid tenant information, it calls the next handler. For missing or invalid tenant information, it sends "500 - Internal Server Error" response with the error message "Invalid tenant or tenant not found".

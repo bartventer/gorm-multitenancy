@@ -1,5 +1,7 @@
 # Echo Middleware for Multitenancy
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/middleware/echo)
+
 Echo middleware provides multitenancy support for the [Echo](https://echo.labstack.com/docs) framework.
 
 For valid tenant information, it calls the next handler.
