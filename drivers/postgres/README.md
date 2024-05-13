@@ -224,18 +224,18 @@ db.Find(&Book{})
 - pkg: github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema
 - cpu: AMD EPYC 7763 64-Core Processor
 - environment: VSCode Codespaces 16GB RAM
-- date: 2024-05-12
+- date: 2024-05-13
 
 | Benchmark | ns/op | B/op | allocs/op |
 |-----------|-------|------|-----------|
-| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 7587430 | 16086 | 208 |
-| BenchmarkScopingQueries/Create/SetSearchPath-4 | 292105 | 1672 | 25 |
-| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 269289 | 4917 | 86 |
-| BenchmarkScopingQueries/Find/SetSearchPath-4 | 539173 | 6374 | 102 |
-| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 7534239 | 13343 | 203 |
-| BenchmarkScopingQueries/Update/SetSearchPath-4 | 516340 | 6392 | 104 |
-| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 7630597 | 10848 | 181 |
-| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 8168061 | 12088 | 189 |
+| BenchmarkScopingQueries/Create/SetSearchPath-4 | 8946807 | 17619 | 224 |
+| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 8621335 | 16095 | 208 |
+| BenchmarkScopingQueries/Find/SetSearchPath-4 | 603807 | 6376 | 102 |
+| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 307467 | 4916 | 86 |
+| BenchmarkScopingQueries/Update/SetSearchPath-4 | 9035868 | 14721 | 209 |
+| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 8863140 | 13506 | 204 |
+| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 9142545 | 12256 | 189 |
+| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 8766017 | 11010 | 183 |
 <!-- end from tmp/bench/BenchmarkScopingQueries.md -->
 
 ## Basic Example
