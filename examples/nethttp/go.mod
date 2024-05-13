@@ -4,7 +4,7 @@ go 1.22.2
 
 require gorm.io/gorm v1.25.10
 
-require github.com/bartventer/gorm-multitenancy/v6 v6.0.0
+require github.com/bartventer/gorm-multitenancy/v6 v6.0.1
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
