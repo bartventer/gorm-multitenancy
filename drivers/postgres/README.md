@@ -2,9 +2,9 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/drivers/postgres)
 
-The PostgreSQL driver provides multitenancy support for PostgreSQL databases using the `gorm` ORM.
+The PostgreSQL driver provides multitenancy support for PostgreSQL databases using `GORM`.
 
-> The package is a thin wrapper around the [gorm.io/driver/postgres](https://pkg.go.dev/gorm.io/driver/postgres) driver, enhancing it with multitenancy support.
+> This package is a thin wrapper around the `GORM` [postgres driver](https://github.com/go-gorm/postgres), enhancing it with multitenancy support.
 
 ## Conventions
 

@@ -18,7 +18,7 @@
 
 ## Introduction
 
-Gorm-multitenancy is a package that provides a framework for implementing multitenancy in Go applications using GORM.
+Gorm-multitenancy is a Go package that provides a framework for implementing multitenancy in applications using GORM.
 
 ## Multitenancy Approaches
 
@@ -28,23 +28,23 @@ There are three common approaches to multitenancy in a database:
 - Shared database, separate schemas
 - Separate databases
 
-This package implements the shared database, separate schemas approach to multitenancy, providing custom drivers for seamless integration with your existing database setup.
+This package adopts the 'shared database, separate schemas' approach, providing custom drivers for seamless integration with your existing database setup.
 
 ## Features
 
-- **GORM Integration**: Uses the [gorm](https://gorm.io/) ORM to manage the database, allowing for easy integration with your existing GORM setup.
-- **Custom Database Drivers**: Offers drop-in replacements for existing drivers, supporting multitenancy without requiring any initialization reconfiguration.
-- **HTTP Middleware**: Includes middleware for seamless integration with popular routers, allowing you to easily manage tenant context in your application.
+- **GORM Integration**: Leverages the [gorm](https://gorm.io/) ORM to manage the database, facilitating easy integration with your existing GORM setup.
+- **Custom Database Drivers**: Provides drop-in replacements for existing drivers, enabling multitenancy without the need for initialization reconfiguration.
+- **HTTP Middleware**: Offers middleware for seamless integration with popular routers, making it easy to manage tenant context in your application.
 
 ## Database compatibility
 
-Current supported databases are listed below. Pull requests for other drivers are welcome.
+The following databases are currently supported. Contributions for other drivers are welcome.
 
 - PostgreSQL
 
 ## Router Integration
 
-This package includes middleware that can be utilized with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
+This package includes middleware that can be used with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
 
 - Echo
 - Net/HTTP

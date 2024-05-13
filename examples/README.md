@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains examples of how to use the `gorm-multitenancy` package with different frameworks:
+This directory provides examples demonstrating the use of the `gorm-multitenancy` package with various frameworks:
 
 - [Echo](echo/README.md)
 - [net/http](nethttp/README.md)
@@ -9,29 +9,29 @@ This directory contains examples of how to use the `gorm-multitenancy` package w
 
 To run these examples on your local machine, follow these steps:
 
-### 1. Clone the main repository and run the following commands:
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/bartventer/gorm-multitenancy.git
 cd gorm-multitenancy
 ```
 
-### 2. Run the desired example:
+### Step 2: Execute the Desired Example
 
-Run one of the following to spin up the necessary services and start the server.
+Choose an example to run. This will spin up the necessary services and start the server.
 
-#### Echo
+#### For `Echo`
 
 ```bash
 make echo_example
 ```
 
-#### net/http
+#### For `net/http`
 
 ```bash
 make nethttp_example
 ```
 
-## API Usage
+## Interacting with the API
 
 Please see [API Usage](USAGE.md) for more examples on how to interact with the server.
