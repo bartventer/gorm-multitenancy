@@ -72,137 +72,150 @@ func createBook(b *testing.B, db *gorm.DB, tenant *Tenant) {
 	}
 }
 
+// RunFunc is a function that runs a benchmark test.
+type RunFunc func(*testing.B, *gorm.DB, *Tenant)
+
 func BenchmarkScopingQueries(b *testing.B) {
 	db, tenant, cleanup, err := setupScopingBenchmark(b, testutil.WithDBName("tenants1"))
 	if err != nil {
 		b.Fatalf("Setup failed: %v", err)
 	}
 	b.Cleanup(cleanup)
-	b.ResetTimer()
+	type args struct {
+		preRun           RunFunc
+		setup            RunFunc
+		withTenantSchema RunFunc
+		setSearchPath    RunFunc
+	}
 	tests := []struct {
-		name             string
-		preRun           func(*testing.B, *gorm.DB, *Tenant)
-		setup            func(*testing.B, *gorm.DB, *Tenant)
-		withTenantSchema func(*testing.B, *gorm.DB, *Tenant)
-		setSearchPath    func(*testing.B, *gorm.DB, *Tenant)
+		name string
+		args args
 	}{
 		{
 			name: "Create",
-			withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				book := Book{
-					Tenant: *tenant,
-				}
-				if err := db.Scopes(scopes.WithTenantSchema(tenant.SchemaName)).Create(&book).Error; err != nil {
-					b.Errorf("Create book failed, expected %v, got %v", nil, err)
-				}
-			},
-			setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				_, resetSearchPath := pgschema.SetSearchPath(db, tenant.SchemaName)
-				if err := db.Error; err != nil {
-					b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
-				}
-				defer resetSearchPath()
-			},
-		},
-		{
-			name:   "Find",
-			preRun: createBook,
-			withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				var book Book
-				if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).First(&book).Error; err != nil {
-					b.Errorf("Find book failed, expected %v, got %v", nil, err)
-				}
-			},
-			setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
-				if err := d.Error; err != nil {
-					b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
-				}
-				defer resetSearchPath()
-				var book Book
-				if err := d.First(&book).Error; err != nil {
-					b.Errorf("Find book failed, expected %v, got %v", nil, err)
-				}
+			args: args{
+				withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					book := Book{
+						Tenant: *tenant,
+					}
+					if err := db.Scopes(scopes.WithTenantSchema(tenant.SchemaName)).Create(&book).Error; err != nil {
+						b.Errorf("Create book failed, expected %v, got %v", nil, err)
+					}
+				},
+				setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					_, resetSearchPath := pgschema.SetSearchPath(db, tenant.SchemaName)
+					if err := db.Error; err != nil {
+						b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
+					}
+					defer resetSearchPath()
+					book := Book{
+						Tenant: *tenant,
+					}
+					if err := db.Create(&book).Error; err != nil {
+						b.Errorf("Create book failed, expected %v, got %v", nil, err)
+					}
+				},
 			},
 		},
 		{
-			name:   "Update",
-			preRun: createBook,
-			withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				var book Book
-				if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).First(&book).Error; err != nil {
-					b.Fatalf("Find book failed: %v", err)
-				}
-				book.Title = "Updated"
-				if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).Save(&book).Error; err != nil {
-					b.Errorf("Update book failed, expected %v, got %v", nil, err)
-				}
-			},
-			setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
-				if err := d.Error; err != nil {
-					b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
-				}
-				defer resetSearchPath()
-				var book Book
-				if err := d.First(&book).Error; err != nil {
-					b.Fatalf("Find book failed: %v", err)
-				}
+			name: "Find",
+			args: args{
+				preRun: createBook,
+				withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					_ = findBook(b, d.Scopes(scopes.WithTenantSchema(t.SchemaName)))
+				},
+				setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
+					if err := d.Error; err != nil {
+						b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
+					}
+					defer resetSearchPath()
+					_ = findBook(b, d)
+				},
 			},
 		},
 		{
-			name:  "Delete",
-			setup: createBook,
-			withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				var book Book
-				if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).First(&book).Error; err != nil {
-					b.Fatalf("Find book failed: %v", err)
-				}
-				if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).Delete(&book).Error; err != nil {
-					b.Errorf("Delete book failed, expected %v, got %v", nil, err)
-				}
+			name: "Update",
+			args: args{
+				preRun: createBook,
+				withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					book := findBook(b, d.Scopes(scopes.WithTenantSchema(t.SchemaName)))
+					book.Title = "Updated"
+					if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).Save(&book).Error; err != nil {
+						b.Errorf("Update book failed, expected %v, got %v", nil, err)
+					}
+				},
+				setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
+					if err := d.Error; err != nil {
+						b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
+					}
+					defer resetSearchPath()
+					book := findBook(b, d)
+					book.Title = "Updated"
+					if err := d.Save(&book).Error; err != nil {
+						b.Errorf("Update book failed, expected %v, got %v", nil, err)
+					}
+				},
 			},
-			setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
-				_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
-				if err := d.Error; err != nil {
-					b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
-				}
-				defer resetSearchPath()
-				var book Book
-				if err := d.First(&book).Error; err != nil {
-					b.Fatalf("Find book failed: %v", err)
-				}
-				if err := d.Delete(&book).Error; err != nil {
-					b.Errorf("Delete book failed, expected %v, got %v", nil, err)
-				}
+		},
+		{
+			name: "Delete",
+			args: args{
+				setup: createBook,
+				withTenantSchema: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					book := findBook(b, d.Scopes(scopes.WithTenantSchema(t.SchemaName)))
+					if err := d.Scopes(scopes.WithTenantSchema(t.SchemaName)).Delete(&book).Error; err != nil {
+						b.Errorf("Delete book failed, expected %v, got %v", nil, err)
+					}
+				},
+				setSearchPath: func(b *testing.B, d *gorm.DB, t *Tenant) {
+					_, resetSearchPath := pgschema.SetSearchPath(d, t.SchemaName)
+					if err := d.Error; err != nil {
+						b.Fatalf("SetSearchPath() with valid schema name failed: %v", err)
+					}
+					defer resetSearchPath()
+					book := findBook(b, d)
+					if err := d.Delete(&book).Error; err != nil {
+						b.Errorf("Delete book failed, expected %v, got %v", nil, err)
+					}
+				},
 			},
 		},
 	}
+	b.ResetTimer()
 	for _, tt := range tests {
-		if tt.preRun != nil {
+		if tt.args.preRun != nil {
 			b.StopTimer()
-			tt.preRun(b, db, tenant)
+			tt.args.preRun(b, db, tenant)
 			b.StartTimer()
 		}
-		b.Run(tt.name+"/WithTenantSchema", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				if tt.setup != nil {
-					b.StopTimer()
-					tt.setup(b, db, tenant)
-					b.StartTimer()
-				}
-				tt.withTenantSchema(b, db, tenant)
-			}
-		})
-		b.Run(tt.name+"/SetSearchPath", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				if tt.setup != nil {
-					b.StopTimer()
-					tt.setup(b, db, tenant)
-					b.StartTimer()
-				}
-				tt.setSearchPath(b, db, tenant)
-			}
-		})
+		runScopingBenchmark(b, tt.name+"/SetSearchPath", db, tenant, tt.args.setup, tt.args.setSearchPath)
+		runScopingBenchmark(b, tt.name+"/WithTenantSchema", db, tenant, tt.args.setup, tt.args.withTenantSchema)
 	}
+}
+
+// runScopingBenchmark runs a benchmark test.
+func runScopingBenchmark(b *testing.B, name string, db *gorm.DB, tenant *Tenant, setup RunFunc, fn RunFunc) {
+	b.Helper()
+	b.Run(name, func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			if setup != nil {
+				b.StopTimer()
+				setup(b, db, tenant)
+				b.StartTimer()
+			}
+			fn(b, db, tenant)
+		}
+	})
+}
+
+// findBook finds a book.
+func findBook(b *testing.B, db *gorm.DB) Book {
+	b.Helper()
+	var book Book
+	if err := db.First(&book).Error; err != nil {
+		b.Fatalf("Find book failed: %v", err)
+	}
+	return book
 }
