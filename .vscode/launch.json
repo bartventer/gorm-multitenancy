@@ -9,18 +9,20 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/internal/examples/echo/main.go",
+            "program": "${workspaceFolder}/examples/echo/main.go",
             "env": {},
-            "args": []
+            "args": [],
+            "envFile": "${workspaceFolder}/.devcontainer/dev.env"
         },
         {
             "name": "Launch net/http server",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/internal/examples/nethttp/main.go",
+            "program": "${workspaceFolder}/examples/nethttp/main.go",
             "env": {},
-            "args": []
+            "args": [],
+            "envFile": "${workspaceFolder}/.devcontainer/dev.env"
         },
     ]
 }
