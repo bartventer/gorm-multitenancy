@@ -47,15 +47,14 @@ while (("$#")); do
     esac
 done
 
-echo ":: Starting go mod files update..."
+echo "ℹ️ Starting go mod files update..."
 
 find . -name 'go.mod' -not -path './vendor/*' \
-    -printf '\n\n:: Updating go modules in %h...\n' \
+    -printf '\n\n:: Updating go modules for %p...' \
     -execdir go get -u -v -tags ${_TAGS} \; \
-    -printf '\n\n  ✔️ OK. Updated.\n' \
-    -printf '\n:: Tidying go modules in %h...' \
+    -printf '\n  ✔️ OK. Updated.' \
+    -printf '\n\n:: Tidying go modules for %p...' \
     -execdir go mod tidy -v \; \
     -printf '\n  ✔️ OK. Tidied.'
 
-echo "✔️ OK. Go mod files update complete."
-echo
+printf "\n\n✅ OK. Go mod files update complete."
