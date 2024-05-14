@@ -28,53 +28,6 @@ type Book struct {
 func (Book) TableName() string   { return "books" }
 func (Book) IsTenantTable() bool { return true }
 
-func setupScopingBenchmark(b *testing.B, dsnOpt testutil.DSNOption) (*gorm.DB, *Tenant, func(), error) {
-	b.Helper()
-	db, err := gorm.Open(pgdriver.Open(testutil.GetDSN(dsnOpt)), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	if err := pgdriver.RegisterModels(db, &Tenant{}, &Book{}); err != nil {
-		return nil, nil, nil, err
-	}
-	if err := pgdriver.MigratePublicSchema(db); err != nil {
-		return nil, nil, nil, err
-	}
-	tenant := Tenant{
-		TenantPKModel: pgdriver.TenantPKModel{
-			DomainURL:  "tenant1.example.com",
-			SchemaName: "tenant1",
-		},
-	}
-	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&tenant).Error; err != nil {
-		return nil, nil, nil, err
-	}
-	if err := pgdriver.CreateSchemaForTenant(db, tenant.SchemaName); err != nil {
-		return nil, nil, nil, err
-	}
-	cleanup := func() {
-		if err := pgdriver.DropSchemaForTenant(db, tenant.SchemaName); err != nil {
-			b.Fatalf("Drop schema for tenant failed: %v", err)
-		}
-	}
-	return db, &tenant, cleanup, nil
-}
-
-func createBook(b *testing.B, db *gorm.DB, tenant *Tenant) {
-	b.Helper()
-	book := Book{
-		Tenant: *tenant,
-	}
-	if err := db.Scopes(scopes.WithTenantSchema(tenant.SchemaName)).Create(&book).Error; err != nil {
-		b.Errorf("Create book failed, expected %v, got %v", nil, err)
-	}
-}
-
-// RunFunc is a function that runs a benchmark test.
-type RunFunc func(*testing.B, *gorm.DB, *Tenant)
-
 func BenchmarkScopingQueries(b *testing.B) {
 	db, tenant, cleanup, err := setupScopingBenchmark(b, testutil.WithDBName("tenants1"))
 	if err != nil {
@@ -82,10 +35,7 @@ func BenchmarkScopingQueries(b *testing.B) {
 	}
 	b.Cleanup(cleanup)
 	type args struct {
-		preRun           RunFunc
-		setup            RunFunc
-		withTenantSchema RunFunc
-		setSearchPath    RunFunc
+		preRun, setup, withTenantSchema, setSearchPath RunFunc
 	}
 	tests := []struct {
 		name string
@@ -195,8 +145,65 @@ func BenchmarkScopingQueries(b *testing.B) {
 	}
 }
 
+// RunFunc is a function that runs a benchmark test.
+type RunFunc func(*testing.B, *gorm.DB, *Tenant)
+
+func setupScopingBenchmark(b *testing.B, dsnOpt testutil.DSNOption) (*gorm.DB, *Tenant, func(), error) {
+	b.Helper()
+	db, err := gorm.Open(pgdriver.Open(testutil.GetDSN(dsnOpt)), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if err := pgdriver.RegisterModels(db, &Tenant{}, &Book{}); err != nil {
+		return nil, nil, nil, err
+	}
+	if err := pgdriver.MigratePublicSchema(db); err != nil {
+		return nil, nil, nil, err
+	}
+	tenant := Tenant{
+		TenantPKModel: pgdriver.TenantPKModel{
+			DomainURL:  "tenant1.example.com",
+			SchemaName: "tenant1",
+		},
+	}
+	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&tenant).Error; err != nil {
+		return nil, nil, nil, err
+	}
+	if err := pgdriver.CreateSchemaForTenant(db, tenant.SchemaName); err != nil {
+		return nil, nil, nil, err
+	}
+	cleanup := func() {
+		if err := pgdriver.DropSchemaForTenant(db, tenant.SchemaName); err != nil {
+			b.Fatalf("Drop schema for tenant failed: %v", err)
+		}
+	}
+	return db, &tenant, cleanup, nil
+}
+
+func createBook(b *testing.B, db *gorm.DB, tenant *Tenant) {
+	b.Helper()
+	book := Book{
+		Tenant: *tenant,
+	}
+	if err := db.Scopes(scopes.WithTenantSchema(tenant.SchemaName)).Create(&book).Error; err != nil {
+		b.Errorf("Create book failed, expected %v, got %v", nil, err)
+	}
+}
+
+// findBook finds a book.
+func findBook(b *testing.B, db *gorm.DB) Book {
+	b.Helper()
+	var book Book
+	if err := db.First(&book).Error; err != nil {
+		b.Fatalf("Find book failed: %v", err)
+	}
+	return book
+}
+
 // runScopingBenchmark runs a benchmark test.
-func runScopingBenchmark(b *testing.B, name string, db *gorm.DB, tenant *Tenant, setup RunFunc, fn RunFunc) {
+func runScopingBenchmark(b *testing.B, name string, db *gorm.DB, tenant *Tenant, setup, fn RunFunc) {
 	b.Helper()
 	b.Run(name, func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
@@ -208,14 +215,4 @@ func runScopingBenchmark(b *testing.B, name string, db *gorm.DB, tenant *Tenant,
 			fn(b, db, tenant)
 		}
 	})
-}
-
-// findBook finds a book.
-func findBook(b *testing.B, db *gorm.DB) Book {
-	b.Helper()
-	var book Book
-	if err := db.First(&book).Error; err != nil {
-		b.Fatalf("Find book failed: %v", err)
-	}
-	return book
 }
