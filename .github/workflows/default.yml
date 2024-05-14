@@ -15,6 +15,8 @@ jobs:
                 go-version: [1.21.x, 1.22.x]
 
         runs-on: ${{ matrix.os }}
+        env:
+            COVERAGE_PROFILE: ./cover.out
         steps:
             - uses: actions/checkout@v4
             - name: Set up Go
@@ -28,12 +30,12 @@ jobs:
 
             - name: Test and Coverage
               shell: bash
-              run: make cover
+              run: make COVER=true test
 
             - name: Coveralls
               uses: shogo82148/actions-goveralls@v1
               with:
-                  path-to-profile: ./cover.out
+                  path-to-profile: ${{ env.COVERAGE_PROFILE }}
 
     license-scan:
         name: License scan
