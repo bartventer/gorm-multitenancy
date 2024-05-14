@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
 	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 )
 
 func ExampleWithTenant() {
@@ -133,8 +133,8 @@ func TestWithTenant(t *testing.T) {
 
 			if tt.wantErr {
 				he := handler(c).(*echo.HTTPError)
-				assert.Equal(t, http.StatusInternalServerError, he.Code)
-				assert.Equal(t, "forced error", he.Message)
+				testutil.AssertEqual(t, http.StatusInternalServerError, he.Code)
+				testutil.AssertEqual(t, "forced error", he.Message)
 				return
 			}
 
@@ -144,8 +144,10 @@ func TestWithTenant(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, tt.want, rec.Body.String())
+			// testutil.AssertEqual(t, http.StatusOK, rec.Code)
+			testutil.AssertEqual(t, http.StatusOK, rec.Code)
+			// testutil.AssertEqual(t, tt.want, rec.Body.String())
+			testutil.AssertEqual(t, tt.want, rec.Body.String())
 		})
 	}
 }
