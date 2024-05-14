@@ -1,6 +1,7 @@
 # Temp folder
 /tmp
 cover.out
+cover.html
 
 # Go files
 go.work*
