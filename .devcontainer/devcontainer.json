@@ -4,7 +4,7 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "cweijan.vscode-postgresql-client2",
+                "cweijan.vscode-database-client2",
                 "github.vscode-github-actions"
             ]
         }
