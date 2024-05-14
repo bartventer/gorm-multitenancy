@@ -15,17 +15,22 @@
 .SHELLFLAGS = -ecuo pipefail
 SHELL = /bin/bash
 
+# Arguments
+SKIP_DEPS ?= false
+COVER ?= false
+COVERAGE_PROFILE ?= cover.out
+
 # Variables
 PKG_NAME := main
-ENVFILE_PATH := ./.devcontainer/dev.env
-COVERAGE_PROFILE := cover.out
 BINARY := $(PKG_NAME)
+EXAMPLE_BUILDTAG := gormmultitenancy_example
+ENVFILE_PATH := ./.devcontainer/dev.env
+
+# Scripts
 SCRIPTS_DIR := ./scripts
 DEPS_SCRIPT := $(SCRIPTS_DIR)/start_local_deps.sh
 DEPS_HEALTH_SCRIPT := $(SCRIPTS_DIR)/check_services.sh
 BENCH_SCRIPT := $(SCRIPTS_DIR)/run_benchmarks.sh
-SKIP_DEPS ?= false
-EXAMPLE_BUILDTAG := gormmultitenancy_example
 
 # Commands 
 GO := go
@@ -40,7 +45,9 @@ ifeq ($(CI),)
 	GOLANGCILINTFLAGS += --fix --color always
 endif
 GOTESTFLAGS := -v
-GOCOVERFLAGS := -html
+ifneq ($(COVER), false)
+	GOTESTFLAGS += -coverprofile=$(COVERAGE_PROFILE)
+endif
 
 # Include environment variables
 include $(ENVFILE_PATH)
@@ -85,7 +92,7 @@ endif
 
 .PHONY: test
 test: deps ## Run tests
-	$(GOTEST) $(GOTESTFLAGS) -coverprofile=$(COVERAGE_PROFILE) ./...
+	$(GOTEST) $(GOTESTFLAGS) ./...
 
 BENCH_OUTDIR := ./tmp/bench
 .PHONY: bench
@@ -95,9 +102,9 @@ bench: deps ## Run benchmarks
 		-benchfuncs "BenchmarkScopingQueries" \
 		-outputdir $(BENCH_OUTDIR)
 
-.PHONY: cover
-cover: test ## Run tests with coverage
-	$(GOCOVER) $(GOCOVERFLAGS) $(COVERAGE_PROFILE)
+.PHONY: coverbrowser
+coverbrowser: ## View coverage in browser
+	$(GOCOVER) -html=$(COVERAGE_PROFILE)
 
 .PHONY: echo_example
 echo_example: deps## Run the echo example
