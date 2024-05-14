@@ -4,9 +4,10 @@ package testutil
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
+	"testing"
 
-	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -60,7 +61,35 @@ func NewTestDB(opts ...DSNOption) *gorm.DB {
 		Logger:      logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
-		panic(errors.Wrap(err, "failed to connect to test database"))
+		panic(fmt.Errorf("failed to connect to test database: %w", err))
 	}
 	return db
+}
+
+// DeepEqual compares the expected and actual values using reflect.DeepEqual.
+// It returns a boolean indicating whether the values are equal, and a string
+// containing an error message if the values are not equal.
+func DeepEqual[T any](expected, actual T, message ...interface{}) (bool, string) {
+	if !reflect.DeepEqual(expected, actual) {
+		// Format the message
+		var msg string
+		if len(message) > 0 {
+			msg = fmt.Sprint(message...)
+		} else {
+			msg = fmt.Sprintf("Expected %v, got %v", expected, actual)
+		}
+
+		return false, fmt.Sprintf("%s: Expected %v, got %v", msg, expected, actual)
+	}
+	return true, ""
+}
+
+// AssertEqual compares two values and logs an error if they are not equal.
+func AssertEqual[T any](t *testing.T, expected, actual T, message ...interface{}) bool {
+	t.Helper()
+	equal, msg := DeepEqual(expected, actual, message...)
+	if !equal {
+		t.Errorf(msg)
+	}
+	return equal
 }
