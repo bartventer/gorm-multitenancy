@@ -135,7 +135,7 @@ create_pull_request() {
     git config pull.rebase false
     _branch_name="automated-documentation-update-$GITHUB_RUN_ID"
     git checkout -b "$_branch_name"
-    git add _README.md ./docs/*.md
+    git add "$_README" "$_INTRO_AND_USAGE" "$_BENCHMARKS" "$_EXAMPLES"
     _commit_message="docs(README): Update benchmark results"
     git commit -m "${_commit_message} [skip ci]" || export NO_UPDATES=true
     if [[ "${NO_UPDATES:=false}" == "true" ]]; then
