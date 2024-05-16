@@ -132,7 +132,7 @@ create_pull_request() {
 
     git config --global user.email "github-actions[bot]@users.noreply.github.com"
     git config --global user.name "github-actions[bot]"
-    git config --pull.rebase false
+    git config pull.rebase false
     _branch_name="automated-documentation-update-$GITHUB_RUN_ID"
     git checkout -b "$_branch_name"
     git add _README.md ./docs/*.md
