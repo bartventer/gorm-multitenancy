@@ -1,37 +1,55 @@
 version: 2
 updates:
-    - package-ecosystem: 'gomod'
-      directory: '/'
-      reviewers:
-          - bartventer
-      assignees:
-          - bartventer
-      schedule:
-          interval: 'weekly'
-      commit-message:
-          prefix: 'fix(deps)'
+  - package-ecosystem: "gomod"
+    directory: "/"
+    reviewers:
+      - "bartventer"
+    assignees:
+      - "bartventer"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    commit-message:
+      prefix: "fix"
+      include: "scope"
 
-    - package-ecosystem: 'gomod'
-      directory: '/examples/echo'
-      schedule:
-          interval: 'weekly'
-      commit-message:
-          prefix: 'chore(examples/deps)'
+  - package-ecosystem: "gomod"
+    directories:
+      - "/examples/echo"
+      - "/examples/nethttp"
+    assignees:
+      - "bartventer"
+    reviewers:
+      - "bartventer"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
 
-    - package-ecosystem: 'gomod'
-      directory: '/examples/nethttp'
-      schedule:
-          interval: 'weekly'
-      commit-message:
-          prefix: 'chore(examples/deps)'
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    assignees:
+      - "bartventer"
+    reviewers:
+      - "bartventer"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
 
-    - package-ecosystem: 'github-actions'
-      directory: '/'
-      assignees:
-          - bartventer
-      reviewers:
-          - bartventer
-      commit-message:
-          prefix: 'ci(workflows/deps)'
-      schedule:
-          interval: 'weekly'
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
