@@ -30,7 +30,7 @@ ENVFILE_PATH := ./.devcontainer/dev.env
 SCRIPTS_DIR := ./scripts
 DEPS_SCRIPT := $(SCRIPTS_DIR)/start_local_deps.sh
 DEPS_HEALTH_SCRIPT := $(SCRIPTS_DIR)/check_services.sh
-BENCH_SCRIPT := $(SCRIPTS_DIR)/run_benchmarks.sh
+BENCH_SCRIPT := $(SCRIPTS_DIR)/benchmark.sh
 
 # Commands 
 GO := go
