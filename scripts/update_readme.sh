@@ -137,7 +137,7 @@ create_pull_request() {
     git config --global user.email "github-actions[bot]@users.noreply.github.com"
     git config --global user.name "github-actions[bot]"
     git config pull.rebase false
-    _branch_name="automated-documentation-update-$GITHUB_RUN_ID_$(date +%s)"
+    _branch_name="automated-documentation-update-$GITHUB_RUN_ID-$(date +%s)"
     git checkout -b "$_branch_name"
     git add "$_README" "$_INTRO_AND_USAGE" "$_BENCHMARKS" "$_EXAMPLES"
     _commit_message="docs(README): Update benchmark results"
