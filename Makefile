@@ -94,13 +94,18 @@ endif
 test: deps ## Run tests
 	$(GOTEST) $(GOTESTFLAGS) ./...
 
-BENCH_OUTDIR := ./tmp/bench
-.PHONY: bench
-bench: deps ## Run benchmarks
+.PHONY: benchmark
+benchmark: deps ## Run benchmarks
 	$(BENCH_SCRIPT) \
 		-package ./drivers/postgres/schema \
-		-benchfuncs "BenchmarkScopingQueries" \
-		-outputdir $(BENCH_OUTDIR)
+		-benchfunc "BenchmarkScopingQueries" \
+		-outputdir ./drivers/postgres/docs \
+		-template $(SCRIPTS_DIR)/benchmark_template.md
+
+.PHONY: update_readme
+update_readme: ## Update the README.md file in the drivers/postgres directory
+	$(SCRIPTS_DIR)/update_readme.sh \
+		-dirpath ./drivers/postgres
 
 .PHONY: coverbrowser
 coverbrowser: ## View coverage in browser
@@ -114,6 +119,6 @@ echo_example: deps## Run the echo example
 nethttp_example: deps ## Run the nethttp example
 	$(GO) run -C ./examples/nethttp -tags $(EXAMPLE_BUILDTAG) .
 
-.PHONY: update
-update: ## Update dependencies
+.PHONY: update_deps
+update_deps: ## Update dependencies
 	$(SCRIPTS_DIR)/update_deps.sh -tags $(EXAMPLE_BUILDTAG)
