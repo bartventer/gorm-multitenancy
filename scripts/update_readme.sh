@@ -84,11 +84,15 @@ get_script_url() {
     # Get the relative path from the root of the git repository
     script_path=$(realpath --relative-to="$git_root" "$script_path")
 
-    # Get the URL of the remote repository
-    remote_url=$(git config --get remote.origin.url)
+    if [[ "${CI:=false}" == "true" ]]; then
+        remote_url_https="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+    else
+        # Get the URL of the remote repository
+        remote_url=$(git config --get remote.origin.url)
 
-    # Convert SSH format to HTTPS format
-    remote_url_https=$(echo "$remote_url" | sed -e 's/:/\//' -e 's/git@/https:\/\//')
+        # Convert SSH format to HTTPS format
+        remote_url_https=$(echo "$remote_url" | sed -e 's/:/\//' -e 's/git@/https:\/\//')
+    fi
 
     # Combine the remote URL and the script path
     echo "${remote_url_https%.git}/blob/master/${script_path}"
@@ -133,7 +137,7 @@ create_pull_request() {
     git config --global user.email "github-actions[bot]@users.noreply.github.com"
     git config --global user.name "github-actions[bot]"
     git config pull.rebase false
-    _branch_name="automated-documentation-update-$GITHUB_RUN_ID"
+    _branch_name="automated-documentation-update-$GITHUB_RUN_ID_$(date +%s)"
     git checkout -b "$_branch_name"
     git add "$_README" "$_INTRO_AND_USAGE" "$_BENCHMARKS" "$_EXAMPLES"
     _commit_message="docs(README): Update benchmark results"
@@ -153,7 +157,7 @@ create_pull_request() {
 
 # Main function
 main() {
-    echo "ℹ️ Updating the main _README file..."
+    echo "ℹ️ Updating the main README file..."
     script_name=$(basename "$(realpath "$0")")
     script_url=$(get_script_url "$script_name")
     update_readme "$script_name" "$script_url"
