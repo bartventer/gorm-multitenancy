@@ -15,9 +15,7 @@ updates:
       include: "scope"
 
   - package-ecosystem: "gomod"
-    directories:
-      - "/examples/echo"
-      - "/examples/nethttp"
+    directory: "/examples"
     assignees:
       - "bartventer"
     reviewers:
