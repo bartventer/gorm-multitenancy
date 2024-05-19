@@ -107,7 +107,7 @@ type (
 	// Dialector is the postgres dialector with multitenancy support.
 	Dialector struct {
 		postgres.Dialector
-		*multitenancyConfig
+		*migratorConfig
 		rw *sync.RWMutex
 	}
 )
@@ -116,17 +116,14 @@ type (
 var _ gorm.Dialector = (*Dialector)(nil)
 
 func initializeDialector(d *Dialector, models ...interface{}) {
-	mtc, err := newMultitenancyConfig(models)
+	mtc, err := newMigratorConfig(models)
 	if err != nil {
 		panic(err)
 	}
-	d.multitenancyConfig = mtc
+	d.migratorConfig = mtc
 }
 
 // Open opens a connection to a PostgreSQL database using the provided DSN (Data Source Name) and models.
-// It returns a gorm.Dialector that can be used to interact with the database.
-// The models parameter is optional and can be used to specify the database models that should be registered.
-// If an error occurs while creating the multitenancy configuration, it panics.
 func Open(dsn string, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.Open(dsn).(*postgres.Dialector),
@@ -137,11 +134,6 @@ func Open(dsn string, models ...interface{}) gorm.Dialector {
 }
 
 // New creates a new PostgreSQL dialector with multitenancy support.
-// It takes a Config struct as the first parameter and variadic models as the second parameter.
-// The Config struct contains the necessary configuration for connecting to the PostgreSQL database.
-// The models parameter is a list of GORM models that will be used for multitenancy configuration.
-// It returns a gorm.Dialector that can be used with GORM.
-// If there is an error during the creation of the multitenancy configuration, it will panic.
 func New(config Config, models ...interface{}) gorm.Dialector {
 	d := &Dialector{
 		Dialector: *postgres.New(config).(*postgres.Dialector),
@@ -151,10 +143,7 @@ func New(config Config, models ...interface{}) gorm.Dialector {
 	return d
 }
 
-// Migrator returns a gorm.Migrator implementation for the Dialector.
-// It creates a new instance of Migrator with the provided database connection and dialector.
-// It also includes a multitenancyConfig that contains information about public models, tenant models, and all models.
-// The Migrator is thread-safe and uses a sync.RWMutex for synchronization.
+// Migrator returns a [gorm.Migrator] implementation for the Dialector.
 func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 	dialector.rw.RLock()
 	defer dialector.rw.RUnlock()
@@ -169,62 +158,51 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 				},
 			},
 		},
-		&multitenancyConfig{
+		&migratorConfig{
 			publicModels: dialector.publicModels,
 			tenantModels: dialector.tenantModels,
-			models:       dialector.models,
 		},
 		&sync.RWMutex{},
 	}
 }
 
-// RegisterModels registers the given models with the provided gorm.DB instance for multitenancy support.
-// It initializes the multitenancy configuration for the database dialector.
-// The models parameter should be a variadic list of model structs.
-// Returns an error if there is a failure in registering the models or initializing the multitenancy configuration.
+// RegisterModels registers the given models with the provided [gorm.DB] instance for multitenancy support.
 func RegisterModels(db *gorm.DB, models ...interface{}) error {
 	dialector := db.Dialector.(*Dialector)
-	mtc, err := newMultitenancyConfig(models)
+	mtc, err := newMigratorConfig(models)
 	if err != nil {
 		return fmt.Errorf("failed to register models: %w", err)
 	}
 
 	dialector.rw.Lock()
-	dialector.multitenancyConfig = mtc
+	dialector.migratorConfig = mtc
 	dialector.rw.Unlock()
 	return nil
 }
 
 // MigratePublicSchema migrates the public schema in the database.
-// It takes a *gorm.DB as input and returns an error if any.
 func MigratePublicSchema(db *gorm.DB) error {
 	return db.Migrator().(*Migrator).MigratePublicSchema()
 }
 
-// CreateSchemaForTenant creates a new schema for a specific tenant in the PostgreSQL database,
-// and migrates the private tables for the tenant.
-// It takes a gorm.DB instance and the name of the schema as parameters.
-// Returns an error if the schema creation fails.
+// CreateSchemaForTenant creates a new schema for a specific tenant in the PostgreSQL database.
 func CreateSchemaForTenant(db *gorm.DB, schemaName string) error {
 	return db.Migrator().(*Migrator).CreateSchemaForTenant(schemaName)
 }
 
-// DropSchemaForTenant drops the schema for a specific tenant in the PostgreSQL
-// database (CASCADING all objects in the schema).
-// It takes a *gorm.DB instance and the name of the schema as parameters.
-// Returns an error if there was a problem dropping the schema.
+// DropSchemaForTenant drops the schema for a specific tenant in the PostgreSQL database (CASCADE).
 func DropSchemaForTenant(db *gorm.DB, schemaName string) error {
 	return db.Migrator().(*Migrator).DropSchemaForTenant(schemaName)
 }
 
-// newMultitenancyConfig creates a new multitenancy configuration based on the provided models.
-// It separates the models into public models and private models based on their table names.
-// Public models are those that have a table name starting with the default schema name (PublicSchemaName),
-// while private models are those that implement the TenantTabler interface and have a table name without a fullstop.
-// If any model does not meet the required criteria, an error message is appended to the errStrings slice.
-// If there are any errors, the function returns nil and an error. Otherwise, it returns a new multitenancyConfig
-// containing the public models, private models, and all the models.
-func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
+// newMigratorConfig creates a new multitenancy configuration based on the provided models.
+func newMigratorConfig(models []interface{}) (*migratorConfig, error) {
+	// It separates the models into public models and private models based on their table names.
+	// Public models are those that have a table name starting with the default schema name (PublicSchemaName),
+	// while private models are those that implement the TenantTabler interface and have a table name without a fullstop.
+	// If any model does not meet the required criteria, an error message is appended to the errStrings slice.
+	// If there are any errors, the function returns nil and an error. Otherwise, it returns a new multitenancyConfig
+	// containing the public models, private models, and all the models.
 	var (
 		publicModels  = make([]interface{}, 0, len(models))
 		privateModels = make([]interface{}, 0, len(models))
@@ -260,9 +238,8 @@ func newMultitenancyConfig(models []interface{}) (*multitenancyConfig, error) {
 		return nil, fmt.Errorf("failed to create multitenancy config: %s", strings.Join(errStrings, "; "))
 	}
 
-	return &multitenancyConfig{
+	return &migratorConfig{
 		publicModels: publicModels,
 		tenantModels: privateModels,
-		models:       models,
 	}, nil
 }

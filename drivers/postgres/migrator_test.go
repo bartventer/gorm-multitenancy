@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 	type fields struct {
 		Migrator           postgres.Migrator
-		multitenancyConfig *multitenancyConfig
+		multitenancyConfig *migratorConfig
 	}
 	type args struct {
 		tenant string
@@ -73,10 +73,9 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 			name: "valid",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			args: args{
@@ -88,10 +87,9 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 			name: "invalid",
 			fields: fields{
 				Migrator: testDbWithError.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{},
 					tenantModels: []interface{}{},
-					models:       []interface{}{},
 				},
 			},
 			args: args{
@@ -103,10 +101,9 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 			name: "invalid schema name (reserved)",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			args: args{
@@ -118,9 +115,8 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 			name: "invalid: no private tables to migrate",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
-					models:       []interface{}{&testPublicTable{}},
 				},
 			},
 			args: args{
@@ -132,9 +128,9 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Migrator{
-				Migrator:           tt.fields.Migrator,
-				multitenancyConfig: tt.fields.multitenancyConfig,
-				rw:                 &sync.RWMutex{},
+				Migrator:       tt.fields.Migrator,
+				migratorConfig: tt.fields.multitenancyConfig,
+				rw:             &sync.RWMutex{},
 			}
 			if err := m.CreateSchemaForTenant(tt.args.tenant); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.CreateSchemaForTenant() error = %v, wantErr %v", err, tt.wantErr)
@@ -151,7 +147,7 @@ func TestMigrator_CreateSchemaForTenant(t *testing.T) {
 func TestMigrator_MigratePublicSchema(t *testing.T) {
 	type fields struct {
 		Migrator           postgres.Migrator
-		multitenancyConfig *multitenancyConfig
+		multitenancyConfig *migratorConfig
 	}
 	tests := []struct {
 		name    string
@@ -162,10 +158,9 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 			name: "valid",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			wantErr: false,
@@ -174,10 +169,9 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 			name: "invalid",
 			fields: fields{
 				Migrator: testDbWithError.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{},
 					tenantModels: []interface{}{},
-					models:       []interface{}{},
 				},
 			},
 			wantErr: true,
@@ -186,9 +180,8 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 			name: "invalid: no public tables to migrate",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testTenantTable{}},
 				},
 			},
 			wantErr: true,
@@ -197,9 +190,9 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Migrator{
-				Migrator:           tt.fields.Migrator,
-				multitenancyConfig: tt.fields.multitenancyConfig,
-				rw:                 &sync.RWMutex{},
+				Migrator:       tt.fields.Migrator,
+				migratorConfig: tt.fields.multitenancyConfig,
+				rw:             &sync.RWMutex{},
 			}
 			if err := m.MigratePublicSchema(); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.MigratePublicSchema() error = %v, wantErr %v", err, tt.wantErr)
@@ -220,7 +213,7 @@ func TestMigrator_MigratePublicSchema(t *testing.T) {
 func TestMigrator_DropSchemaForTenant(t *testing.T) {
 	type fields struct {
 		Migrator           postgres.Migrator
-		multitenancyConfig *multitenancyConfig
+		multitenancyConfig *migratorConfig
 	}
 	type args struct {
 		tenant string
@@ -235,10 +228,9 @@ func TestMigrator_DropSchemaForTenant(t *testing.T) {
 			name: "valid",
 			fields: fields{
 				Migrator: testDb.Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			args: args{
@@ -250,9 +242,9 @@ func TestMigrator_DropSchemaForTenant(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &Migrator{
-				Migrator:           tt.fields.Migrator,
-				multitenancyConfig: tt.fields.multitenancyConfig,
-				rw:                 &sync.RWMutex{},
+				Migrator:       tt.fields.Migrator,
+				migratorConfig: tt.fields.multitenancyConfig,
+				rw:             &sync.RWMutex{},
 			}
 			// create schema
 			if err := m.DB.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", tt.args.tenant)).Error; err != nil {
@@ -276,7 +268,7 @@ func TestMigrator_DropSchemaForTenant(t *testing.T) {
 func TestMigrator_AutoMigrate(t *testing.T) {
 	type fields struct {
 		Migrator           postgres.Migrator
-		multitenancyConfig *multitenancyConfig
+		multitenancyConfig *migratorConfig
 	}
 	type args struct {
 		values []interface{}
@@ -291,10 +283,9 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 			name: "valid: with valid migrate option",
 			fields: fields{
 				Migrator: testDb.Scopes(withMigrationOption(migrationOptionPublicTables)).Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			args: args{
@@ -308,10 +299,9 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 			name: "invalid: with invalid migrate option",
 			fields: fields{
 				Migrator: testDb.Scopes(withMigrationOption(migrationOption(0))).Migrator().(postgres.Migrator),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testPublicTable{}},
 					tenantModels: []interface{}{&testTenantTable{}},
-					models:       []interface{}{&testPublicTable{}, &testTenantTable{}},
 				},
 			},
 			args: args{
@@ -325,9 +315,9 @@ func TestMigrator_AutoMigrate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := Migrator{
-				Migrator:           tt.fields.Migrator,
-				multitenancyConfig: tt.fields.multitenancyConfig,
-				rw:                 &sync.RWMutex{},
+				Migrator:       tt.fields.Migrator,
+				migratorConfig: tt.fields.multitenancyConfig,
+				rw:             &sync.RWMutex{},
 			}
 			if err := m.AutoMigrate(tt.args.values...); (err != nil) != tt.wantErr {
 				t.Errorf("Migrator.AutoMigrate() error = %v, wantErr %v", err, tt.wantErr)

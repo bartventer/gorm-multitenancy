@@ -85,8 +85,8 @@ func TestOpen(t *testing.T) {
 			want: &Dialector{
 				rw:        &sync.RWMutex{},
 				Dialector: *postgres.Open(dsn).(*postgres.Dialector),
-				multitenancyConfig: func() *multitenancyConfig {
-					cfg, _ := newMultitenancyConfig([]interface{}{&testUser{}, &testProduct{}})
+				migratorConfig: func() *migratorConfig {
+					cfg, _ := newMigratorConfig([]interface{}{&testUser{}, &testProduct{}})
 					return cfg
 				}(),
 			},
@@ -121,8 +121,8 @@ func TestNew(t *testing.T) {
 	want := &Dialector{
 		rw:        &sync.RWMutex{},
 		Dialector: *postgres.New(config).(*postgres.Dialector),
-		multitenancyConfig: func() *multitenancyConfig {
-			cfg, _ := newMultitenancyConfig(models)
+		migratorConfig: func() *migratorConfig {
+			cfg, _ := newMigratorConfig(models)
 			return cfg
 		}(),
 	}
@@ -157,7 +157,7 @@ func TestNewMultitenancyConfig(t *testing.T) {
 	wantPrivateModels := []interface{}{&testProduct{}}
 
 	// got := newMultitenancyConfig(models)
-	got, err := newMultitenancyConfig(models)
+	got, err := newMigratorConfig(models)
 	if err != nil {
 		t.Errorf("newMultitenancyConfig() error = %v", err)
 	}
@@ -169,17 +169,13 @@ func TestNewMultitenancyConfig(t *testing.T) {
 	if !reflect.DeepEqual(got.tenantModels, wantPrivateModels) {
 		t.Errorf("newMultitenancyConfig() got tenantModels = %v, want %v", got.tenantModels, wantPrivateModels)
 	}
-
-	if !reflect.DeepEqual(got.models, models) {
-		t.Errorf("newMultitenancyConfig() got models = %v, want %v", got.models, models)
-	}
 }
 
 func TestNewMultitenancyConfig_InvalidModel(t *testing.T) {
 	models := []interface{}{&invalidPublicUser{}, &invalidPrivateProduct{}, &invalidNonTabler{}}
 
 	for _, model := range models {
-		_, err := newMultitenancyConfig([]interface{}{model})
+		_, err := newMigratorConfig([]interface{}{model})
 		if err == nil {
 			t.Errorf("newMultitenancyConfig() error = %v, wantErr %v", err, true)
 		}
@@ -189,7 +185,7 @@ func TestNewMultitenancyConfig_InvalidModel(t *testing.T) {
 func TestDialector_Migrator(t *testing.T) {
 	type fields struct {
 		Dialector          postgres.Dialector
-		multitenancyConfig *multitenancyConfig
+		multitenancyConfig *migratorConfig
 	}
 	type args struct {
 		db *gorm.DB
@@ -205,10 +201,9 @@ func TestDialector_Migrator(t *testing.T) {
 			name: "Test Migrator",
 			fields: fields{
 				Dialector: *db.Dialector.(*postgres.Dialector),
-				multitenancyConfig: &multitenancyConfig{
+				multitenancyConfig: &migratorConfig{
 					publicModels: []interface{}{&testUser{}},
 					tenantModels: []interface{}{&testProduct{}},
-					models:       []interface{}{&testUser{}, &testProduct{}},
 				},
 			},
 			args: args{
@@ -225,25 +220,24 @@ func TestDialector_Migrator(t *testing.T) {
 						},
 					},
 				},
-				multitenancyConfig: &multitenancyConfig{
+				migratorConfig: &migratorConfig{
 					publicModels: []interface{}{&testUser{}},
 					tenantModels: []interface{}{&testProduct{}},
-					models:       []interface{}{&testUser{}, &testProduct{}},
 				},
 			},
 		},
 	}
 
 	compareMigrators := func(x, y gorm.Migrator) bool {
-		return reflect.DeepEqual(x.(*Migrator).multitenancyConfig, y.(*Migrator).multitenancyConfig)
+		return reflect.DeepEqual(x.(*Migrator).migratorConfig, y.(*Migrator).migratorConfig)
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dialector := Dialector{
-				Dialector:          tt.fields.Dialector,
-				multitenancyConfig: tt.fields.multitenancyConfig,
-				rw:                 &sync.RWMutex{},
+				Dialector:      tt.fields.Dialector,
+				migratorConfig: tt.fields.multitenancyConfig,
+				rw:             &sync.RWMutex{},
 			}
 			got := dialector.Migrator(tt.args.db)
 			if !compareMigrators(got, tt.want) {
@@ -295,8 +289,11 @@ func TestRegisterModels(t *testing.T) {
 				return
 			}
 			dialector := db.Dialector.(*Dialector)
-			if !reflect.DeepEqual(dialector.multitenancyConfig.models, tt.args.models) {
-				t.Errorf("RegisterModels() failed, expected models: %v, got: %v", tt.args.models, dialector.multitenancyConfig.models)
+			if !reflect.DeepEqual(dialector.migratorConfig.publicModels, []interface{}{&testUser{}}) {
+				t.Errorf("RegisterModels() publicModels = %v, want %v", dialector.migratorConfig.publicModels, []interface{}{&testUser{}})
+			}
+			if !reflect.DeepEqual(dialector.migratorConfig.tenantModels, []interface{}{&testProduct{}}) {
+				t.Errorf("RegisterModels() tenantModels = %v, want %v", dialector.migratorConfig.tenantModels, []interface{}{&testProduct{}})
 			}
 		})
 	}

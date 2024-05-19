@@ -4,6 +4,7 @@ Package schema provides utilities for managing PostgreSQL schemas in a multi-ten
 package schema
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -11,6 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// schemaNameRegexStr is the regular expression pattern for a valid schema name.
+//
+// Examples of valid schema names:
+//   - "domain1"
+//   - "test_domain"
+//   - "test123"
+//   - "_domain"
 const schemaNameRegexStr = `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`
 
 var schemaNameRegex = regexp.MustCompile(schemaNameRegexStr)
@@ -91,16 +99,18 @@ func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
 //		// ... do something with schemaName
 //		return nil
 //	}
+//
+// Deprecated: This function will be removed in the next major version (v7). Please update your code to avoid using this function.
 func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
 	// get the table expression sql
 	if tx.Statement.TableExpr == nil {
-		return "", fmt.Errorf("table expression is nil")
+		return "", errors.New("table expression is nil")
 	}
 	// get the schema name from the table expression sql
 	schemaName := getSchemaNameFromSQLExpr(tx.Statement.TableExpr.SQL)
 	// if the schema name is empty, return an error
 	if schemaName == "" {
-		return "", fmt.Errorf("schema name is empty")
+		return "", errors.New("schema name is empty")
 	}
 	return schemaName, nil
 }
