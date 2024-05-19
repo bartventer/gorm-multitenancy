@@ -1,3 +1,9 @@
 {
+    "go.lintOnSave": "workspace",
+    "go.lintFlags": [
+        "--fast",
+        "--config",
+        "./.golangci.yaml",
+    ],
     "go.buildTags": "gormmultitenancy_example"
 }
