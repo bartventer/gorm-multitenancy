@@ -11,7 +11,9 @@
     },
     "features": {
         "ghcr.io/bartventer/devcontainer-features/docker-in-docker:latest": {},
-        "ghcr.io/bartventer/arch-devcontainer-features/go:latest": {}
+        "ghcr.io/bartventer/arch-devcontainer-features/go:latest": {
+            "golangciLintVersion": "v1.58.1"
+        }
     },
     "mounts": [
         "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
