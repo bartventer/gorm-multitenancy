@@ -29,6 +29,7 @@ package nethttp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -44,7 +45,7 @@ const (
 
 var (
 	// ErrTenantInvalid represents an error when the tenant is invalid or not found.
-	ErrTenantInvalid = fmt.Errorf("invalid tenant or tenant not found")
+	ErrTenantInvalid = errors.New("invalid tenant or tenant not found")
 )
 
 // DefaultSkipper represents the default skipper.
