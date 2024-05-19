@@ -24,62 +24,62 @@ var (
 )
 
 const (
-	// TableNameTenant is the table name for the tenant model
+	// TableNameTenant is the table name for the tenant model.
 	TableNameTenant = "public.tenants"
-	// TableNameBook is the table name for the book model
+	// TableNameBook is the table name for the book model.
 	TableNameBook = "books"
 )
 
-// TableName overrides the table name used by Tenant to `tenants`
+// TableName overrides the table name used by Tenant to `tenants`.
 func (u *Tenant) TableName() string { return TableNameTenant }
 
-// Tenant is the tenant model
+// Tenant is the tenant model.
 type Tenant struct {
 	gorm.Model
 	postgres.TenantModel
 }
 
-// Book is the book model
+// Book is the book model.
 type Book struct {
-	ID           uint   `gorm:"primarykey" json:"id"`
-	Name         string `gorm:"column:name;size:255;not null;default:NULL" json:"name"`
-	TenantSchema string `gorm:"column:tenant_schema"`
-	Tenant       Tenant `gorm:"foreignKey:TenantSchema;references:SchemaName"`
+	ID           uint   `json:"id"   gorm:"primarykey"`
+	Name         string `json:"name" gorm:"column:name;size:255;not null;default:NULL"`
+	TenantSchema string `            gorm:"column:tenant_schema"`
+	Tenant       Tenant `            gorm:"foreignKey:TenantSchema;references:SchemaName"`
 }
 
 var _ multitenancy.TenantTabler = (*Book)(nil)
 
-// TableName overrides the table name used by Book to `books`
+// TableName overrides the table name used by Book to `books`.
 func (u *Book) TableName() string { return TableNameBook }
 
-// IsTenantTable returns true
+// IsTenantTable returns true.
 func (u *Book) IsTenantTable() bool { return true }
 
 type (
-	// CreateTenantBody is the request body for creating a tenant
+	// CreateTenantBody is the request body for creating a tenant.
 	CreateTenantBody struct {
 		DomainURL string `json:"domainUrl"`
 	}
 
-	// UpdateBookBody is the request body for updating a book
+	// UpdateBookBody is the request body for updating a book.
 	UpdateBookBody struct {
 		Name string `json:"name"`
 	}
 
-	// BookResponse is the response body for a book
+	// BookResponse is the response body for a book.
 	BookResponse struct {
 		ID   uint   `json:"id"`
 		Name string `json:"name"`
 	}
 
-	// TenantResponse is the response body for a tenant
+	// TenantResponse is the response body for a tenant.
 	TenantResponse struct {
 		ID        uint   `json:"id"`
 		DomainURL string `json:"domainUrl"`
 	}
 )
 
-// create database connection, models, and tables
+// create database connection, models, and tables.
 func init() {
 	var err error
 
@@ -157,7 +157,7 @@ func init() {
 	})
 }
 
-// TenantFromContext returns the tenant from the context
+// TenantFromContext returns the tenant from the context.
 func TenantFromContext(c echo.Context) (string, error) {
 	tenant, ok := c.Get(echomw.TenantKey.String()).(string)
 	if !ok {
