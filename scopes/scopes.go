@@ -4,6 +4,9 @@ Package scopes provides a set of predefined GORM scopes for managing multi-tenan
 package scopes
 
 import (
+	"errors"
+	"reflect"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
@@ -44,11 +47,15 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 		case db.Statement.Table != "":
 			tn = db.Statement.Table
 		case db.Statement.Model != nil:
-			tn = tableNameFromReflectValue(db.Statement.Model)
+			tn = tableNameFromInterface(db.Statement.Model)
 		case db.Statement.Dest != nil:
-			tn = tableNameFromReflectValue(db.Statement.Dest)
+			destPtr := reflect.ValueOf(db.Statement.Dest)
+			if destPtr.Kind() != reflect.Ptr {
+				_ = db.AddError(errors.New("destination must be a pointer"))
+			} else {
+				tn = tableNameFromReflectValue(db.Statement.Dest)
+			}
 		}
-
 		if tn != "" {
 			return db.Table(tenant + "." + tn)
 		}
@@ -58,10 +65,22 @@ func WithTenantSchema(tenant string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-// tableNameFromReflectValue returns the table name from the model.
-func tableNameFromReflectValue(val interface{}) string {
+// tableNameFromInterface returns the table name from a interface.
+func tableNameFromInterface(val interface{}) string {
 	if s, ok := val.(schema.Tabler); ok {
 		return s.TableName()
+	}
+	return ""
+}
+
+// tableNameFromReflectValue returns the table name from a reflect.Value.
+func tableNameFromReflectValue(valPtr interface{}) string {
+	val := reflect.ValueOf(valPtr).Elem()
+	if val.Kind() == reflect.Struct {
+		return tableNameFromInterface(val.Interface())
+	}
+	if val.Kind() == reflect.Slice || val.Kind() == reflect.Array {
+		return tableNameFromInterface(reflect.New(val.Type().Elem()).Interface())
 	}
 	return ""
 }

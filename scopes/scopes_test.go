@@ -70,21 +70,42 @@ func TestWithTenantSchema(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "test-with-tenant-schema",
-			queryFn: func(tx *gorm.DB) *gorm.DB {
-				return tx.Model(&Book{}).Scopes(WithTenantSchema("tenant1")).Find(&Book{})
-			},
-			expected: `SELECT * FROM "tenant1"."books"`,
-		},
-		{
-			name: "test-with-tenant-schema-and-table-set-manually",
+			name: "valid: with table name set",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Table("books").Scopes(WithTenantSchema("tenant2")).Find(&Book{})
 			},
 			expected: `SELECT * FROM "tenant2"."books"`,
 		},
 		{
-			name: "invalid:table-name-not-set",
+			name: "valid: with model set",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Model(&Book{}).Scopes(WithTenantSchema("tenant1")).Find(&Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "valid: with dest pointer to struct",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find(&Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "invalid: dest not a pointer",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find(Book{})
+			},
+			expected: ``,
+		},
+		{
+			name: "valid: with dest pointer to array/slice",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find(&[]Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "invalid: Tabler interface not implemented",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Scopes(WithTenantSchema("tenant3")).Find(&struct{}{})
 			},
