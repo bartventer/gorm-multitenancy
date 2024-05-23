@@ -6,7 +6,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"testing"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -82,14 +81,4 @@ func DeepEqual[T any](expected, actual T, message ...interface{}) (bool, string)
 		return false, fmt.Sprintf("%s: Expected %v, got %v", msg, expected, actual)
 	}
 	return true, ""
-}
-
-// AssertEqual compares two values and logs an error if they are not equal.
-func AssertEqual[T any](t *testing.T, expected, actual T, message ...interface{}) bool {
-	t.Helper()
-	equal, msg := DeepEqual(expected, actual, message...)
-	if !equal {
-		t.Errorf(msg)
-	}
-	return equal
 }

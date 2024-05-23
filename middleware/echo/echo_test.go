@@ -12,6 +12,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// assertEqual compares two values and logs an error if they are not equal.
+func assertEqual[T any](t *testing.T, expected, actual T, message ...interface{}) bool {
+	t.Helper()
+	equal, msg := testutil.DeepEqual(expected, actual, message...)
+	if !equal {
+		t.Errorf(msg)
+	}
+	return equal
+}
+
 func ExampleWithTenant() {
 	e := echo.New()
 
@@ -133,8 +143,8 @@ func TestWithTenant(t *testing.T) {
 
 			if tt.wantErr {
 				he := handler(c).(*echo.HTTPError)
-				testutil.AssertEqual(t, http.StatusInternalServerError, he.Code)
-				testutil.AssertEqual(t, "forced error", he.Message)
+				assertEqual(t, http.StatusInternalServerError, he.Code)
+				assertEqual(t, "forced error", he.Message)
 				return
 			}
 
@@ -144,10 +154,8 @@ func TestWithTenant(t *testing.T) {
 				return
 			}
 
-			// testutil.AssertEqual(t, http.StatusOK, rec.Code)
-			testutil.AssertEqual(t, http.StatusOK, rec.Code)
-			// testutil.AssertEqual(t, tt.want, rec.Body.String())
-			testutil.AssertEqual(t, tt.want, rec.Body.String())
+			assertEqual(t, http.StatusOK, rec.Code)
+			assertEqual(t, tt.want, rec.Body.String())
 		})
 	}
 }
