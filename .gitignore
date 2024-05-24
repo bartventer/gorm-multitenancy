@@ -2,6 +2,7 @@
 /tmp
 cover.out
 cover.html
+tmp.*
 
 # Go files
 go.work*
