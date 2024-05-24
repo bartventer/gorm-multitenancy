@@ -9,7 +9,7 @@ The benchmarks were run with the following configuration:
 - go version: 1.22.3
 - date: 2024-05-24
 
-> The benchmark results were generated during a GitHub Actions workflow run on a Linux runner ([view workflow](https://github.com/bartventer/gorm-multitenancy/actions/runs/9218903247)).
+> The benchmark results were generated during a GitHub Actions workflow run on a Linux runner ([view workflow](https://github.com/bartventer/gorm-multitenancy/actions/runs/9225819485)).
 
 The following table shows the benchmark results, obtained by running:
 ```bash
@@ -19,11 +19,11 @@ go test -bench=^BenchmarkScopingQueries$ -run=^$ -benchmem -benchtime=2s github.
 
 | Benchmark | ns/op | B/op | allocs/op |
 |-----------|-------|------|-----------|
-| BenchmarkScopingQueries/Create/SetSearchPath-4 | 1196085 | 17559 | 224 |
-| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 917882 | 16228 | 209 |
-| BenchmarkScopingQueries/Find/SetSearchPath-4 | 942373 | 6376 | 102 |
-| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 668363 | 5076 | 87 |
-| BenchmarkScopingQueries/Update/SetSearchPath-4 | 1652153 | 14719 | 209 |
-| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 1381975 | 13656 | 205 |
-| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 1699808 | 12235 | 190 |
-| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 1479026 | 11301 | 185 |
+| BenchmarkScopingQueries/Create/SetSearchPath-4 | 1127533 | 17549 | 224 |
+| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 861925 | 16231 | 209 |
+| BenchmarkScopingQueries/Find/SetSearchPath-4 | 957667 | 6376 | 102 |
+| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 683608 | 5077 | 87 |
+| BenchmarkScopingQueries/Update/SetSearchPath-4 | 1622015 | 14717 | 209 |
+| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 1350094 | 13655 | 205 |
+| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 1642159 | 12231 | 190 |
+| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 1420370 | 11297 | 185 |
