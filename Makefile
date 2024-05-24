@@ -105,8 +105,8 @@ benchmark: deps ## Run benchmarks
 .PHONY: update_readme
 update_readme: ## Update the postgres driver README
 	$(SCRIPTS_DIR)/update_readme.sh \
-		-dirpath ./drivers/postgres/docs \
-		-outfile ./drivers/postgres/README.md
+		--dirpath ./drivers/postgres/docs \
+		--outfile ./drivers/postgres/README.md
 
 .PHONY: coverbrowser
 coverbrowser: ## View coverage in browser
