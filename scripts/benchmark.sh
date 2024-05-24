@@ -178,6 +178,6 @@ format_output() {
     echo "✔️ OK. Formatted benchmark results saved in \"$output_file\"."
 }
 
-format_output "$_BENCHOUT" "$_OUTPUTDIR/benchmarks.md" "$_TEMPLATE" "$_BENCH_FUNC"
+format_output "$_BENCHOUT" "$_OUTPUTDIR/0002_benchmarks.md" "$_TEMPLATE" "$_BENCH_FUNC"
 
 echo "✔️ Done."
