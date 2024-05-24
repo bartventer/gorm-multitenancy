@@ -103,9 +103,10 @@ benchmark: deps ## Run benchmarks
 		-template $(SCRIPTS_DIR)/benchmark_template.md
 
 .PHONY: update_readme
-update_readme: ## Update the README.md file in the drivers/postgres directory
+update_readme: ## Update the postgres driver README
 	$(SCRIPTS_DIR)/update_readme.sh \
-		-dirpath ./drivers/postgres
+		-dirpath ./drivers/postgres/docs \
+		-outfile ./drivers/postgres/README.md
 
 .PHONY: coverbrowser
 coverbrowser: ## View coverage in browser
