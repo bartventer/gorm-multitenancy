@@ -18,7 +18,7 @@ Example:
 	}
 
 	// Implement the gorm.Tabler interface
-	func (t *Tenant) TableName() string {return "public.tenants"} // Note the public. prefix
+	func (Tenant) TableName() string {return "public.tenants"} // Note the public. prefix
 
 	// Book is a tenant specific model
 	type Book struct {
@@ -29,10 +29,10 @@ Example:
 	}
 
 	// Implement the gorm.Tabler interface
-	func (b *Book) TableName() string {return "books"} // Note the lack of prefix
+	func (Book) TableName() string {return "books"} // Note the lack of prefix
 
 	// Implement the TenantTabler interface
-	func (b *Book) IsTenantTable() bool {return true} // This classifies the model as a tenant specific model
+	func (Book) IsTenantTable() bool {return true} // This classifies the model as a tenant specific model
 
 	func main(){
 		// Open a connection to the database
