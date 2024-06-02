@@ -33,7 +33,7 @@ const (
 )
 
 // TableName overrides the table name used by Tenant to `tenants`.
-func (u *Tenant) TableName() string { return TableNameTenant }
+func (Tenant) TableName() string { return TableNameTenant }
 
 // Tenant is the tenant model.
 type Tenant struct {
@@ -52,10 +52,10 @@ type Book struct {
 var _ multitenancy.TenantTabler = (*Book)(nil)
 
 // TableName overrides the table name used by Book to `books`.
-func (u *Book) TableName() string { return TableNameBook }
+func (Book) TableName() string { return TableNameBook }
 
 // IsTenantTable returns true.
-func (u *Book) IsTenantTable() bool { return true }
+func (Book) IsTenantTable() bool { return true }
 
 type (
 	// CreateTenantBody is the request body for creating a tenant.
