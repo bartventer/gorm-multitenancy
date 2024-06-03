@@ -1,20 +1,6 @@
 {
     "name": "Gorm Multi-Tenancy",
-    "image": "ghcr.io/bartventer/devcontainer-images/base-archlinux:latest",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "cweijan.vscode-database-client2",
-                "github.vscode-github-actions"
-            ]
-        }
-    },
-    "features": {
-        "ghcr.io/bartventer/devcontainer-features/docker-in-docker:latest": {},
-        "ghcr.io/bartventer/arch-devcontainer-features/go:latest": {
-            "golangciLintVersion": "v1.58.1"
-        }
-    },
+    "image": "ghcr.io/bartventer/gorm-multitenancy/devcontainer:latest",
     "mounts": [
         "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.vscode-server,target=/home/vscode/.vscode-server-insiders/extensions,type=bind,consistency=cached"
@@ -25,6 +11,5 @@
     ],
     "forwardPorts": [
         8080
-    ],
-    "remoteUser": "vscode"
+    ]
 }
