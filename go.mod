@@ -26,5 +26,5 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/stretchr/testify v1.9.0 // indirect
-	gorm.io/driver/postgres v1.5.7
+	gorm.io/driver/postgres v1.5.9
 )
