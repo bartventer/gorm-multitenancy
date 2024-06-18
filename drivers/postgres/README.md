@@ -225,10 +225,10 @@ The benchmarks were run with the following configuration:
 - goarch: amd64
 - pkg: github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema
 - cpu: AMD EPYC 7763 64-Core Processor                
-- go version: 1.22.3
-- date: 2024-06-06
+- go version: 1.22.4
+- date: 2024-06-18
 
-> The benchmark results were generated during a GitHub Actions workflow run on a Linux runner ([view workflow](https://github.com/bartventer/gorm-multitenancy/actions/runs/9399013373)).
+> The benchmark results were generated during a GitHub Actions workflow run on a Linux runner ([view workflow](https://github.com/bartventer/gorm-multitenancy/actions/runs/9565315909)).
 
 The following table shows the benchmark results, obtained by running:
 ```bash
@@ -238,14 +238,14 @@ go test -bench=^BenchmarkScopingQueries$ -run=^$ -benchmem -benchtime=2s github.
 
 | Benchmark | ns/op | B/op | allocs/op |
 |-----------|-------|------|-----------|
-| BenchmarkScopingQueries/Create/SetSearchPath-4 | 1184112 | 17552 | 224 |
-| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 918555 | 16224 | 209 |
-| BenchmarkScopingQueries/Find/SetSearchPath-4 | 951405 | 6377 | 102 |
-| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 667583 | 5076 | 87 |
-| BenchmarkScopingQueries/Update/SetSearchPath-4 | 1665855 | 14720 | 209 |
-| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 1387175 | 13657 | 205 |
-| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 1701148 | 12234 | 190 |
-| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 1503335 | 11303 | 185 |
+| BenchmarkScopingQueries/Create/SetSearchPath-4 | 1158551 | 17548 | 224 |
+| BenchmarkScopingQueries/Create/WithTenantSchema-4 | 892393 | 16236 | 209 |
+| BenchmarkScopingQueries/Find/SetSearchPath-4 | 938606 | 6375 | 102 |
+| BenchmarkScopingQueries/Find/WithTenantSchema-4 | 667922 | 5076 | 87 |
+| BenchmarkScopingQueries/Update/SetSearchPath-4 | 1649238 | 14719 | 209 |
+| BenchmarkScopingQueries/Update/WithTenantSchema-4 | 1362411 | 13656 | 205 |
+| BenchmarkScopingQueries/Delete/SetSearchPath-4 | 1655629 | 12240 | 190 |
+| BenchmarkScopingQueries/Delete/WithTenantSchema-4 | 1438684 | 11299 | 185 |
 
 
 ## Basic Example
