@@ -1,0 +1,39 @@
+name: Release
+
+on:
+    workflow_dispatch: 
+    push:
+        tags:
+            - 'v[0-9]+.[0-9]+.[0-9]+'
+            - '[a-z]+/v[0-9]+.[0-9]+.[0-9]+'
+    workflow_run:
+        workflows: ["Build"]
+        branches: [master]
+        types: [completed]
+
+jobs:
+    semantic-release:
+        name: Semantic Release
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+        strategy:
+            fail-fast: false
+            max-parallel: 1
+            matrix:
+                directory:
+                    - '.'
+                    - 'drivers/postgres'
+                    - 'middleware/echo'
+                    - 'middleware/nethttp'
+        permissions:
+            contents: write
+            issues: write
+        steps:
+            - uses: actions/checkout@v4
+            - name: 'Run semantic-release in "${{ matrix.directory }}"'
+              working-directory: ${{ matrix.directory }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  yarn global add semantic-release@17 @semantic-release/git
+                  semantic-release
