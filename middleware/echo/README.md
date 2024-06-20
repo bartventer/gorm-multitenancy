@@ -14,7 +14,7 @@ import (
     "net/http"
 
     echomw "github.com/bartventer/gorm-multitenancy/v6/middleware/echo"
-    "github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
+    "github.com/bartventer/gorm-multitenancy/v6"
     "github.com/labstack/echo/v4"
 )
 
@@ -24,7 +24,7 @@ func main() {
     e.Use(echomw.WithTenant(echomw.DefaultWithTenantConfig))
 
     e.GET("/", func(c echo.Context) error {
-        tenant := c.Get(tenantcontext.TenantKey).(string)
+        tenant := c.Get(multitenancy.TenantKey).(string)
         return c.String(http.StatusOK, "Hello, "+tenant)
     })
 
@@ -46,7 +46,7 @@ type WithTenantConfig struct {
 	TenantGetters []func(c echo.Context) (string, error)
 
 	// ContextKey is the key used to store the tenant in the context.
-	ContextKey tenantcontext.ContextKey
+	ContextKey multitenancy.ContextKey
 
 	// ErrorHandler is a callback function that is called when an error occurs during the tenant retrieval process.
 	ErrorHandler func(c echo.Context, err error) error
@@ -66,7 +66,7 @@ var	DefaultWithTenantConfig = WithTenantConfig{
 			DefaultTenantFromSubdomain,
 			DefaultTenantFromHeader,
 		},
-		ContextKey: tenantcontext.TenantKey,
+		ContextKey: multitenancy.TenantKey,
 		ErrorHandler: func(c echo.Context, _ error) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, nethttpmw.ErrTenantInvalid.Error())
 		},
