@@ -1,6 +1,6 @@
 # NetHTTP Middleware for Multitenancy
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7)
 
 NetHTTP middleware provides multitenancy support for the [net/http](https://golang.org/pkg/net/http/) package in Go.
 
@@ -12,8 +12,8 @@ For valid tenant information, it calls the next handler. For missing or invalid 
 import (
     "net/http"
 
-    nethttpmw "github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp"
-    "github.com/bartventer/gorm-multitenancy/v6"
+    nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
+    "github.com/bartventer/gorm-multitenancy/v7"
 )
 
 func main() {

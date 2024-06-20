@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/internal/testutil"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/internal/testutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"

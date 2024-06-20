@@ -1,6 +1,6 @@
 # Echo Middleware for Multitenancy
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v6/middleware/echo)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v7)
 
 Echo middleware provides multitenancy support for the [Echo](https://echo.labstack.com/docs) framework.
 
@@ -13,8 +13,8 @@ For missing or invalid tenant information, it sends "500 - Internal Server Error
 import (
     "net/http"
 
-    echomw "github.com/bartventer/gorm-multitenancy/v6/middleware/echo"
-    "github.com/bartventer/gorm-multitenancy/v6"
+    echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v7"
+    "github.com/bartventer/gorm-multitenancy/v7"
     "github.com/labstack/echo/v4"
 )
 

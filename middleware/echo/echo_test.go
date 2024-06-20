@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"github.com/labstack/echo/v4"
 )
 

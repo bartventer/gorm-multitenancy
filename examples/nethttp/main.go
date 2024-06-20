@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6"
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/scopes"
-	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v6"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/scopes"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
 	"github.com/urfave/negroni"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

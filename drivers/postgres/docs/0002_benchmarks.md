@@ -4,7 +4,7 @@ The benchmarks were run with the following configuration:
 
 - goos: linux
 - goarch: amd64
-- pkg: github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema
+- pkg: github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/schema
 - cpu: AMD EPYC 7763 64-Core Processor                
 - go version: 1.22.4
 - date: 2024-06-18
@@ -13,7 +13,7 @@ The benchmarks were run with the following configuration:
 
 The following table shows the benchmark results, obtained by running:
 ```bash
-go test -bench=^BenchmarkScopingQueries$ -run=^$ -benchmem -benchtime=2s github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema
+go test -bench=^BenchmarkScopingQueries$ -run=^$ -benchmem -benchtime=2s github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/schema
 ```
 > ns/op: nanoseconds per operation (*lower is better*), B/op: bytes allocated per operation (*lower is better*), allocs/op: allocations per operation (*lower is better*)
 

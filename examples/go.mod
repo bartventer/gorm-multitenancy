@@ -1,28 +1,28 @@
-module github.com/bartventer/gorm-multitenancy/examples/v6
+module github.com/bartventer/gorm-multitenancy/examples/v7
 
 go 1.22
 
 toolchain go1.22.4
 
-replace github.com/bartventer/gorm-multitenancy/v6 => ../
+replace github.com/bartventer/gorm-multitenancy/v7 => ../
 
-replace github.com/bartventer/gorm-multitenancy/drivers/postgres/v6 => ../drivers/postgres
+replace github.com/bartventer/gorm-multitenancy/drivers/postgres/v7 => ../drivers/postgres
 
-replace github.com/bartventer/gorm-multitenancy/middleware/echo/v6 => ../middleware/echo
+replace github.com/bartventer/gorm-multitenancy/middleware/echo/v7 => ../middleware/echo
 
-replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v6 => ../middleware/nethttp
+replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 => ../middleware/nethttp
 
 require (
-	github.com/bartventer/gorm-multitenancy/drivers/postgres/v6 v6.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v6 v6.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v6 v6.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/drivers/postgres/v7 v7.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v7 v7.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 v7.0.0-00010101000000-000000000000
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/urfave/negroni v1.0.0
 	gorm.io/gorm v1.25.10
 )
 
 require (
-	github.com/bartventer/gorm-multitenancy/v6 v6.1.3 // indirect
+	github.com/bartventer/gorm-multitenancy/v7 v7.0.0-00010101000000-000000000000 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect

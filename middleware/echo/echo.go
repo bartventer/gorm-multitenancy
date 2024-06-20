@@ -6,8 +6,8 @@ Example usage:
 	import (
 		"net/http"
 
-	    echomw "github.com/bartventer/gorm-multitenancy/v6/middleware/echo"
-		"github.com/bartventer/gorm-multitenancy/v6"
+	    echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v7"
+		"github.com/bartventer/gorm-multitenancy/v7"
 	    "github.com/labstack/echo/v4"
 	)
 
@@ -31,8 +31,8 @@ package echo
 import (
 	"net/http"
 
-	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v6"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"github.com/labstack/echo/v4"
 )
 

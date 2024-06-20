@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
-	pgschema "github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/schema"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
+	pgschema "github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/schema"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
