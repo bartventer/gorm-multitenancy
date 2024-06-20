@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -euxo pipefail
 
 COVERPROFILE="${COVERPROFILE:-cover.out}"
 WORKSPACE="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"

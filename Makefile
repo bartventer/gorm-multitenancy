@@ -16,10 +16,8 @@
 SHELL = /bin/bash
 
 # Arguments
-WORKSPACE="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
 SKIP_DEPS ?= false
 COVER ?= false
-COVERDIR="${COVERDIR:-$WORKSPACE/.coverage}"
 
 # Variables
 PKG_NAME := main
