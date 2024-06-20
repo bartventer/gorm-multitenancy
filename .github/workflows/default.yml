@@ -19,7 +19,7 @@ jobs:
 
         runs-on: ${{ matrix.os }}
         env:
-            COVERPROFILE: ${{ github.workspace }}/.cover.out
+            COVERPROFILE: ./cover.out
             COVERDIR: ${{ github.workspace }}/.cover
         steps:
             - uses: actions/checkout@v4
