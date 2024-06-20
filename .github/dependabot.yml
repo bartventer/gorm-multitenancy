@@ -1,7 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    directory: "/"
+    directories:
+      - "/"
+      - "/drivers/postgres"
+      - "/middleware/echo"
+      - "/middleware/nethttp"
     reviewers:
       - "bartventer"
     assignees:
