@@ -94,7 +94,6 @@ import (
 	"strings"
 	"sync"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
@@ -214,7 +213,7 @@ func newMigratorConfig(models []interface{}) (*migratorConfig, error) {
 			errStrings = append(errStrings, fmt.Sprintf("model %T does not implement TableName()", m))
 			continue
 		}
-		tt, ok := m.(multitenancy.TenantTabler)
+		tt, ok := m.(TenantTabler)
 		parts := strings.Split(tn.TableName(), ".")
 		if ok && tt.IsTenantTable() {
 			// ensure that the private model does not contain a fullstop

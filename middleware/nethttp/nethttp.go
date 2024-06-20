@@ -7,14 +7,14 @@ Example usage:
 	    "net/http"
 
 	    nethttpmw "github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp"
-	    "github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
+	    "github.com/bartventer/gorm-multitenancy/v6"
 	)
 
 	func main() {
 	    mux := http.NewServeMux()
 
 	    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	        tenant := r.Context().Value(tenantcontext.TenantKey).(string)
+	        tenant := r.Context().Value(multitenancy.TenantKey).(string)
 	        fmt.Fprintf(w, "Hello, %s", tenant)
 	    })
 
@@ -35,7 +35,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
 )
 
 const (
@@ -101,7 +101,7 @@ var (
 			DefaultTenantFromSubdomain,
 			DefaultTenantFromHeader,
 		},
-		ContextKey: tenantcontext.TenantKey,
+		ContextKey: multitenancy.TenantKey,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, _ error) {
 			http.Error(w, ErrTenantInvalid.Error(), http.StatusInternalServerError)
 		},
@@ -119,7 +119,7 @@ type WithTenantConfig struct {
 	TenantGetters []func(r *http.Request) (string, error)
 
 	// ContextKey is the key used to store the tenant in the context.
-	ContextKey tenantcontext.ContextKey
+	ContextKey multitenancy.ContextKey
 
 	// ErrorHandler is a callback function that is called when an error occurs during the tenant retrieval process.
 	ErrorHandler func(w http.ResponseWriter, r *http.Request, err error)

@@ -6,8 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
-	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/internal/testutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -31,7 +30,7 @@ func (testTenantTable) TableName() string {
 	return "test_private_table"
 }
 
-var _ multitenancy.TenantTabler = (*testTenantTable)(nil)
+var _ TenantTabler = (*testTenantTable)(nil)
 
 func (testTenantTable) IsTenantTable() bool { return true }
 

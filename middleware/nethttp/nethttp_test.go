@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
 )
 
 func ExampleDefaultTenantFromSubdomain() {
@@ -62,7 +62,7 @@ func ExampleWithTenant() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tenant := r.Context().Value(tenantcontext.TenantKey).(string)
+		tenant := r.Context().Value(multitenancy.TenantKey).(string)
 		fmt.Println("Tenant:", tenant)
 	})
 
@@ -154,7 +154,7 @@ func TestWithTenant(t *testing.T) {
 			// setup the handler
 			handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// tenant from context, should be same as tenant from search path
-				tenant, ok := r.Context().Value(tenantcontext.TenantKey).(string)
+				tenant, ok := r.Context().Value(multitenancy.TenantKey).(string)
 				if !ok && tt.args.config.Skipper != nil && tt.args.config.Skipper(r) {
 					// If Skipper is not nil and returns true, we don't expect a tenant in the context
 					fmt.Fprint(w, "")

@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
-	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
 	"github.com/labstack/echo/v4"
 )
 
 // assertEqual compares two values and logs an error if they are not equal.
-func assertEqual[T any](t *testing.T, expected, actual T, message ...interface{}) bool {
+func assertEqual[T any](t *testing.T, expected, actual T) bool {
 	t.Helper()
-	equal, msg := testutil.DeepEqual(expected, actual, message...)
-	if !equal {
-		t.Errorf(msg)
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("expected: %v, got: %v", expected, actual)
+		return false
 	}
-	return equal
+	return true
 }
 
 func ExampleWithTenant() {
@@ -28,7 +28,7 @@ func ExampleWithTenant() {
 	e.Use(WithTenant(DefaultWithTenantConfig))
 
 	e.GET("/", func(c echo.Context) error {
-		tenant := c.Get(tenantcontext.TenantKey.String()).(string)
+		tenant := c.Get(multitenancy.TenantKey.String()).(string)
 		fmt.Println("Tenant:", tenant)
 		return c.String(http.StatusOK, "Hello, "+tenant)
 	})
@@ -119,7 +119,7 @@ func TestWithTenant(t *testing.T) {
 			// setup the handler
 			handler := middleware(func(c echo.Context) error {
 				// tenant from context, should be same as tenant from search path
-				tenantValue := c.Get(tenantcontext.TenantKey.String())
+				tenantValue := c.Get(multitenancy.TenantKey.String())
 				tenant, _ := tenantValue.(string) // type assertion is safe because we check if tenantValue is nil
 
 				if tt.args.config.Skipper != nil && tt.args.config.Skipper(c) {

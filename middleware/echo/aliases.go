@@ -1,10 +1,8 @@
 package echo
 
-import (
-	"github.com/bartventer/gorm-multitenancy/v6/tenantcontext"
-)
+import multitenancy "github.com/bartventer/gorm-multitenancy/v6"
 
 var (
 	// TenantKey is the key that holds the tenant in a request context.
-	TenantKey = tenantcontext.TenantKey
+	TenantKey = multitenancy.TenantKey
 )

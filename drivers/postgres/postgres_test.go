@@ -6,8 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
-	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/internal/testutil"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
@@ -48,7 +47,7 @@ func (invalidPrivateProduct) TableName() string {
 	return fmt.Sprintf("%s.products", PublicSchemaName) // invalid table name; should be "products"
 }
 
-var _ multitenancy.TenantTabler = (*invalidPrivateProduct)(nil)
+var _ TenantTabler = (*invalidPrivateProduct)(nil)
 
 func (invalidPrivateProduct) IsTenantTable() bool { return true }
 
@@ -60,7 +59,7 @@ func (testProduct) TableName() string {
 	return "products"
 }
 
-var _ multitenancy.TenantTabler = (*testProduct)(nil)
+var _ TenantTabler = (*testProduct)(nil)
 
 func (testProduct) IsTenantTable() bool { return true }
 
