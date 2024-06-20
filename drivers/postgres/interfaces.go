@@ -1,12 +1,16 @@
 package postgres
 
-import (
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
-)
+import "gorm.io/gorm"
+
+// TenantTabler is the interface for tenant tables.
+type TenantTabler interface {
+	// IsTenantTable returns true if the table is a tenant table
+	IsTenantTable() bool
+}
 
 // MultitenancyMigrator is the interface for the postgres migrator with multitenancy support.
 type MultitenancyMigrator interface {
-	multitenancy.Migrator
+	gorm.Migrator
 
 	// CreateSchemaForTenant creates the schema for the tenant, and migrates the private tables
 	//
