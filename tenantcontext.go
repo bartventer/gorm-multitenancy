@@ -1,7 +1,4 @@
-/*
-Package tenantcontext provides context keys for the tenant and migration options.
-*/
-package tenantcontext
+package multitenancy
 
 import "fmt"
 
