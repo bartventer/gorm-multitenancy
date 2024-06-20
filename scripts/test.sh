@@ -14,16 +14,20 @@ gomoddirs=(
 
 echo "Running tests..."
 for dir in "${gomoddirs[@]}"; do
-    [[ -f "$dir/go.mod" ]] || { echo "No go.mod file found at $dir"; exit 1; }
+    [[ -f "$dir/go.mod" ]] || {
+        echo "No go.mod file found at $dir"
+        exit 1
+    }
     printf '\n\n%s\n' "$(printf '=%.0s' {1..80})"
     printf "🐛 Testing module at path: %s\n" "$dir"
     printf '%s\n' "$(printf '=%.0s' {1..80})"
+    set -x
     if [[ "$(basename "$dir")" == "." ]]; then
-        coverfile="rover.cover"
+        coverfile="$COVERDIR/rover.cover"
     else
-        coverfile="$(basename "$dir").cover"
+        coverfile="$COVERDIR/$(basename "$dir").cover"
     fi
-    pushd "$dir" >/dev/null
+    set +x
     go test -v -race -outputdir="$COVERDIR" -coverprofile="$coverfile" -timeout 15m ./...
     popd >/dev/null
 done
