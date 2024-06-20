@@ -4,60 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	pgschema "github.com/bartventer/gorm-multitenancy/v6/drivers/postgres/schema"
-	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/internal/testutil"
+	pgschema "github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/schema"
 )
-
-func TestGetSchemaNameFromDb(t *testing.T) {
-	type args struct {
-		tx *gorm.DB
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "Test with schema",
-			args: args{
-				tx: &gorm.DB{Statement: &gorm.Statement{TableExpr: &clause.Expr{SQL: "\"schema\".table"}}},
-			},
-			want:    "schema",
-			wantErr: false,
-		},
-		{
-			name: "Test without schema",
-			args: args{
-				tx: &gorm.DB{Statement: &gorm.Statement{TableExpr: &clause.Expr{SQL: "table"}}},
-			},
-			want:    "",
-			wantErr: true,
-		},
-		{
-			name: "Test with nil TableExpr",
-			args: args{
-				tx: &gorm.DB{Statement: &gorm.Statement{}},
-			},
-			want:    "",
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := pgschema.GetSchemaNameFromDb(tt.args.tx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSchemaNameFromDb() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GetSchemaNameFromDb() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestSetSearchPath(t *testing.T) {
 	// Connect to the test database.

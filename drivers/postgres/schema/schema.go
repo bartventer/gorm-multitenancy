@@ -4,7 +4,6 @@ Package schema provides utilities for managing PostgreSQL schemas in a multi-ten
 package schema
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -72,45 +71,4 @@ func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
 		return db.Exec("SET search_path TO public").Error
 	}
 	return db, reset
-}
-
-// GetSchemaNameFromDb retrieves the schema name from the given gorm.DB transaction.
-// It first checks if the table expression is not nil, then extracts the schema name from the table expression SQL.
-// If the schema name is empty, it returns an error.
-//
-// It is intended to be used in a gorm hook, such as BeforeCreate, BeforeUpdate, etc.
-//
-// Example:
-//
-//	type User struct {
-//		gorm.Model
-//		Username string
-//	}
-//
-//	func (User) TableName() string {
-//		return "domain1.mock_private"
-//	}
-//
-//	func (User) BeforeCreate(tx *gorm.DB) (err error) {
-//		schemaName, err := postgres.GetSchemaNameFromDb(tx) // schemaName = "domain1"
-//		if err != nil {
-//			return err
-//		}
-//		// ... do something with schemaName
-//		return nil
-//	}
-//
-// Deprecated: This function will be removed in the next major version (v7). Please update your code to avoid using this function.
-func GetSchemaNameFromDb(tx *gorm.DB) (string, error) {
-	// get the table expression sql
-	if tx.Statement.TableExpr == nil {
-		return "", errors.New("table expression is nil")
-	}
-	// get the schema name from the table expression sql
-	schemaName := getSchemaNameFromSQLExpr(tx.Statement.TableExpr.SQL)
-	// if the schema name is empty, return an error
-	if schemaName == "" {
-		return "", errors.New("schema name is empty")
-	}
-	return schemaName, nil
 }
