@@ -16,14 +16,14 @@
 SHELL = /bin/bash
 
 # Arguments
+WORKSPACE="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
 SKIP_DEPS ?= false
 COVER ?= false
-COVERAGE_PROFILE ?= cover.out
+COVERDIR="${COVERDIR:-$WORKSPACE/.coverage}"
 
 # Variables
 PKG_NAME := main
 BINARY := $(PKG_NAME)
-EXAMPLE_BUILDTAG := gormmultitenancy_example
 ENVFILE_PATH := ./.devcontainer/dev.env
 
 # Scripts
@@ -35,7 +35,6 @@ BENCH_SCRIPT := $(SCRIPTS_DIR)/benchmark.sh
 # Commands 
 GO := go
 GOLANGCILINT := golangci-lint
-GOTEST := $(GO) test
 GOCOVER := $(GO) tool cover
 
 # Flags
@@ -43,10 +42,6 @@ GOFLAGS := -v
 GOLANGCILINTFLAGS := run --verbose
 ifeq ($(CI),)
 	GOLANGCILINTFLAGS += --fix --color always
-endif
-GOTESTFLAGS := -v
-ifneq ($(COVER), false)
-	GOTESTFLAGS += -coverprofile=$(COVERAGE_PROFILE)
 endif
 
 # Include environment variables
@@ -92,7 +87,7 @@ endif
 
 .PHONY: test
 test: deps ## Run tests
-	$(GOTEST) $(GOTESTFLAGS) ./...
+	$(SCRIPTS_DIR)/test.sh
 
 .PHONY: benchmark
 benchmark: deps ## Run benchmarks
@@ -112,14 +107,18 @@ update_readme: ## Update the postgres driver README
 coverbrowser: ## View coverage in browser
 	$(GOCOVER) -html=$(COVERAGE_PROFILE)
 
+define run_example
+	$(GO) run -C ./examples/$(1) .
+endef
+
 .PHONY: echo_example
-echo_example: deps## Run the echo example
-	$(GO) run -C ./examples/echo -tags $(EXAMPLE_BUILDTAG) .
+examples/echo: deps ## Run the echo example
+	$(call run_example,echo)
 
 .PHONY: nethttp_example
-nethttp_example: deps ## Run the nethttp example
-	$(GO) run -C ./examples/nethttp -tags $(EXAMPLE_BUILDTAG) .
+examples/nethttp: deps ## Run the nethttp example
+	$(call run_example,nethttp)
 
 .PHONY: update_deps
 update_deps: ## Update dependencies
-	$(SCRIPTS_DIR)/update_deps.sh -tags $(EXAMPLE_BUILDTAG)
+	$(SCRIPTS_DIR)/update_deps.sh
