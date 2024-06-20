@@ -2,16 +2,12 @@ name: Benchmark
 
 on:
     workflow_dispatch: 
-    workflow_run:
-        workflows: ['Build']
-        types:
-            - completed
 
 jobs:
     benchmark:
         name: Benchmark
         runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         permissions: 
             contents: write # Grant permission to read and write repository contents
             pull-requests: write # Grant permission to create pull requests
