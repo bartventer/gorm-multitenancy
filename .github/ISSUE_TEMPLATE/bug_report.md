@@ -1,36 +1,36 @@
 ---
-name: Bug report
+name: 🐞 Bug report
 about: Create a report to help us improve
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 
 > [!IMPORTANT]
-> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the issue. Example: `middleware/echo: not setting context correctly`.
+> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the issue. Example: `drivers/postgres: Connection pooling not working` or `all: Memory leak issue`.
 
 You have the option to utilize `go bug` for an automatically populated bug report template, or you can manually complete the template provided below.
 
-### Describe the bug
+## 📝 Describe the bug
 
 A clear and concise description of what the bug is.
 
-### To Reproduce
+## 🔬 To Reproduce
 
 Steps to reproduce the behavior:
 
-## Expected behavior
+## 🎯 Expected behavior
 
 A clear and concise description of what you expected to happen.
 
-### Screenshots
+## 📸 Screenshots
 
 If applicable, add screenshots to help explain your problem.
 
-### Version
+## 📦 Version
 
 Which version(s) of the `gorm-multitenancy` modules are you seeing the bug with?
 
-### Additional context
+## 🌄 Additional context
 
 Add any other context about the problem here.
