@@ -1,6 +1,3 @@
-//go:build gormmultitenancy_example
-// +build gormmultitenancy_example
-
 package main
 
 import (
@@ -9,10 +6,9 @@ import (
 	"os"
 	"strings"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
-	"github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
-	echomw "github.com/bartventer/gorm-multitenancy/v6/middleware/echo"
-	"github.com/bartventer/gorm-multitenancy/v6/scopes"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/scopes"
+	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v6"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
@@ -47,7 +43,7 @@ type Book struct {
 	Tenant       Tenant `            gorm:"foreignKey:TenantSchema;references:SchemaName"`
 }
 
-var _ multitenancy.TenantTabler = (*Book)(nil)
+var _ postgres.TenantTabler = (*Book)(nil)
 
 // TableName overrides the table name used by Book to `books`.
 func (Book) TableName() string { return TableNameBook }

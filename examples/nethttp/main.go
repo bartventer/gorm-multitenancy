@@ -1,21 +1,18 @@
-//go:build gormmultitenancy_example
-// +build gormmultitenancy_example
-
 package main
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v6"
-	"github.com/bartventer/gorm-multitenancy/v6/drivers/postgres"
-	nethttpmw "github.com/bartventer/gorm-multitenancy/v6/middleware/nethttp"
-	"github.com/bartventer/gorm-multitenancy/v6/scopes"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6"
+	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v6/scopes"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v6"
 	"github.com/urfave/negroni"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -49,7 +46,7 @@ type Book struct {
 	Tenant       Tenant `            gorm:"foreignKey:TenantSchema;references:SchemaName"`
 }
 
-var _ multitenancy.TenantTabler = (*Book)(nil)
+var _ postgres.TenantTabler = (*Book)(nil)
 
 // TableName overrides the table name used by Book to `books`.
 func (Book) TableName() string { return TableNameBook }
@@ -196,9 +193,9 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	fmt.Println("server started", "address", server.Addr)
+	log.Printf("Server listening on %s", server.Addr)
 	if err := server.ListenAndServe(); err != nil {
-		panic(fmt.Sprintf("failed to start server: %v", err))
+		log.Fatalf("failed to start server: %v", err)
 	}
 }
 
