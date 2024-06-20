@@ -13,10 +13,14 @@ jobs:
             matrix:
                 os: [ubuntu-latest]
                 go-version: [1.21.x, 1.22.x]
+                include:
+                    - go-version: 1.22.x
+                      upload-coverage: true
 
         runs-on: ${{ matrix.os }}
         env:
-            COVERAGE_PROFILE: ./cover.out
+            COVERPROFILE: ${{ github.workspace }}/.cover.out
+            COVERDIR: ${{ github.workspace }}/.cover
         steps:
             - uses: actions/checkout@v4
             - name: Set up Go
@@ -30,12 +34,17 @@ jobs:
 
             - name: Test and Coverage
               shell: bash
-              run: make COVER=true test
+              id: test
+              run: |
+                make test
 
-            - name: Coveralls
-              uses: shogo82148/actions-goveralls@v1
+            - name: Upload coverage reports to Codecov
+              if: matrix.upload-coverage
+              uses: codecov/codecov-action@v4.5.0
               with:
-                  path-to-profile: ${{ env.COVERAGE_PROFILE }}
+                token: ${{ secrets.CODECOV_TOKEN }}
+                file: ${{ env.COVERPROFILE }}
+                verbose: true
 
     license-scan:
         name: License scan
@@ -57,20 +66,3 @@ jobs:
               env:
                   FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
               run: fossa test
-
-    semantic-release:
-        name: Semantic Release
-        runs-on: ubuntu-latest
-        needs: [license-scan]
-        if: github.event_name == 'push'
-        permissions:
-            contents: write
-            issues: write
-        steps:
-            - uses: actions/checkout@v4
-            - name: Run semantic-release
-              run: |
-                  yarn global add semantic-release@17
-                  semantic-release
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
