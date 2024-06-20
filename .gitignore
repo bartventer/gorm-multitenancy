@@ -1,8 +1,9 @@
-# Temp folder
+# Output files
 /tmp
 cover.out
 cover.html
 tmp.*
+*.out
 
 # Go files
 go.work*
