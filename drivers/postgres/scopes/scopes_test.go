@@ -5,11 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v6/internal/testutil"
 	"gorm.io/gorm"
+	"gorm.io/gorm/utils/tests"
 )
-
-var DB = testutil.NewTestDB()
 
 type Book struct {
 	ID    uint
@@ -21,12 +19,12 @@ func (Book) TableName() string {
 }
 
 // assertEqualSQL for assert that the sql is equal, this method will ignore quote, and dialect specials.
-func assertEqualSQL(t *testing.T, expected string, actually string) {
+func assertEqualSQL(t *testing.T, db *gorm.DB, expected string, actually string) {
 	t.Helper()
 
 	// replace SQL quote, convert into postgresql like ""
-	expected = replaceQuoteInSQL(expected)
-	actually = replaceQuoteInSQL(actually)
+	expected = replaceQuoteInSQL(t, db, expected)
+	actually = replaceQuoteInSQL(t, db, actually)
 
 	// ignore updated_at value, because it's generated in Gorm internal, can't to mock value on update.
 	updatedAtRe := regexp.MustCompile(`(?i)"updated_at"=".+?"`)
@@ -46,24 +44,33 @@ func assertEqualSQL(t *testing.T, expected string, actually string) {
 	}
 }
 
-func replaceQuoteInSQL(sql string) string {
+func replaceQuoteInSQL(t *testing.T, db *gorm.DB, sql string) string {
+	t.Helper()
 	// convert single quote into double quote
 	sql = strings.ReplaceAll(sql, `'`, `"`)
 
 	// convert dialect special quote into double quote
-	switch DB.Dialector.Name() {
+	switch db.Name() {
 	case "postgres":
 		sql = strings.ReplaceAll(sql, `"`, `"`)
 	case "mysql", "sqlite":
 		sql = strings.ReplaceAll(sql, "`", `"`)
 	case "sqlserver":
 		sql = strings.ReplaceAll(sql, `'`, `"`)
+	case "dummy": //See dummy_dialecter.go
+		sql = strings.ReplaceAll(sql, "`", `"`)
 	}
 
 	return sql
 }
 
 func TestWithTenantSchema(t *testing.T) {
+	db, err := gorm.Open(tests.DummyDialector{
+		TranslatedErr: nil,
+	})
+	if err != nil {
+		t.Fatalf("failed to open database connection: %v", err)
+	}
 	tests := []struct {
 		name     string
 		queryFn  func(tx *gorm.DB) *gorm.DB
@@ -115,7 +122,7 @@ func TestWithTenantSchema(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertEqualSQL(t, tt.expected, DB.ToSQL(tt.queryFn))
+			assertEqualSQL(t, db, tt.expected, db.ToSQL(tt.queryFn))
 		})
 	}
 }
