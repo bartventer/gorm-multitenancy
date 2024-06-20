@@ -19,9 +19,9 @@ for dir in "${gomoddirs[@]}"; do
     printf "🐛 Testing module at path: %s\n" "$dir"
     printf '%s\n' "$(printf '=%.0s' {1..80})"
     if [[ "$(basename "$dir")" == "." ]]; then
-        coverfile="$COVERDIR/root.cover"
+        coverfile="rover.cover"
     else
-        coverfile="$COVERDIR/$(basename "$dir").cover"
+        coverfile="$(basename "$dir").cover"
     fi
     pushd "$dir" >/dev/null
     go test -v -race -outputdir="$COVERDIR" -coverprofile="$coverfile" -timeout 15m ./...
