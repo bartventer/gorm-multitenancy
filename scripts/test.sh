@@ -22,19 +22,24 @@ for dir in "${gomoddirs[@]}"; do
     printf "🐛 Testing module at path: %s\n" "$dir"
     printf '%s\n' "$(printf '=%.0s' {1..80})"
     if [[ "$(basename "$dir")" == "." ]]; then
-        coverfile="$COVERDIR/rover.cover"
+        coverfile="$COVERDIR/root.out"
     else
-        coverfile="$COVERDIR/$(basename "$dir").cover"
+        coverfile="$COVERDIR/$(basename "$dir").out"
     fi
     pushd "$dir" >/dev/null
     go test -v -race -outputdir="$COVERDIR" -coverprofile="$coverfile" -timeout 15m ./...
     popd >/dev/null
 done
 
-# Merge all coverage files
-echo "Merging coverage files..."
-echo "mode: atomic" >"$COVERPROFILE"
-tail -q -n +2 "$COVERDIR"/*.cover >>"$COVERPROFILE"
+# Upload coverage report
+printf '\n\n%s\n' "$(printf '=%.0s' {1..80})"
+echo "Uploading coverage report..."
+printf '%s\n' "$(printf '=%.0s' {1..80})"
+if [[ "${CI:-false}" == "true" ]]; then
+    bash <(curl -s https://codecov.io/bash) -f "$COVERDIR"'/*.out' -p "$WORKSPACE"
+else
+    echo "Skipping upload. Not running in CI."
+fi
 rm -rf "$COVERDIR"
 
-echo "Done."
+echo -e "\nDone."

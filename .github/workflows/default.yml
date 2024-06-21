@@ -36,15 +36,7 @@ jobs:
               shell: bash
               id: test
               run: |
-                make test
-
-            - name: Upload coverage reports to Codecov
-              if: matrix.upload-coverage
-              uses: codecov/codecov-action@v4.5.0
-              with:
-                token: ${{ secrets.CODECOV_TOKEN }}
-                file: ${{ env.COVERPROFILE }}
-                verbose: true
+                  make test
 
     license-scan:
         name: License scan
