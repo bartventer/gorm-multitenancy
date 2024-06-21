@@ -35,6 +35,8 @@ jobs:
             - name: Test and Coverage
               shell: bash
               id: test
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
               run: |
                   make test
 
