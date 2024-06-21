@@ -6,6 +6,12 @@ The PostgreSQL driver provides multitenancy support for PostgreSQL databases usi
 
 > This package is a thin wrapper around the `GORM` [postgres driver](https://github.com/go-gorm/postgres), enhancing it with multitenancy support.
 
+## Installation
+
+```bash
+go get -u github.com/bartventer/gorm-multitenancy/drivers/postgres/v7
+```
+
 ## Conventions
 
 ### TableName
