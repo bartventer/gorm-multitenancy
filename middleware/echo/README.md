@@ -7,6 +7,12 @@ Echo middleware provides multitenancy support for the [Echo](https://echo.labsta
 For valid tenant information, it calls the next handler.
 For missing or invalid tenant information, it sends "500 - Internal Server Error" response with the error message "Invalid tenant".
 
+## Installation
+
+```bash
+go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v7
+```
+
 ## Usage
 
 ```go
