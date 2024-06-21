@@ -23,13 +23,13 @@ Choose an example to run. This will spin up the necessary services and start the
 #### For `Echo`
 
 ```bash
-make echo_example
+make examples/echo
 ```
 
 #### For `net/http`
 
 ```bash
-make nethttp_example
+make examples/nethttp
 ```
 
 ## Interacting with the API
