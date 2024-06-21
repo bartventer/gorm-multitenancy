@@ -7,12 +7,12 @@ find . \
     -name 'go.mod' \
     -exec printf '=%.0s' {1..80} \; \
     -printf '\ngo.mod directory: %h\n\n' \
-    -printf '\n:: 🛠️ Updating...\n' \
-    -execdir go get -u \; \
-    -printf '\n  ✔️ OK. Updated.' \
     -printf '\n::🔧 Running go mod tidy...\n' \
     -execdir go mod tidy \; \
-    -printf '\n  ✔️ OK. Tidied.'
+    -printf '\n  ✔️ OK. Tidied.' \
+    -printf '\n:: 🛠️ Updating...\n' \
+    -execdir go get -u ./... \; \
+    -printf '\n  ✔️ OK. Updated.'
     
 echo
 echo "✅ Done. All dependencies updated."
