@@ -22,7 +22,7 @@ COVER ?= false
 # Variables
 PKG_NAME := main
 BINARY := $(PKG_NAME)
-ENVFILE_PATH := ./.devcontainer/dev.env
+ENVFILE_PATH := ./.devcontainer/.env.dev
 
 # Scripts
 SCRIPTS_DIR := ./scripts

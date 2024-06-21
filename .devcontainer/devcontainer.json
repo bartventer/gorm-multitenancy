@@ -7,7 +7,7 @@
     ],
     "runArgs": [
         "--env-file",
-        "./.devcontainer/dev.env"
+        "./.devcontainer/.env.dev"
     ],
     "forwardPorts": [
         8080

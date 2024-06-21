@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/examples/echo/main.go",
             "env": {},
             "args": [],
-            "envFile": "${workspaceFolder}/.devcontainer/dev.env"
+            "envFile": "${workspaceFolder}/.devcontainer/.env.dev"
         },
         {
             "name": "Launch net/http server",
@@ -22,7 +22,7 @@
             "program": "${workspaceFolder}/examples/nethttp/main.go",
             "env": {},
             "args": [],
-            "envFile": "${workspaceFolder}/.devcontainer/dev.env"
+            "envFile": "${workspaceFolder}/.devcontainer/.env.dev"
         },
     ]
 }
