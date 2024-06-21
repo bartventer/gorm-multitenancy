@@ -5,6 +5,5 @@
         "--config",
         "./.golangci.yaml",
         "--fix",
-    ],
-    "go.buildTags": "gormmultitenancy_example"
+    ]
 }
