@@ -6,6 +6,12 @@ NetHTTP middleware provides multitenancy support for the [net/http](https://gola
 
 For valid tenant information, it calls the next handler. For missing or invalid tenant information, it sends "500 - Internal Server Error" response with the error message "Invalid tenant or tenant not found".
 
+## Installation
+
+```bash
+go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7
+```
+
 ## Usage
 
 ```go
