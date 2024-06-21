@@ -4,6 +4,7 @@ cover.out
 cover.html
 tmp.*
 *.out
+.env
 
 # Go files
 go.work*
