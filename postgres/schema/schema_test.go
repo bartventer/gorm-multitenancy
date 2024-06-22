@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/internal/testutil"
-	pgschema "github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/schema"
+	"github.com/bartventer/gorm-multitenancy/postgres/v7/internal/testutil"
+	pgschema "github.com/bartventer/gorm-multitenancy/postgres/v7/schema"
 )
 
 func TestSetSearchPath(t *testing.T) {

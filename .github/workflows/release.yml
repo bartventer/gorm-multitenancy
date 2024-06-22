@@ -22,7 +22,7 @@ jobs:
             matrix:
                 directory:
                     - '.'
-                    - 'drivers/postgres'
+                    - 'postgres'
                     - 'middleware/echo'
                     - 'middleware/nethttp'
         permissions:

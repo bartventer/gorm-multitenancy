@@ -7,7 +7,7 @@ COVERDIR="${COVERDIR:-$WORKSPACE/.cover}"
 mkdir -p "$COVERDIR"
 gomoddirs=(
     '.'
-    './drivers/postgres'
+    './postgres'
     './middleware/echo'
     './middleware/nethttp'
 )

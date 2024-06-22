@@ -7,7 +7,7 @@ assignees: ''
 ---
 
 > [!IMPORTANT]
-> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the issue. Example: `drivers/postgres: Connection pooling not working` or `all: Memory leak issue`.
+> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the issue. Example: `postgres: Connection pooling not working` or `all: Memory leak issue`.
 
 You have the option to utilize `go bug` for an automatically populated bug report template, or you can manually complete the template provided below.
 
