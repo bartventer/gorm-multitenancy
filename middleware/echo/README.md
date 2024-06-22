@@ -30,7 +30,7 @@ func main() {
     e.Use(echomw.WithTenant(echomw.DefaultWithTenantConfig))
 
     e.GET("/", func(c echo.Context) error {
-        tenant := c.Get(multitenancy.TenantKey).(string)
+        tenant := c.Get(echomw.TenantKey).(string)
         return c.String(http.StatusOK, "Hello, "+tenant)
     })
 
@@ -72,7 +72,7 @@ var	DefaultWithTenantConfig = WithTenantConfig{
 			DefaultTenantFromSubdomain,
 			DefaultTenantFromHeader,
 		},
-		ContextKey: multitenancy.TenantKey,
+		ContextKey: TenantKey,
 		ErrorHandler: func(c echo.Context, _ error) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, nethttpmw.ErrTenantInvalid.Error())
 		},

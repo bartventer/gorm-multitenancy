@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,7 +27,7 @@ func ExampleWithTenant() {
 	e.Use(WithTenant(DefaultWithTenantConfig))
 
 	e.GET("/", func(c echo.Context) error {
-		tenant := c.Get(multitenancy.TenantKey.String()).(string)
+		tenant := c.Get(TenantKey.String()).(string)
 		fmt.Println("Tenant:", tenant)
 		return c.String(http.StatusOK, "Hello, "+tenant)
 	})
@@ -119,7 +118,7 @@ func TestWithTenant(t *testing.T) {
 			// setup the handler
 			handler := middleware(func(c echo.Context) error {
 				// tenant from context, should be same as tenant from search path
-				tenantValue := c.Get(multitenancy.TenantKey.String())
+				tenantValue := c.Get(TenantKey.String())
 				tenant, _ := tenantValue.(string) // type assertion is safe because we check if tenantValue is nil
 
 				if tt.args.config.Skipper != nil && tt.args.config.Skipper(c) {

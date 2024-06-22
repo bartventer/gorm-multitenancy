@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	pgschema "github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/schema"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -116,7 +115,7 @@ func (m *Migrator) MigratePublicSchema() error {
 
 // AutoMigrate migrates the specified values to the database based on the migration options.
 func (m Migrator) AutoMigrate(values ...interface{}) error {
-	opt, ok := m.DB.Get(multitenancy.MigrationOptions.String())
+	opt, ok := m.DB.Get(MigrationOptions.String())
 	if !ok {
 		return errors.New("no migration options found")
 	}
@@ -154,7 +153,7 @@ func (m *Migrator) DropSchemaForTenant(tenant string) error {
 // withMigrationOption sets the migration option for a GORM database connection.
 func withMigrationOption(opt migrationOption) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Set(multitenancy.MigrationOptions.String(), opt)
+		return db.Set(MigrationOptions.String(), opt)
 	}
 }
 
