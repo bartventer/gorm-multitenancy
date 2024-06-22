@@ -7,7 +7,7 @@ assignees: ''
 ---
 
 > [!IMPORTANT]
-> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the feature. Example: `drivers/postgres: Add support for connection pooling` or `all: Add support for connection pooling`.
+> Please use a title starting with the name of the affected package, or "all", followed by a colon, followed by a short summary of the feature. Example: `postgres: Add support for connection pooling` or `all: Add support for connection pooling`.
 
 ## 📝 Description
 

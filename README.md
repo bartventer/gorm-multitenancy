@@ -60,7 +60,7 @@ go get -u github.com/bartventer/gorm-multitenancy/v7
 
 ### Drivers
 
-- PostgreSQL [Guide](./drivers/postgres/README.md)
+- PostgreSQL [Guide](./postgres/README.md)
 
 ### Middleware
 

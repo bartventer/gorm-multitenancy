@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "gomod"
     directories:
       - "/"
-      - "/drivers/postgres"
+      - "/postgres"
       - "/middleware/echo"
       - "/middleware/nethttp"
     reviewers:

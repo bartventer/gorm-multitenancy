@@ -20,7 +20,7 @@ Here's how you can make a pull request (PR):
 1. 🍴 Fork the repository and create your branch from `master`.
 2. 📝 If you've added code, add tests. Ensure the test suite passes.
 3. 📚 If you've changed APIs, update the documentation.
-4. 🏷️ Use a title that follows the [Conventional Commits](https://www.conventionalcommits.org/) standard. Examples: `feat(drivers/postgres): Add support for connection pooling`, `fix(drivers/all): Resolve memory leak issue`. 
+4. 🏷️ Use a title that follows the [Conventional Commits](https://www.conventionalcommits.org/) standard. Examples: `feat(postgres): Add support for connection pooling`, `fix(drivers/all): Resolve memory leak issue`. 
 5. ✉️ Ensure all commit messages also follow the [Conventional Commits](https://www.conventionalcommits.org/) standard.
 6. 🚫 Please do not update the package version manually. This is done during the release process.
 7. 🎉 Submit your pull request!

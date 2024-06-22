@@ -7,7 +7,7 @@ type contextKey struct {
 }
 
 func (c contextKey) String() string {
-	return fmt.Sprintf("gorm-multitenancy/drivers/postgres/%s", c.name)
+	return fmt.Sprintf("gorm-multitenancy/postgres/%s", c.name)
 }
 
 var (

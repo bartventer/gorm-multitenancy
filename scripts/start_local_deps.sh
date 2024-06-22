@@ -25,8 +25,8 @@ set -euo pipefail
 echo ":: Starting local dependencies setup..."
 echo
 # shellcheck disable=SC1091
-# shellcheck source=drivers/postgres/localpostgres.sh
-. ./drivers/postgres/localpostgres.sh
+# shellcheck source=postgres/localpostgres.sh
+. ./postgres/localpostgres.sh
 
 echo "✔️ OK. Local dependencies setup complete."
 echo

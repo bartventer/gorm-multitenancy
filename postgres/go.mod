@@ -1,4 +1,4 @@
-module github.com/bartventer/gorm-multitenancy/drivers/postgres/v7
+module github.com/bartventer/gorm-multitenancy/postgres/v7
 
 go 1.22
 

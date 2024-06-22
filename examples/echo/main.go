@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7"
-	"github.com/bartventer/gorm-multitenancy/drivers/postgres/v7/scopes"
 	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v7"
+	"github.com/bartventer/gorm-multitenancy/postgres/v7"
+	"github.com/bartventer/gorm-multitenancy/postgres/v7/scopes"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"

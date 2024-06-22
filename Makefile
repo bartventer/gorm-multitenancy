@@ -90,16 +90,16 @@ test: deps ## Run tests
 .PHONY: benchmark
 benchmark: deps ## Run benchmarks
 	$(BENCH_SCRIPT) \
-		-package ./drivers/postgres/schema \
+		-package ./postgres/schema \
 		-benchfunc "BenchmarkScopingQueries" \
-		-outputdir ./drivers/postgres/docs \
+		-outputdir ./postgres/docs \
 		-template $(SCRIPTS_DIR)/benchmark_template.md
 
 .PHONY: update_readme
 update_readme: ## Update the postgres driver README
 	$(SCRIPTS_DIR)/update_readme.sh \
-		--dirpath ./drivers/postgres/docs \
-		--outfile ./drivers/postgres/README.md
+		--dirpath ./postgres/docs \
+		--outfile ./postgres/README.md
 
 .PHONY: coverbrowser
 coverbrowser: ## View coverage in browser

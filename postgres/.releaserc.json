@@ -12,5 +12,5 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/git"
   ],
-  "tagFormat": "drivers/postgres/v${version}"
+  "tagFormat": "postgres/v${version}"
 }
