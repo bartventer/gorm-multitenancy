@@ -4,13 +4,10 @@ go 1.22
 
 toolchain go1.22.4
 
-replace github.com/bartventer/gorm-multitenancy/v7 => ../..
-
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 => ../nethttp
 
 require (
 	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 v7.0.0
-	github.com/bartventer/gorm-multitenancy/v7 v7.0.0
 	github.com/labstack/echo/v4 v4.12.0
 )
 

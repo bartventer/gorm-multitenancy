@@ -17,7 +17,7 @@ Example usage:
 	    e.Use(echomw.WithTenant(echomw.DefaultWithTenantConfig))
 
 	    e.GET("/", func(c echo.Context) error {
-	        tenant := c.Get(multitenancy.TenantKey).(string)
+	        tenant := c.Get(echomw.TenantKey).(string)
 	        return c.String(http.StatusOK, "Hello, "+tenant)
 	    })
 
@@ -29,10 +29,10 @@ Example usage:
 package echo
 
 import (
+	"fmt"
 	"net/http"
 
 	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
 	"github.com/labstack/echo/v4"
 )
 
@@ -63,7 +63,7 @@ var (
 			DefaultTenantFromSubdomain,
 			DefaultTenantFromHeader,
 		},
-		ContextKey: multitenancy.TenantKey,
+		ContextKey: TenantKey,
 		ErrorHandler: func(c echo.Context, _ error) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, nethttpmw.ErrTenantInvalid.Error())
 		},
@@ -82,7 +82,7 @@ type WithTenantConfig struct {
 	TenantGetters []func(c echo.Context) (string, error)
 
 	// ContextKey is the key used to store the tenant in the context.
-	ContextKey multitenancy.ContextKey
+	ContextKey fmt.Stringer
 
 	// ErrorHandler is a callback function that is called when an error occurs during the tenant retrieval process.
 	ErrorHandler func(c echo.Context, err error) error

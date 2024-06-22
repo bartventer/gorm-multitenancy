@@ -26,7 +26,7 @@ func main() {
     mux := http.NewServeMux()
 
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        tenant := r.Context().Value(multitenancy.TenantKey).(string)
+        tenant := r.Context().Value(nethttpmw.TenantKey).(string)
         fmt.Fprintf(w, "Hello, %s", tenant)
     })
 
@@ -69,7 +69,7 @@ var DefaultWithTenantConfig = WithTenantConfig{
 			DefaultTenantFromSubdomain,
 			DefaultTenantFromHeader,
 		},
-		ContextKey: multitenancy.TenantKey,
+		ContextKey: TenantKey,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, _ error) {
 			http.Error(w, ErrTenantInvalid.Error(), http.StatusInternalServerError)
 		},
