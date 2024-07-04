@@ -90,6 +90,11 @@ linters-settings:
         # Default: true
         skipRecvDeref: false
 
+  gomoddirectives:
+    replace-local: true
+    retract-allow-no-explanation: false
+    exclude-forbidden: true
+
   mnd:
     # List of function patterns to exclude from analysis.
     # Values always ignored: `time.Date`,
@@ -229,7 +234,6 @@ linters:
     - durationcheck # checks for two durations multiplied together
     - errname # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     #- errorlint # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
-    - execinquery # checks query string in Query function which reads your Go src files and warning it finds
     - exhaustive # checks exhaustiveness of enum switch statements
     - exportloopref # checks for pointers to enclosing loop variables
     #- forbidigo # forbids identifiers
@@ -325,6 +329,7 @@ linters:
     ## deprecated
     #- deadcode # [deprecated, replaced by unused] finds unused code
     #- exhaustivestruct # [deprecated, replaced by exhaustruct] checks if all struct's fields are initialized
+    #- execinquery [deprecated, archived by owner] checks query string in Query function which reads your Go src files and warning it finds
     #- golint # [deprecated, replaced by revive] golint differs from gofmt. Gofmt reformats Go source code, whereas golint prints out style mistakes
     #- ifshort # [deprecated] checks that your code uses short syntax for if-statements whenever possible
     #- gomnd # [deprecated, replaced by mnd] detects magic numbers
@@ -355,6 +360,3 @@ issues:
         - gosec
         - noctx
         - wrapcheck
-    # TODO: remove after PR is released https://github.com/golangci/golangci-lint/pull/4386
-    - text: "fmt.Sprintf can be replaced with string addition"
-      linters: [perfsprint]
