@@ -35,8 +35,7 @@ curl -X POST \
 ##### Request
 
 ```bash
-curl -X GET \
-  http://example.com:8080/tenants/3
+curl http://example.com:8080/tenants/3
 ```
 
 ##### Response
@@ -77,8 +76,7 @@ curl -X DELETE \
 ##### Request
 
 ```bash
-curl -X GET \
-  http://example.com:8080/books \
+curl http://example.com:8080/books \
   -H 'Host: tenant1.example.com'
 ```
 
