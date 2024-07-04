@@ -2,19 +2,17 @@
 set -euo pipefail
 
 echo "================================================================================"
-echo "🔧 Starting Dependency Update Process"
+echo "🔍 Starting Linting Process"
 echo "================================================================================"
+
 find . -name 'go.mod' -type f \
     -exec echo "--------------------------------------------------------------------------------" \; \
-    -exec printf 'Updating dependencies in: %h\n\n' \; \
+    -exec printf 'Linting in directory: %h\n\n' \; \
     -exec echo "--------------------------------------------------------------------------------" \; \
-    -exec echo ":: Running 'go mod tidy' to clean up dependencies..." \; \
-    -execdir go mod tidy \; \
-    -exec echo "\n  ✔️ Dependencies tidied successfully.\n" \; \
-    -exec echo ":: Running 'go get -u ./...' to update dependencies..." \; \
-    -execdir go get -u ./... \; \
-    -exec echo "\n  ✔️ Dependencies updated successfully.\n" \;
+    -exec echo ":: Initiating linter..." \; \
+    -execdir golangci-lint run --fix --verbose ./... \; \
+    -exec echo "\n  ✔️ Linting complete.\n" \;
 
 echo "================================================================================"
-echo "✅ Dependency Update Process Completed Successfully"
+echo "✅ Linting Process Completed Successfully"
 echo "================================================================================"
