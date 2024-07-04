@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/utils/tests"
 )
@@ -14,9 +15,10 @@ type Book struct {
 	Title string
 }
 
-func (Book) TableName() string {
-	return "books"
-}
+var _ driver.TenantTabler = new(Book)
+
+func (Book) TableName() string   { return "books" }
+func (Book) IsSharedModel() bool { return true }
 
 // assertEqualSQL for assert that the sql is equal, this method will ignore quote, and dialect specials.
 func assertEqualSQL(t *testing.T, db *gorm.DB, expected string, actually string) {
@@ -77,44 +79,81 @@ func TestWithTenantSchema(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "valid: with table name set",
+			name: "01 - With table name set",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Table("books").Scopes(WithTenantSchema("tenant2")).Find(&Book{})
 			},
 			expected: `SELECT * FROM "tenant2"."books"`,
 		},
 		{
-			name: "valid: with model set",
+			name: "02 - With model set",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Model(Book{}).Scopes(WithTenantSchema("tenant1")).Find(&Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "03 - With model (pointer) set",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Model(&Book{}).Scopes(WithTenantSchema("tenant1")).Find(&Book{})
 			},
 			expected: `SELECT * FROM "tenant1"."books"`,
 		},
 		{
-			name: "valid: with dest pointer to struct",
+			name: "04 - With dest pointer to struct",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Scopes(WithTenantSchema("tenant1")).Find(&Book{})
 			},
 			expected: `SELECT * FROM "tenant1"."books"`,
 		},
 		{
-			name: "invalid: dest not a pointer",
+			name: "05 - With dest struct",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Scopes(WithTenantSchema("tenant1")).Find(Book{})
 			},
-			expected: ``,
+			expected: `SELECT * FROM "tenant1"."books"`,
 		},
 		{
-			name: "valid: with dest pointer to array/slice",
+			name: "06 - With dest pointer to array/slice",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Scopes(WithTenantSchema("tenant1")).Find(&[]Book{})
 			},
 			expected: `SELECT * FROM "tenant1"."books"`,
 		},
 		{
-			name: "invalid: Tabler interface not implemented",
+			name: "07 - With dest pointer to array/slice non empty",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find(&[]Book{
+					{ID: 1, Title: "Book 1"},
+				})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "08 - With dest array/slice",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find([]Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "09 - With dest array/slice of pointer to structs",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant1")).Find([]*Book{})
+			},
+			expected: `SELECT * FROM "tenant1"."books"`,
+		},
+		{
+			name: "10 - Invalid: Tabler interface not implemented",
 			queryFn: func(tx *gorm.DB) *gorm.DB {
 				return tx.Scopes(WithTenantSchema("tenant3")).Find(&struct{}{})
+			},
+			expected: ``,
+		},
+		{
+			name: "11 - Invalid: Tabler interface not implemented (slice/array)",
+			queryFn: func(tx *gorm.DB) *gorm.DB {
+				return tx.Scopes(WithTenantSchema("tenant3")).Find(&[]struct{}{})
 			},
 			expected: ``,
 		},
@@ -123,6 +162,30 @@ func TestWithTenantSchema(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertEqualSQL(t, db, tt.expected, db.ToSQL(tt.queryFn))
+		})
+	}
+}
+
+func Test_tableNameFromInterface(t *testing.T) {
+	type args struct {
+		i interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "invalid: nil",
+			args: args{i: nil},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tableNameFromInterface(tt.args.i); got != tt.want {
+				t.Errorf("tableNameFromInterface() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
