@@ -1,13 +1,10 @@
 # Examples
 
-This directory provides examples demonstrating the use of the `gorm-multitenancy` package with various frameworks:
-
-- [Echo](echo/README.md)
-- [net/http](nethttp/README.md)
+This directory provides an example demonstrating the use of the `gorm-multitenancy` package with various configurations:
 
 ## Getting Started
 
-To run these examples on your local machine, follow these steps:
+To run this example on your local machine, follow these steps:
 
 ### Step 1: Clone the Repository
 
@@ -16,21 +13,44 @@ git clone https://github.com/bartventer/gorm-multitenancy.git
 cd gorm-multitenancy
 ```
 
-### Step 2: Execute the Desired Example
+### Step 2: Run the Example
 
-Choose an example to run. This will spin up the necessary services and start the server.
+This example supports various configurations through command-line options.
 
-#### For `Echo`
-
-```bash
-make examples/echo
-```
-
-#### For `net/http`
+#### Usage
 
 ```bash
-make examples/nethttp
+go run examples/main.go [options]
 ```
+
+#### Options
+
+- `-server` string
+  - Description: Specifies the HTTP server to run (_and `gorm-multitenancy` middleware to use_)
+  - Options: [`echo`](../middleware/echo/README.md), [`nethttp`](../middleware/nethttp/README.md)
+  - Default: [`echo`](../middleware/echo/README.md)
+
+- `-driver` string
+  - Description: Specifies the `gorm-multitenancy` database driver.
+  - Options: [`postgres`](../postgres/), [`mysql`](../mysql/)
+  - Default: [`postgres`](../postgres/)
+
+#### Examples
+
+- Run with default options:
+
+  ```bash
+  go run examples/main.go
+  ```
+
+- Run with the `NetHTTP` server and `MySQL` driver:
+
+  ```bash
+  go run examples/main.go -server=nethttp -driver=mysql
+  ```
+
+> [!NOTE]
+> To enable debug logging, set the GMT_DEBUG environment variable to true. This can be helpful for troubleshooting or understanding the internal workings of the application.
 
 ## Interacting with the API
 
