@@ -1,7 +1,6 @@
 # Output files
 /tmp
-cover.out
-cover.html
+*cover*.html
 tmp.*
 *.out
 .env
