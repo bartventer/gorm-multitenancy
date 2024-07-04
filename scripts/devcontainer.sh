@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
-echo "🚀 Building devcontainer..."
+echo "================================================================================"
+echo "🚀 Starting Devcontainer Build Process"
+echo "================================================================================"
 devcontainer build \
     --log-level debug \
     --workspace-folder .devcontainer/build \
@@ -10,4 +11,6 @@ devcontainer build \
     --platform linux/amd64 \
     --push
 
-echo "🎉 OK. Successfully built devcontainer."
+echo "================================================================================"
+echo "🎉 Devcontainer Build Process Completed Successfully"
+echo "================================================================================"
