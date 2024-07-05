@@ -2,83 +2,97 @@
 package testutil
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"reflect"
-	"strings"
+	"log"
+	"testing"
 
-	"gorm.io/driver/postgres"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/go-connections/nat"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
-var (
-	dbnamePrefix = "dbname="
-)
-
-type DSNOption func(string) string
-
-// WithDBName sets the database name for the connection.
-func WithDBName(name string) DSNOption {
-	return func(dsn string) string {
-		if strings.Contains(dsn, dbnamePrefix) {
-			// Replace existing dbname
-			start := strings.Index(dsn, dbnamePrefix) + len(dbnamePrefix)
-			end := strings.Index(dsn[start:], " ")
-			if end == -1 { // If dbname is the last parameter
-				end = len(dsn)
-			} else {
-				end += start
-			}
-			return dsn[:start] + name + dsn[end:]
-		}
-		// Append dbname if it doesn't exist
-		return fmt.Sprintf("%s %s%s", dsn, dbnamePrefix, name)
-	}
+type dbContainer struct {
+	opts          []gorm.Option
+	dialectOpener func(dsn string) gorm.Dialector
 }
 
-// GetDSN returns the data source name for the database connection.
-func GetDSN(opts ...DSNOption) string {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PASSWORD"),
-	)
-	for _, opt := range opts {
-		dsn = opt(dsn)
-	}
-	return dsn
-}
+func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
+	t.Helper()
+	dbName := "tenants"
+	dbUser := "tenants"
+	dbPassword := "tenants"
+	dbPort := "5432/tcp"
 
-// NewTestDB creates a new database connection (for internal use).
-func NewTestDB(opts ...DSNOption) *gorm.DB {
-	dsn := GetDSN(opts...)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		PrepareStmt: true,
-		Logger:      logger.Default.LogMode(logger.Silent),
+	req := testcontainers.ContainerRequest{
+		Image:        "postgres:16-alpine",
+		ExposedPorts: []string{dbPort},
+		Env: map[string]string{
+			"POSTGRES_DB":       dbName,
+			"POSTGRES_USER":     dbUser,
+			"POSTGRES_PASSWORD": dbPassword,
+		},
+		WaitingFor: wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
+		Tmpfs:      map[string]string{"/var/lib/postgres": "rw"},
+		HostConfigModifier: func(hc *container.HostConfig) {
+			hc.Memory = 512 * 1024 * 1024 // 512MB
+			hc.NanoCPUs = 500000000       // 0.5 CPU
+		},
+	}
+
+	postgresContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
 	})
-	if err != nil {
-		panic(fmt.Errorf("failed to connect to test database: %w", err))
-	}
+	require.NoErrorf(t, err, "Failed to start postgres container: %v", err)
+	t.Cleanup(func() {
+		cleanupErr := postgresContainer.Terminate(ctx)
+		require.NoErrorf(t, cleanupErr, "Failed to terminate Postgres container: %v", cleanupErr)
+	})
+
+	host, err := postgresContainer.Host(ctx)
+	require.NoErrorf(t, err, "Failed to get postgres container host: %v", err)
+	natPort, err := postgresContainer.MappedPort(ctx, nat.Port(dbPort))
+	require.NoErrorf(t, err, "Failed to get postgres container port: %v", err)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, natPort.Port(), dbUser, dbPassword, dbName)
+	db, err := gorm.Open(c.dialectOpener(dsn), c.opts...)
+	require.NoErrorf(t, err, "Failed to connect to database: %v", err)
+
+	summary := makeContainerSummary(t, postgresContainer)
+	log.Println(summary)
+
 	return db
 }
 
-// DeepEqual compares the expected and actual values using reflect.DeepEqual.
-// It returns a boolean indicating whether the values are equal, and a string
-// containing an error message if the values are not equal.
-func DeepEqual[T any](expected, actual T, message ...interface{}) (bool, string) {
-	if !reflect.DeepEqual(expected, actual) {
-		// Format the message
-		var msg string
-		if len(message) > 0 {
-			msg = fmt.Sprint(message...)
-		} else {
-			msg = fmt.Sprintf("Expected %v, got %v", expected, actual)
-		}
-
-		return false, fmt.Sprintf("%s: Expected %v, got %v", msg, expected, actual)
+// NewDBWithOptions creates a new database instance for testing with the provided options.
+func NewDBWithOptions(t testing.TB, ctx context.Context, opener func(dsn string) gorm.Dialector, opts ...gorm.Option) *gorm.DB {
+	t.Helper()
+	c := dbContainer{
+		dialectOpener: opener,
+		opts:          opts,
 	}
-	return true, ""
+	return c.NewDB(t, ctx)
+}
+
+// makeContainerSummary generates a summary of the container for debugging purposes.
+func makeContainerSummary(t testing.TB, container testcontainers.Container) string {
+	t.Helper()
+	containerJSON, err := container.Inspect(context.Background())
+	require.NoErrorf(t, err, "Failed to inspect container: %v", err)
+	return fmt.Sprintf(`
+PostgreSQL:
+	Test: %s
+	Status: %s
+    Ports: %+v
+    Env: %q
+
+`,
+		t.Name(),
+		containerJSON.State.Status,
+		containerJSON.NetworkSettings.Ports,
+		containerJSON.Config.Env,
+	)
 }
