@@ -13,6 +13,14 @@ var domainURLRegex = regexp.MustCompile(domainURLRegexPattern)
 
 // ExtractSubdomain extracts the first part of the subdomain from a given domain URL.
 // If the URL has multiple subdomains, it only returns the first part.
+//
+// Valid domain URLs:
+//   - http://sub.example.com
+//   - https://sub.example.com
+//   - http://sub.example.com:8080
+//   - https://sub.example.com:8080
+//   - sub.example.com
+//   - sub.example.com:8080
 func ExtractSubdomain(domainURL string) (string, error) {
 	// Add scheme if absent
 	if !strings.HasPrefix(domainURL, "http://") && !strings.HasPrefix(domainURL, "https://") {
