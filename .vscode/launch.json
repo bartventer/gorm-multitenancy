@@ -5,24 +5,67 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch echo server",
-            "type": "go",
+            "type": "bashdb",
             "request": "launch",
-            "mode": "debug",
-            "program": "${workspaceFolder}/examples/echo/main.go",
-            "env": {},
-            "args": [],
-            "envFile": "${workspaceFolder}/.devcontainer/.env.dev"
+            "name": "Run script",
+            "cwd": "${workspaceFolder}",
+            "program": "${command:SelectScriptName}",
+            "args": []
         },
         {
-            "name": "Launch net/http server",
+            "name": "Launch example server",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/examples/nethttp/main.go",
+            "program": "${workspaceFolder}/examples",
             "env": {},
-            "args": [],
-            "envFile": "${workspaceFolder}/.devcontainer/.env.dev"
+            "args": [
+                "-driver=${input:driverInput}",
+                "-server=${input:serverInput}"
+            ],
         },
+        {
+            "name": "Launch html file",
+            "type": "chrome",
+            "request": "launch",
+            "file": "${input:htmlFile}",
+        }
+    ],
+    "inputs": [
+        {
+            "id": "driverInput",
+            "type": "pickString",
+            "description": "Choose the driver",
+            "options": [
+                "postgres",
+                "mysql"
+            ],
+            "default": "postgres"
+        },
+        {
+            "id": "serverInput",
+            "type": "pickString",
+            "description": "Choose the server",
+            "options": [
+                "echo",
+                "nethttp"
+            ],
+            "default": "echo",
+        },
+        {
+            "id": "htmlFile",
+            "type": "command",
+            "command": "extension.commandvariable.file.pickFile",
+            // https://marketplace.visualstudio.com/items?itemName=rioj7.command-variable#pick-file
+            "args": {
+                "include": "**/*.html",
+                "description": "Pick an html file",
+                "multiPick": false,
+                "display": "transform",
+                "valueTransform": {
+                    "text": "${env:LOCAL_WORKSPACE_FOLDER}/${relativeFile}",
+                }
+            },
+        }
     ]
 }
