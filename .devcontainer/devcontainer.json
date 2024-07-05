@@ -7,11 +7,12 @@
     ],
     "runArgs": [
         "--env-file",
-        "./.devcontainer/.env.dev",
-        "--env-file",
         "./.devcontainer/.env"
     ],
     "forwardPorts": [
         8080
-    ]
+    ],
+    "remoteEnv": {
+        "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    }
 }
