@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/release/bartventer/gorm-multitenancy.svg)](https://github.com/bartventer/gorm-multitenancy/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy/v7)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy/v7)
 [![codecov](https://codecov.io/gh/bartventer/gorm-multitenancy/graph/badge.svg?token=6i0Pr1GFek)](https://codecov.io/gh/bartventer/gorm-multitenancy)
-[![Build](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml)
+[![Tests](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml)
 ![GitHub issues](https://img.shields.io/github/issues/bartventer/gorm-multitenancy)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_shield&issueType=license)
