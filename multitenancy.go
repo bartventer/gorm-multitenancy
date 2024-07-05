@@ -1,9 +1,9 @@
 /*
-Package multitenancy provides a framework for implementing multitenancy in Go
-applications, leveraging the capabilities of [gorm]. It facilitates the
-construction and management of multi-tenant applications with features for
-tenant-specific migrations, shared model migrations, and comprehensive
-tenant management.
+Package multitenancy provides a framework for implementing multitenancy in Go applications. It
+simplifies the development and management of multi-tenant applications by offering functionalities
+for tenant-specific and shared model migrations, alongside thorough tenant management. Central to
+this package is its ability to abstract multitenancy complexities, presenting a unified,
+database-agnostic API that integrates seamlessly with GORM.
 
 # Opening a Database Connection
 
