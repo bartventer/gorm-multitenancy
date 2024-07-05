@@ -2,16 +2,14 @@ name: Benchmark
 
 on:
     workflow_dispatch: 
+    push:
+        branches:
+            - master
 
 jobs:
     benchmark:
         name: Benchmark
         runs-on: ubuntu-latest
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        permissions: 
-            contents: write # Grant permission to read and write repository contents
-            pull-requests: write # Grant permission to create pull requests
-            issues: write # Grant permission to write issues
         steps:
             - uses: actions/checkout@v4
             - name: Set up Go
@@ -20,9 +18,4 @@ jobs:
                   go-version: 1.22.x
 
             - name: Run benchmarks
-              shell: bash
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  make benchmark
-                  make update_readme
+              run: make benchmark
