@@ -4,71 +4,48 @@ Package schema provides utilities for managing PostgreSQL schemas in a multi-ten
 package schema
 
 import (
+	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 
 	"gorm.io/gorm"
 )
 
-// schemaNameRegexStr is the regular expression pattern for a valid schema name.
-//
-// Examples of valid schema names:
-//   - "domain1"
-//   - "test_domain"
-//   - "test123"
-//   - "_domain"
-const schemaNameRegexStr = `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`
-
-var schemaNameRegex = regexp.MustCompile(schemaNameRegexStr)
-
-// ValidateTenantName checks the validity of a provided tenant name.
-// A tenant name is considered valid if it:
-//  1. Matches the pattern `^[_a-zA-Z][_a-zA-Z0-9]{2,}$`. This means it must start with an underscore or a letter, followed by at least two characters that can be underscores, letters, or numbers.
-//  2. Does not start with "pg_". The prefix "pg_" is reserved for system schemas in PostgreSQL.
-//
-// If the tenant name is invalid, the function returns an error with a detailed explanation.
-func ValidateTenantName(tenant string) error {
-	if !schemaNameRegex.MatchString(tenant) {
-		return fmt.Errorf(`
-invalid tenant name: '%s'. Tenant name must match the following pattern: '%s'.
-This means it must start with an underscore or a letter, followed by at least two characters that can be underscores, letters, or numbers`,
-			tenant, schemaNameRegexStr)
-	}
-	if strings.HasPrefix(tenant, "pg_") {
-		return fmt.Errorf("invalid tenant name: %s. Tenant name must not start with 'pg_' as it is reserved for system schemas in PostgreSQL", tenant)
-	}
-	return nil
-}
-
-// ResetSearchPath is a function that resets the search path to the default value.
-type ResetSearchPath func() error
-
 // SetSearchPath sets the search path for the given database connection to the specified schema name.
-// It returns the modified database connection and a function that can be used to reset the search path to the default 'public' schema.
-// If the schema name is invalid or starts with 'pg_', an error is added to the database connection's error list.
+// It returns a function that can be used to reset the search path to the default value.
+// This function does not perform any validation on the schemaName parameter. It is the
+// responsibility of the caller to ensure that the schemaName has been sanitized to avoid SQL
+// injection vulnerabilities.
 //
 // Example:
 //
-//	db, reset := postgres.SetSearchPath(db, "domain1")
-//	if db.Error != nil {
+//	reset, err := postgres.SetSearchPath(db, "domain1")
+//	if err != nil {
 //		// handle the error
 //	}
 //	defer reset() // reset the search path to 'public'
-//	// ... do something with the database connection (with the search path set to 'domain1')
-func SetSearchPath(db *gorm.DB, schemaName string) (*gorm.DB, ResetSearchPath) {
-	var reset ResetSearchPath
-	if err := ValidateTenantName(schemaName); err != nil {
-		_ = db.AddError(err)
-		return db, reset
+//	// ... do operations with the database with the search path set to 'domain1'
+func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err error) {
+	tx = tx.Session(&gorm.Session{})
+	if schemaName == "" {
+		return nil, errors.New("schema name is empty")
 	}
-	sql := "SET search_path TO " + db.Statement.Quote(schemaName)
-	if err := db.Exec(sql).Error; err != nil {
-		_ = db.AddError(err)
-		return db, reset
+	sql := fmt.Sprintf("SET search_path TO %s", tx.Statement.Quote(schemaName))
+	if err = tx.Exec(sql).Error; err != nil {
+		return nil, fmt.Errorf("failed to set search path: %w", err)
 	}
 	reset = func() error {
-		return db.Exec("SET search_path TO public").Error
+		return tx.Exec("SET search_path TO public").Error
 	}
-	return db, reset
+	return reset, nil
+}
+
+// CurrentSearchPath returns the current search path for the given database connection.
+func CurrentSearchPath(tx *gorm.DB) string {
+	tx = tx.Session(&gorm.Session{})
+	var searchPath string
+	tx.Raw("SHOW search_path").Scan(&searchPath)
+	if searchPath == `"$user", public` {
+		return "public"
+	}
+	return searchPath
 }
