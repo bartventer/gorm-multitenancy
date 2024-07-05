@@ -6,12 +6,12 @@ echo "🔍 Starting Linting Process"
 echo "================================================================================"
 
 find . -name 'go.mod' -type f \
-    -exec echo "--------------------------------------------------------------------------------" \; \
-    -exec printf 'Linting in directory: %h\n\n' \; \
-    -exec echo "--------------------------------------------------------------------------------" \; \
-    -exec echo ":: Initiating linter..." \; \
+    -printf "--------------------------------------------------------------------------------\n" \
+    -printf "Linting in directory: %h\n\n" \
+    -printf "--------------------------------------------------------------------------------\n" \
+    -printf ":: Initiating linter...\n" \
     -execdir golangci-lint run --fix --verbose ./... \; \
-    -exec echo "\n  ✔️ Linting complete.\n" \;
+    -printf "\n  ✔️ Linting complete.\n"
 
 echo "================================================================================"
 echo "✅ Linting Process Completed Successfully"
