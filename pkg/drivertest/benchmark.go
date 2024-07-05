@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/stretchr/testify/require"
 )
 

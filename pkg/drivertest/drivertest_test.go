@@ -8,9 +8,9 @@ import (
 	"sync"
 	"testing"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/namespace"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/namespace"
 	"gorm.io/gorm"
 	"gorm.io/gorm/utils/tests"
 )

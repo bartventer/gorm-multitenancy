@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/bartventer/gorm-multitenancy/postgres/v7/internal/migrator"
-	"github.com/bartventer/gorm-multitenancy/postgres/v7/schema"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
+	"github.com/bartventer/gorm-multitenancy/postgres/v8/internal/migrator"
+	"github.com/bartventer/gorm-multitenancy/postgres/v8/schema"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	"gorm.io/gorm"
 )
 

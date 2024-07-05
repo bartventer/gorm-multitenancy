@@ -6,8 +6,8 @@ Example usage:
 	import (
 	    "net/http"
 
-	    nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
-	    "github.com/bartventer/gorm-multitenancy/v7"
+	    nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8"
+	    "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
 	func main() {

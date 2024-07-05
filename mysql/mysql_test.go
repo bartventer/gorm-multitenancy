@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/mysql/v7/internal/testutil"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/drivertest"
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/testutil"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/drivertest"
 	"gorm.io/gorm"
 )
 

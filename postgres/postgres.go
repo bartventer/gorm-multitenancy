@@ -43,9 +43,9 @@ package postgres
 import (
 	"context"
 
-	"github.com/bartventer/gorm-multitenancy/postgres/v7/schema"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/postgres/v8/schema"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

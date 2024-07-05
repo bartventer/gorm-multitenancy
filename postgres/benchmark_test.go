@@ -6,7 +6,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/drivertest"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/drivertest"
 )
 
 func BenchmarkConformance(b *testing.B) {

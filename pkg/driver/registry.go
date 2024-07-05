@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 )
 
 // PublicSchemaEnvVar is the environment variable that contains the name of the public schema.

@@ -1,9 +1,9 @@
 # gorm-multitenancy
 
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
-[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v7)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bartventer/gorm-multitenancy.svg)](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8)
 [![Release](https://img.shields.io/github/release/bartventer/gorm-multitenancy.svg)](https://github.com/bartventer/gorm-multitenancy/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy/v7)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy/v7)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy/v8)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy/v8)
 [![codecov](https://codecov.io/gh/bartventer/gorm-multitenancy/graph/badge.svg?token=6i0Pr1GFek)](https://codecov.io/gh/bartventer/gorm-multitenancy)
 [![Tests](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml/badge.svg)](https://github.com/bartventer/gorm-multitenancy/actions/workflows/default.yml)
 ![GitHub issues](https://img.shields.io/github/issues/bartventer/gorm-multitenancy)
@@ -50,40 +50,40 @@ Depending on the database in use, this package utilizes either the _"shared data
 
 ## Router Integration
 
-- Echo - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v7)
-- Net/HTTP - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7)
+- Echo - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v8)
+- Net/HTTP - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8)
 
 ## Installation
 
 Install the core package:
 
 ```bash
-go get -u github.com/bartventer/gorm-multitenancy/v7
+go get -u github.com/bartventer/gorm-multitenancy/v8
 ```
 
 Install the database-specific driver:
 
 ```bash
 # PostgreSQL
-go get -u github.com/bartventer/gorm-multitenancy/postgres/v7
+go get -u github.com/bartventer/gorm-multitenancy/postgres/v8
 
 # MySQL
-go get -u github.com/bartventer/gorm-multitenancy/mysql/v7
+go get -u github.com/bartventer/gorm-multitenancy/mysql/v8
 ```
 
 Optionally, install the router-specific middleware:
 
 ```bash
 # Echo
-go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v7
+go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v8
 
 # Net/HTTP
-go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7
+go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8
 ```
 
 ## Getting Started
 
-Check out the [pkg.go.dev](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v7) documentation for comprehensive guides and API references.
+Check out the [pkg.go.dev](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8) documentation for comprehensive guides and API references.
 
 ### Running the Example Application
 

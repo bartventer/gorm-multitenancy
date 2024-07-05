@@ -42,9 +42,9 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/bartventer/gorm-multitenancy/mysql/v7/schema"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 )
 
 // DriverName specifies the MySQL driver name, used for driver registration.

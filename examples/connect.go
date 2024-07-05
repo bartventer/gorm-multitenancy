@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/bartventer/gorm-multitenancy/mysql/v7"
-	"github.com/bartventer/gorm-multitenancy/postgres/v7"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+	"github.com/bartventer/gorm-multitenancy/mysql/v8"
+	"github.com/bartventer/gorm-multitenancy/postgres/v8"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

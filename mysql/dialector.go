@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/logext"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/logext"
 )
 
 type (
