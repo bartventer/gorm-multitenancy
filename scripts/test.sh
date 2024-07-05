@@ -43,6 +43,8 @@ done
 
 echo "✅ All tests passed!"
 
+[[ ${UPLOAD_COVERAGE:-false} != "true" ]] && exit 0
+
 echo "================================================================================"
 echo "📊 Generating coverage report using codecov"
 echo "================================================================================"
