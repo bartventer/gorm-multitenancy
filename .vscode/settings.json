@@ -2,8 +2,8 @@
     "go.lintOnSave": "workspace",
     "go.lintFlags": [
         "--fast",
-        "--config",
-        "./.golangci.yaml",
         "--fix",
-    ]
+    ],
+    "go.testTimeout": "15m",
+    "go.buildTags": "gorm_multitenancy_benchmarks"
 }
