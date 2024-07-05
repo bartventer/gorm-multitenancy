@@ -1,4 +1,4 @@
-package main
+package initdb
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func connectDB(ctx context.Context, driver string) (db *multitenancy.DB, cleanup func(), err error) {
+func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup func(), err error) {
 	var config = struct {
 		User, Password, Name, Port string
 	}{

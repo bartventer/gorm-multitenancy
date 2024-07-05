@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bartventer/gorm-multitenancy/examples/v8/models"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/models"
 	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v8"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/scopes"

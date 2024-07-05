@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bartventer/gorm-multitenancy/examples/v8/models"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/models"
 	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
