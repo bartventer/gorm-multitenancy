@@ -17,9 +17,13 @@
   <sub><small>Photo by <a href="https://github.com/ashleymcnamara">Ashley McNamara</a>, via <a href="https://github.com/ashleymcnamara/gophers">ashleymcnamara/gophers</a> (CC BY-NC-SA 4.0)</small></sub>
 </p>
 
-## Introduction
+## Overview
 
-Gorm-multitenancy is a Go package that provides a framework for implementing multitenancy in applications using GORM.
+Gorm-multitenancy provides a framework for implementing multitenancy in Go applications. It
+simplifies the development and management of multi-tenant applications by offering functionalities
+for tenant-specific and shared model migrations, alongside thorough tenant management. Central to
+this package is its ability to abstract multitenancy complexities, presenting a unified,
+database-agnostic API that integrates seamlessly with GORM.
 
 ## Multitenancy Approaches
 
@@ -29,43 +33,61 @@ There are three common approaches to multitenancy in a database:
 - Shared database, separate schemas
 - Separate databases
 
-This package adopts the 'shared database, separate schemas' approach, providing custom drivers for seamless integration with your existing database setup.
+Depending on the database in use, this package utilizes either the _"shared database, separate schemas"_ or _"separate databases"_ strategy, ensuring a smooth integration with your existing database configuration through the provision of tailored drivers.
 
 ## Features
 
-- **GORM Integration**: Leverages the [gorm](https://gorm.io/) ORM to manage the database, facilitating easy integration with your existing GORM setup.
-- **Custom Database Drivers**: Provides drop-in replacements for existing drivers, enabling multitenancy without the need for initialization reconfiguration.
-- **HTTP Middleware**: Offers middleware for seamless integration with popular routers, making it easy to manage tenant context in your application.
+- **GORM Integration**: Simplifies [GORM](https://gorm.io/) usage in multi-tenant environments, offering a unified API alongside direct access to driver-specific APIs for flexibility.
+- **Custom Database Drivers**: Enhances existing drivers for easy multitenancy setup without altering initialization.
+- **HTTP Middleware**: Provides middleware for easy tenant context management in web applications.
 
-## Database compatibility
+## Supported Databases
 
-The following databases are currently supported. Contributions for other drivers are welcome.
-
-- PostgreSQL
+| Database | Approach |
+|----------|----------|
+| PostgreSQL | Shared database, separate schemas |
+| MySQL | Separate databases |
 
 ## Router Integration
 
-This package includes middleware that can be used with the routers listed below for seamless integration with the database drivers. While not a requirement, these routers are fully compatible with the provided middleware. Contributions for other routers are welcome.
-
-- Echo
-- Net/HTTP
+- Echo - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v7)
+- Net/HTTP - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7)
 
 ## Installation
+
+Install the core package:
 
 ```bash
 go get -u github.com/bartventer/gorm-multitenancy/v7
 ```
 
+Install the database-specific driver:
+
+```bash
+# PostgreSQL
+go get -u github.com/bartventer/gorm-multitenancy/postgres/v7
+
+# MySQL
+go get -u github.com/bartventer/gorm-multitenancy/mysql/v7
+```
+
+Optionally, install the router-specific middleware:
+
+```bash
+# Echo
+go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v7
+
+# Net/HTTP
+go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7
+```
+
 ## Getting Started
 
-### Drivers
+Check out the [pkg.go.dev](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v7) documentation for comprehensive guides and API references.
 
-- PostgreSQL [Guide](./postgres/README.md)
+### Running the Example Application
 
-### Middleware
-
-- Echo [Guide](./middleware/echo/README.md)
-- Net/HTTP [Guide](./middleware/nethttp/README.md)
+For a practical demonstration, you can run [the example application](./examples/README.md). It showcases various configurations and usage scenarios.
 
 ## Contributing
 
