@@ -1,2 +1,30 @@
 gorm-multitenancy
 Copyright 2023 Bart Venter <bartventer@outlook.com>
+
+=========================================================================
+Additional Notices for Open Source Software
+=========================================================================
+
+This product includes software developed by third parties.
+
+1. github.com/docker/docker (de5c9cf0b96e4e172b96db54abababa4a328462f)
+   License: MPL-2.0, GPL-2.0-only, GPL-2.0-or-later
+   Note: This software is used solely as an internal utility for testing and does not integrate with the API published to end users. The GPL-2.0-only and GPL-2.0-or-later licensed parts are ignored based on our licensing policy, as they are distributed and run as completely separate processes & packages.
+
+2. github.com/containerd/containerd (2bf793ef6dc9a18e00cb12efb64355c2c9d5eb41)
+   License: MPL-2.0
+   Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
+
+3. github.com/shoenig/go-m1cpu (41fe74c064b56dad60b3cbe1a62f82d39a06960b)
+   License: MPL-2.0
+   Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
+
+4. github.com/Microsoft/hcsshim (c6a83278f5925b721702744dc12a78e274243fa0)
+   License: MPL-2.0
+   Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
+
+5. github.com/go-sql-driver/mysql (4395c45fd098a81c5251667cda111f94c693ab14)
+   License: MPL-2.0
+   Note: Only used indirectly; no changes made to go-sql-driver/mysql source code. Notice requirements are followed.
+
+=========================================================================
