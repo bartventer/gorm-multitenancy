@@ -20,8 +20,8 @@ recommended for new users.
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/<driver>/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/<driver>/v8"
 	)
 
 	db, err := multitenancy.Open(<driver>.Open(dsn))
@@ -29,13 +29,13 @@ recommended for new users.
 
 Postgres:
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
 
 MySQL:
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	db, err := multitenancy.Open(mysql.Open(dsn))
 
@@ -52,7 +52,7 @@ Postgres:
 
 	import (
 		"context"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 		"gorm.io/gorm"
 	)
 
@@ -64,7 +64,7 @@ MySQL:
 
 	import (
 		"context"
-		"github.com/bartventer/gorm-multitenancy/mysql/v7"
+		"github.com/bartventer/gorm-multitenancy/mysql/v8"
 		"gorm.io/gorm"
 	)
 
@@ -111,8 +111,8 @@ must be registered with the DB instance using [DB.RegisterModels].
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
@@ -123,7 +123,7 @@ Postgres Adapter:
 
 Use [postgres.RegisterModels] to register models.
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	postgres.RegisterModels(db, &Tenant{}, &Book{})
 
@@ -131,7 +131,7 @@ MySQL Adapter:
 
 Use [mysql.RegisterModels] to register models.
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	mysql.RegisterModels(db, &Tenant{}, &Book{})
 
@@ -147,8 +147,8 @@ After registering models, shared models are migrated using [DB.MigrateSharedMode
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
@@ -160,7 +160,7 @@ Postgres Adapter:
 
 Use [postgres.MigrateSharedModels] to migrate shared models.
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	postgres.MigrateSharedModels(db)
 
@@ -168,7 +168,7 @@ MySQL Adapter:
 
 Use [mysql.MigrateSharedModels] to migrate shared models.
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	mysql.MigrateSharedModels(db)
 
@@ -178,8 +178,8 @@ After registering models, tenant-specific models are migrated using [DB.MigrateT
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
@@ -193,7 +193,7 @@ Postgres Adapter:
 
 Use [postgres.MigrateTenantModels] to migrate tenant-specific models.
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	postgres.MigrateTenantModels(db, "tenant1")
 
@@ -201,7 +201,7 @@ MySQL Adapter:
 
 Use [mysql.MigrateTenantModels] to migrate tenant-specific models.
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	mysql.MigrateTenantModels(db, "tenant1")
 
@@ -212,8 +212,8 @@ should be cleaned up using [DB.OffboardTenant].
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
@@ -228,7 +228,7 @@ Postgres Adapter:
 
 Use [postgres.DropSchemaForTenant] to offboard a tenant.
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	postgres.DropSchemaForTenant(db, "tenant1")
 
@@ -236,7 +236,7 @@ MySQL Adapter:
 
 Use [mysql.DropDatabaseForTenant] to offboard a tenant.
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	mysql.DropDatabaseForTenant(db, "tenant1")
 
@@ -248,8 +248,8 @@ returns a reset function to revert the database context and an error if the oper
 
 	import (
 		"context"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	db, err := multitenancy.Open(postgres.Open(dsn))
@@ -269,7 +269,7 @@ Postgres Adapter:
 
 Use [postgres.SetSearchPath] to set the search path for a tenant.
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v7"
+	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	reset, err := postgres.SetSearchPath(ctx, db, "tenant1")
 	if err != nil {...}
@@ -280,7 +280,7 @@ MySQL Adapter:
 
 Use [mysql.UseDatabase] function to set the database for a tenant.
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v7"
+	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
 
 	reset, err := mysql.UseDatabase(ctx, db, "tenant1")
 	if err != nil {...}
@@ -320,8 +320,8 @@ Between Tenant-Specific Tables:
 	import (
 		"context"
 
-		"github.com/bartventer/gorm-multitenancy/postgres/v7"
-		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
 	type Tenant struct{ multitenancy.TenantModel }
@@ -420,19 +420,19 @@ utilities:
 For a detailed technical overview of SQL design strategies adopted by the framework, see the
 [STRATEGY.md] file.
 
-[postgres.RegisterModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v7#RegisterModels
-[mysql.RegisterModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v7#RegisterModels
-[postgres.MigrateSharedModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v7#MigrateSharedModels
-[mysql.MigrateSharedModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v7#MigrateSharedModels
-[postgres.MigrateTenantModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v7#MigrateTenantModels
-[mysql.MigrateTenantModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v7#MigrateTenantModels
-[postgres.DropSchemaForTenant]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v7#OffboardTenant
-[mysql.DropDatabaseForTenant]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v7#OffboardTenant
-[postgres.SetSearchPath]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v7#UseTenant
-[mysql.UseDatabase]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v7#UseDatabase
+[postgres.RegisterModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#RegisterModels
+[mysql.RegisterModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#RegisterModels
+[postgres.MigrateSharedModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#MigrateSharedModels
+[mysql.MigrateSharedModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#MigrateSharedModels
+[postgres.MigrateTenantModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#MigrateTenantModels
+[mysql.MigrateTenantModels]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#MigrateTenantModels
+[postgres.DropSchemaForTenant]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#OffboardTenant
+[mysql.DropDatabaseForTenant]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#OffboardTenant
+[postgres.SetSearchPath]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#UseTenant
+[mysql.UseDatabase]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#UseDatabase
 [the example application]: https://github.com/bartventer/gorm-multitenancy/tree/master/examples/README.md
-[pkg/namespace/Validate]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v7/pkg/namespace#Validate
-[middleware/nethttp/ExtractSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7#ExtractSubdomain
+[pkg/namespace/Validate]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8/pkg/namespace#Validate
+[middleware/nethttp/ExtractSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8#ExtractSubdomain
 [STRATEGY.md]: https://github.com/bartventer/gorm-multitenancy/tree/master/docs/STRATEGY.md
 */
 package multitenancy
@@ -441,7 +441,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"gorm.io/gorm"
 )
 

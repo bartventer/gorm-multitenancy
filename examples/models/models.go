@@ -1,8 +1,8 @@
 package models
 
 import (
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"gorm.io/gorm"
 )
 

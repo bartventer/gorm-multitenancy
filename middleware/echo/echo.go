@@ -6,8 +6,8 @@ Example usage:
 	import (
 		"net/http"
 
-	    echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v7"
-		"github.com/bartventer/gorm-multitenancy/v7"
+	    echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v8"
+		"github.com/bartventer/gorm-multitenancy/v8"
 	    "github.com/labstack/echo/v4"
 	)
 
@@ -30,7 +30,7 @@ import (
 	"fmt"
 	"net/http"
 
-	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8"
 	"github.com/labstack/echo/v4"
 )
 

@@ -1,15 +1,16 @@
-module github.com/bartventer/gorm-multitenancy/postgres/v7
+module github.com/bartventer/gorm-multitenancy/postgres/v8
 
 go 1.22
 
 toolchain go1.22.5
 
-replace github.com/bartventer/gorm-multitenancy/v7 => ../
+replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
 // TODO: Remove once github.com/testcontainers/testcontainers-go is updated (from v0.31.0) to use the latest version of github.com/docker/docker
 replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
 
 require (
+	github.com/bartventer/gorm-multitenancy/v8 v8.0.0-00010101000000-000000000000
 	github.com/docker/docker v27.0.3+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/stretchr/testify v1.9.0
@@ -71,7 +72,6 @@ require (
 )
 
 require (
-	github.com/bartventer/gorm-multitenancy/v7 v7.0.1
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect

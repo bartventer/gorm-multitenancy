@@ -7,10 +7,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bartventer/gorm-multitenancy/examples/v7/models"
-	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v7"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/scopes"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/models"
+	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v8"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/scopes"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

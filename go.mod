@@ -1,4 +1,4 @@
-module github.com/bartventer/gorm-multitenancy/v7
+module github.com/bartventer/gorm-multitenancy/v8
 
 go 1.22
 

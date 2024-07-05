@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/utils/tests"
 )

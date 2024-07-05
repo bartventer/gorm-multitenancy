@@ -1,28 +1,28 @@
-module github.com/bartventer/gorm-multitenancy/examples/v7
+module github.com/bartventer/gorm-multitenancy/examples/v8
 
 go 1.22
 
 toolchain go1.22.5
 
-replace github.com/bartventer/gorm-multitenancy/v7 => ../
+replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
-replace github.com/bartventer/gorm-multitenancy/postgres/v7 => ../postgres
+replace github.com/bartventer/gorm-multitenancy/postgres/v8 => ../postgres
 
-replace github.com/bartventer/gorm-multitenancy/mysql/v7 => ../mysql
+replace github.com/bartventer/gorm-multitenancy/mysql/v8 => ../mysql
 
-replace github.com/bartventer/gorm-multitenancy/middleware/echo/v7 => ../middleware/echo
+replace github.com/bartventer/gorm-multitenancy/middleware/echo/v8 => ../middleware/echo
 
-replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 => ../middleware/nethttp
+replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../middleware/nethttp
 
 // TODO: Remove once github.com/testcontainers/testcontainers-go is updated (from v0.31.0) to use the latest version of github.com/docker/docker
 replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v7 v7.0.1
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7 v7.0.1
-	github.com/bartventer/gorm-multitenancy/mysql/v7 v7.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/postgres/v7 v7.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/v7 v7.0.1
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/v8 v8.0.0-00010101000000-000000000000
 	github.com/docker/go-connections v0.5.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/testcontainers/testcontainers-go v0.31.0

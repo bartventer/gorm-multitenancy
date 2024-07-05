@@ -9,10 +9,10 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/bartventer/gorm-multitenancy/examples/v7/echoserver"
-	"github.com/bartventer/gorm-multitenancy/examples/v7/models"
-	"github.com/bartventer/gorm-multitenancy/examples/v7/nethttpserver"
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/echoserver"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/models"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/nethttpserver"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 )
 
 var once sync.Once

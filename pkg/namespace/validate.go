@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 )
 
 // namespaceRegexStr is the regular expression pattern for a valid schema name.

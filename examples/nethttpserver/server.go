@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bartventer/gorm-multitenancy/examples/v7/models"
-	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v7"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/models"
+	nethttpmw "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8"
 
-	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/scopes"
+	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/scopes"
 	"github.com/urfave/negroni"
 )
 

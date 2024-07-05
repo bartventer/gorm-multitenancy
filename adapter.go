@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	"gorm.io/gorm"
 )
 
@@ -68,8 +68,8 @@ func Register(name string, adapter Adapter) {
 // MySQL:
 //
 //	import (
-//		"github.com/bartventer/gorm-multitenancy/mysql/v7"
-//		multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+//		"github.com/bartventer/gorm-multitenancy/mysql/v8"
+//		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 //	)
 //
 //	dsn := "user:password@tcp(localhost:3306)/dbname?parseTime=True"
@@ -78,8 +78,8 @@ func Register(name string, adapter Adapter) {
 // PostgreSQL:
 //
 //	 import (
-//	 	"github.com/bartventer/gorm-multitenancy/postgres/v7"
-//	 	multitenancy "github.com/bartventer/gorm-multitenancy/v7"
+//	 	"github.com/bartventer/gorm-multitenancy/postgres/v8"
+//	 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 //	 )
 //
 //	dsn := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
