@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	gmtmigrator "github.com/bartventer/gorm-multitenancy/mysql/v7/internal/migrator"
 	"github.com/bartventer/gorm-multitenancy/mysql/v7/schema"
 	"github.com/bartventer/gorm-multitenancy/v7/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v7/pkg/gmterrors"
@@ -21,8 +22,7 @@ func inTransaction(db *gorm.DB) bool {
 }
 
 func (m Migrator) AutoMigrate(values ...interface{}) error {
-	// Check if the migration option is set
-	_, err := migrationOptionFromDB(m.DB)
+	_, err := gmtmigrator.OptionFromDB(m.DB)
 	if err != nil {
 		return gmterrors.NewWithScheme(DriverName, err)
 	}
@@ -61,7 +61,8 @@ func (m Migrator) migrateTenantModels(tenantID string) error {
 	defer reset()
 
 	// Migrate tenant tables
-	if err = tx.Scopes(withMigrationOption(migratorOption)).
+	if err = tx.
+		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %s: %w", tenantID, err))
 	}
@@ -88,7 +89,8 @@ func (m Migrator) MigrateSharedModels() error {
 	}
 
 	var err error
-	if err = m.DB.Scopes(withMigrationOption(migratorOption)).
+	if err = m.DB.
+		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(publicModels)...); err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate public tables: %w", err))
 	}
