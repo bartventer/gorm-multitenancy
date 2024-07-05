@@ -1,5 +1,5 @@
 /*
-Package echo provides a middleware for the [Echo] framework, which adds multi-tenancy support.
+Package echo provides a middleware for the [echo] framework, which adds multi-tenancy support.
 
 Example usage:
 
@@ -23,8 +23,6 @@ Example usage:
 
 	    e.Start(":8080")
 	}
-
-[Echo]: https://echo.labstack.com/docs
 */
 package echo
 
