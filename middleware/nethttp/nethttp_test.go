@@ -11,17 +11,14 @@ import (
 )
 
 func ExampleDefaultTenantFromSubdomain() {
-	// Create a new HTTP request
 	req, err := http.NewRequest(http.MethodGet, "http://test.domain.com", nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
 	}
 
-	// Set the host of the request
 	req.Host = "test.domain.com"
 
-	// Extract the subdomain from the request
 	subdomain, err := DefaultTenantFromSubdomain(req)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -34,17 +31,14 @@ func ExampleDefaultTenantFromSubdomain() {
 }
 
 func ExampleDefaultTenantFromHeader() {
-	// Create a new HTTP request
 	req, err := http.NewRequest(http.MethodGet, "http://test.domain.com", nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
 	}
 
-	// Set the XTenantHeader of the request
 	req.Header.Set(XTenantHeader, "test-tenant")
 
-	// Extract the tenant from the request
 	tenant, err := DefaultTenantFromHeader(req)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -70,7 +64,6 @@ func ExampleWithTenant() {
 	req.Host = "tenant.example.com"
 	rec := httptest.NewRecorder()
 
-	// Execute the request
 	handler.ServeHTTP(rec, req)
 
 	// Output: Tenant: tenant
@@ -147,14 +140,10 @@ func TestWithTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// setup the middleware
 			middleware := WithTenant(tt.args.config)
-			// setup the handler
 			handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// tenant from context, should be same as tenant from search path
 				tenant, ok := r.Context().Value(TenantKey).(string)
 				if !ok && tt.args.config.Skipper != nil && tt.args.config.Skipper(r) {
-					// If Skipper is not nil and returns true, we don't expect a tenant in the context
 					fmt.Fprint(w, "")
 					return
 				}
@@ -165,18 +154,15 @@ func TestWithTenant(t *testing.T) {
 				fmt.Fprint(w, tenant)
 			}))
 
-			// Create a request to pass to our handler.
 			req, err := http.NewRequest(http.MethodGet, "/", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 			req.Host = tt.args.tenant + ".example.com"
 
-			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
 
-			// Check the status code is what we expect.
 			expectedStatus := http.StatusOK
 			if tt.wantErr {
 				expectedStatus = http.StatusInternalServerError
@@ -185,7 +171,6 @@ func TestWithTenant(t *testing.T) {
 				t.Errorf("handler returned wrong status code: got %v want %v", status, expectedStatus)
 			}
 
-			// Check the response body is what we expect.
 			expectedBody := tt.want
 			if tt.wantErr {
 				expectedBody = "forced error\n"
@@ -215,7 +200,7 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 					Header: map[string][]string{},
 					Host:   "tenant1.example.com",
 					URL:    &url.URL{Path: "/"},
-					TLS:    &tls.ConnectionState{}, // Simulate an https request
+					TLS:    &tls.ConnectionState{},
 				},
 			},
 			want:    "tenant1",
@@ -253,7 +238,7 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 					Header: map[string][]string{},
 					Host:   "tenant1.example.com:8080",
 					URL:    &url.URL{Path: "/"},
-					TLS:    &tls.ConnectionState{}, // Simulate an https request
+					TLS:    &tls.ConnectionState{},
 				},
 			},
 			want:    "tenant1",
@@ -267,7 +252,7 @@ func TestDefaultTenantFromSubdomain(t *testing.T) {
 					Header: map[string][]string{},
 					Host:   "tenant1.sub.example.com",
 					URL:    &url.URL{Path: "/"},
-					TLS:    &tls.ConnectionState{}, // Simulate an https request
+					TLS:    &tls.ConnectionState{},
 				},
 			},
 			want:    "tenant1",
