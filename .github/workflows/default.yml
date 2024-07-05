@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
     push:
@@ -6,8 +6,8 @@ on:
     pull_request:
 
 jobs:
-    build:
-        name: Build
+    test:
+        name: Test
         strategy:
             fail-fast: false
             matrix:
@@ -18,9 +18,6 @@ jobs:
                       upload-coverage: true
 
         runs-on: ${{ matrix.os }}
-        env:
-            COVERPROFILE: ./cover.out
-            COVERDIR: ${{ github.workspace }}/.cover
         steps:
             - uses: actions/checkout@v4
             - name: Set up Go
@@ -34,17 +31,17 @@ jobs:
 
             - name: Test and Coverage
               shell: bash
-              id: test
               env:
+                  UPLOAD_COVERAGE: ${{ matrix.upload-coverage }}
+                  COVERPROFILE: ./cover.out
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-              run: |
-                  make test
+              run: make test
 
     license-scan:
         name: License scan
         runs-on: ubuntu-latest
         if: github.event_name == 'push'
-        needs: [build]
+        needs: [test]
         steps:
             - uses: actions/checkout@v4
             - name: Install FOSSA
