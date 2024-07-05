@@ -20,7 +20,7 @@ This example supports various configurations through command-line options.
 #### Usage
 
 ```bash
-go run examples/main.go [options]
+go run -C examples . [options]
 ```
 
 #### Options
@@ -40,13 +40,13 @@ go run examples/main.go [options]
 - Run with default options:
 
   ```bash
-  go run examples/main.go
+  go run -C examples .
   ```
 
 - Run with the `NetHTTP` server and `MySQL` driver:
 
   ```bash
-  go run examples/main.go -server=nethttp -driver=mysql
+  go run -C examples . -server=nethttp -driver=mysql
   ```
 
 > [!NOTE]
