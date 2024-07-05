@@ -10,6 +10,12 @@ tenant-specific operations.
 To register models for multitenancy support, use [RegisterModels]. This should
 be done before running any migrations or tenant-specific operations.
 
+# Migration Strategy
+
+To ensure data integrity and schema isolation across tenants, the AutoMigrate method
+has been disabled. Instead, use the provided shared and tenant-specific migration methods.
+[driver.ErrInvalidMigration] is returned if the migration method is called directly.
+
 # Shared Model Migrations
 
 To migrate shared models, use [MigrateSharedModels].
