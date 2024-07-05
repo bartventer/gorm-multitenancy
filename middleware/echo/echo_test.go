@@ -11,7 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// assertEqual compares two values and logs an error if they are not equal.
 func assertEqual[T any](t *testing.T, expected, actual T) bool {
 	t.Helper()
 	if !reflect.DeepEqual(expected, actual) {
@@ -113,16 +112,12 @@ func TestWithTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// setup the middleware
 			middleware := WithTenant(tt.args.config)
-			// setup the handler
 			handler := middleware(func(c echo.Context) error {
-				// tenant from context, should be same as tenant from search path
 				tenantValue := c.Get(TenantKey.String())
-				tenant, _ := tenantValue.(string) // type assertion is safe because we check if tenantValue is nil
+				tenant, _ := tenantValue.(string)
 
 				if tt.args.config.Skipper != nil && tt.args.config.Skipper(c) {
-					// If Skipper is not nil and returns true, we don't expect a tenant in the context
 					_, _ = c.Response().Write([]byte(""))
 					return nil
 				}
@@ -134,7 +129,6 @@ func TestWithTenant(t *testing.T) {
 				return nil
 			})
 
-			// Create a request to pass to our handler.
 			req := httptest.NewRequest(echo.GET, "/", nil)
 			req.Host = tt.args.tenant + ".example.com"
 			rec := httptest.NewRecorder()
@@ -147,7 +141,6 @@ func TestWithTenant(t *testing.T) {
 				return
 			}
 
-			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
 			if err := handler(c); (err != nil) != tt.wantErr {
 				t.Errorf("Handler error = %v, wantErr %v", err, tt.wantErr)
 				return
