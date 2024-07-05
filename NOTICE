@@ -7,24 +7,141 @@ Additional Notices for Open Source Software
 
 This product includes software developed by third parties.
 
-1. github.com/docker/docker (de5c9cf0b96e4e172b96db54abababa4a328462f)
+1. github.com/docker/docker
    License: MPL-2.0, GPL-2.0-only, GPL-2.0-or-later
    Note: This software is used solely as an internal utility for testing and does not integrate with the API published to end users. The GPL-2.0-only and GPL-2.0-or-later licensed parts are ignored based on our licensing policy, as they are distributed and run as completely separate processes & packages.
 
-2. github.com/containerd/containerd (2bf793ef6dc9a18e00cb12efb64355c2c9d5eb41)
+2. github.com/containerd/containerd
    License: MPL-2.0
    Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
 
-3. github.com/shoenig/go-m1cpu (41fe74c064b56dad60b3cbe1a62f82d39a06960b)
+3. github.com/shoenig/go-m1cpu
    License: MPL-2.0
    Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
 
-4. github.com/Microsoft/hcsshim (c6a83278f5925b721702744dc12a78e274243fa0)
+4. github.com/Microsoft/hcsshim
    License: MPL-2.0
    Note: Ignored based on our licensing policy, as it is solely used as an internal utility for testing and does not integrate with the API published to end users.
 
-5. github.com/go-sql-driver/mysql (4395c45fd098a81c5251667cda111f94c693ab14)
+5. github.com/go-sql-driver/mysql
    License: MPL-2.0
    Note: Only used indirectly; no changes made to go-sql-driver/mysql source code. Notice requirements are followed.
+
+6. github.com/go-gorm/gorm
+   License: MIT
+   Note: GORM is extensively used in this project. The MIT License text is included below to comply with the terms of the license.
+
+7. github.com/go-gorm/mysql
+   License: MIT
+   Note: GORM is extensively used in this project. The MIT License text is included below to comply with the terms of the license.
+
+8. github.com/labstack/echo
+   License: MIT
+   Note: Echo is used in this project. The MIT License text is included below to comply with the terms of the license.
+
+=========================================================================
+MIT License for github.com/go-gorm/gorm
+=========================================================================
+
+The MIT License (MIT)
+
+Copyright (c) 2013-NOW  Jinzhu <wosmvp@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+=========================================================================
+MIT License for github.com/go-gorm/postgres
+=========================================================================
+
+The MIT License (MIT)
+
+Copyright (c) 2013-NOW  Jinzhu <wosmvp@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+=========================================================================
+MIT License for github.com/go-gorm/mysql
+=========================================================================
+
+The MIT License (MIT)
+
+Copyright (c) 2013-NOW  Jinzhu <wosmvp@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+=========================================================================
+MIT License for github.com/labstack/echo
+=========================================================================
+
+The MIT License (MIT)
+
+Copyright (c) 2021 LabStack
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 =========================================================================
