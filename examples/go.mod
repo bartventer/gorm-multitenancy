@@ -18,11 +18,11 @@ replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../midd
 replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/v8 v8.0.0
 	github.com/docker/go-connections v0.5.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/testcontainers/testcontainers-go v0.31.0
@@ -89,7 +89,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect

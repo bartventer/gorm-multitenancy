@@ -10,7 +10,7 @@ replace github.com/bartventer/gorm-multitenancy/v8 => ../
 replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
 
 require (
-	github.com/bartventer/gorm-multitenancy/v8 v8.0.0-00010101000000-000000000000
+	github.com/bartventer/gorm-multitenancy/v8 v8.0.0
 	github.com/docker/docker v27.0.3+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/stretchr/testify v1.9.0
@@ -78,7 +78,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 )
