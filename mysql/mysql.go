@@ -5,6 +5,11 @@ and shared resources management. It includes utilities for registering models,
 migrating shared and tenant-specific models, and configuring the database for
 tenant-specific operations.
 
+This package follows the "separate databases" approach for multitenancy, which
+allows for complete data isolation by utilizing separate databases for each tenant.
+This approach ensures maximum security and performance isolation between tenants,
+making it suitable for applications with stringent data security requirements.
+
 # Model Registration
 
 To register models for multitenancy support, use [RegisterModels]. This should

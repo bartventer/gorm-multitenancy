@@ -5,6 +5,12 @@ and shared resources management. It includes utilities for registering models,
 migrating shared and tenant-specific models, and configuring the database for
 tenant-specific operations.
 
+This package follows the "shared database, separate schemas" approach for multitenancy,
+which allows for data isolation and schema customization per tenant within a single
+PostgreSQL database instance. This approach facilitates efficient resource utilization
+and simplifies maintenance, making it ideal for applications that require flexible
+data isolation without the overhead of managing multiple database instances.
+
 # Model Registration
 
 To register models for multitenancy support, use [RegisterModels]. This should

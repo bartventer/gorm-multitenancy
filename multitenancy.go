@@ -5,7 +5,22 @@ for tenant-specific and shared model migrations, alongside thorough tenant manag
 this package is its ability to abstract multitenancy complexities, presenting a unified,
 database-agnostic API that integrates seamlessly with GORM.
 
+The framework supports two primary multitenancy strategies:
+  - Shared Database, Separate Schemas: This approach allows for data isolation and schema
+    customization per tenant within a single database instance, simplifying maintenance and
+    resource utilization.
+  - Separate Databases: This strategy ensures complete data isolation by utilizing separate
+    databases for each tenant, making it suitable for applications with stringent data security
+    requirements.
+
+# Usage
+
+The following sections provide an overview of the package's features and usage instructions for
+implementing multitenancy in Go applications.
+
 # Opening a Database Connection
+
+The package supports multitenancy for both PostgreSQL and MySQL databases.
 
 Two methods are available for establishing a new database connection with multitenancy support:
 
@@ -19,25 +34,40 @@ allowing for seamless switching between database drivers. Starting from v8.0.0, 
 recommended for new users.
 
 	import (
-		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 		"github.com/bartventer/gorm-multitenancy/<driver>/v8"
 	)
 
-	db, err := multitenancy.Open(<driver>.Open(dsn))
-	db.RegisterModels(ctx, ...) // Access to a database-agnostic API with GORM features
+	func main() {
+		dsn := "<driver-specific DSN>"
+		db, err := multitenancy.Open(<driver>.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, ...) // Access to a database-agnostic API with GORM features
+	}
 
 Postgres:
 
-	import "github.com/bartventer/gorm-multitenancy/postgres/v8"
+	import (
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
+	func main() {
+		dsn := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+		db, err := multitenancy.Open(postgres.Open(dsn))
+	}
 
 MySQL:
 
-	import "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	import (
+		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+		"github.com/bartventer/gorm-multitenancy/mysql/v8"
+	)
 
-	db, err := multitenancy.Open(mysql.Open(dsn))
+	func main() {
+		dsn := "user:password@tcp(localhost:3306)/dbname"
+		db, err := multitenancy.Open(mysql.Open(dsn))
+	}
 
 # Approach 2: Direct Driver API
 
@@ -51,28 +81,30 @@ unified API provides.
 Postgres:
 
 	import (
-		"context"
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 		"gorm.io/gorm"
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	// Directly call driver-specific functions
-	postgres.RegisterModels(db, ...)
+	func main() {
+		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		// Directly call driver-specific functions
+		postgres.RegisterModels(db, ...)
+	}
 
 MySQL:
 
 	import (
-		"context"
 		"github.com/bartventer/gorm-multitenancy/mysql/v8"
 		"gorm.io/gorm"
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	// Directly call driver-specific functions
-	mysql.RegisterModels(db, ...)
+	func main() {
+		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		// Directly call driver-specific functions
+		mysql.RegisterModels(db, ...)
+	}
 
-# Table naming conventions
+# Declaring Models
 
 All models must implement [driver.TenantTabler], which extends GORM's Tabler interface. This
 extension allows models to define their table name and indicate whether they are shared across
@@ -104,20 +136,33 @@ These models are specific to a single tenant and should not be shared across ten
 	func (Book) TableName() string   { return "books" } // no 'public.' prefix
 	func (Book) IsSharedModel() bool { return false }
 
+Tenant Model:
+
+This package provides a [TenantModel] struct that can be embedded in any public model that requires
+tenant scoping, enriching it with essential fields for managing tenant-specific information. This
+structure incorporates fields for the tenant's domain URL and schema name, facilitating the linkage
+of tenant-specific models to their respective schemas.
+
+	type Tenant struct { multitenancy.TenantModel }
+
+	func (Tenant) TableName() string   { return "public.tenants" }
+	func (Tenant) IsSharedModel() bool { return true }
+
 # Model Registration
 
 Before performing any migrations or operations on tenant-specific models, the models
 must be registered with the DB instance using [DB.RegisterModels].
 
 	import (
-		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
-	if err != nil {...}
-	db.RegisterModels(ctx, &Tenant{}, &Book{})
+	func main() {
+		db, err := multitenancy.Open(postgres.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, &Tenant{}, &Book{})
+	}
 
 Postgres Adapter:
 
@@ -151,10 +196,12 @@ After registering models, shared models are migrated using [DB.MigrateSharedMode
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
-	if err != nil {...}
-	db.RegisterModels(ctx, &Tenant{}, &Book{})
-	db.MigrateSharedModels(ctx)
+	func main() {
+		db, err := multitenancy.Open(postgres.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, &Tenant{}, &Book{})
+		db.MigrateSharedModels(ctx)
+	}
 
 Postgres Adapter:
 
@@ -182,12 +229,14 @@ After registering models, tenant-specific models are migrated using [DB.MigrateT
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
-	if err != nil {...}
-	db.RegisterModels(ctx, &Tenant{}, &Book{})
-	db.MigrateSharedModels(ctx)
-	// Assuming we have a tenant with schema name 'tenant1'
-	db.MigrateTenantModels(ctx, "tenant1")
+	func main() {
+		db, err := multitenancy.Open(postgres.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, &Tenant{}, &Book{})
+		db.MigrateSharedModels(ctx)
+		// Assuming we have a tenant with schema name 'tenant1'
+		db.MigrateTenantModels(ctx, "tenant1")
+	}
 
 Postgres Adapter:
 
@@ -216,13 +265,15 @@ should be cleaned up using [DB.OffboardTenant].
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
-	if err != nil {...}
-	db.RegisterModels(ctx, &Tenant{}, &Book{})
-	db.MigrateSharedModels(ctx)
-	// Assuming we have a tenant with schema name 'tenant1'
-	db.MigrateTenantModels(ctx, "tenant1")
-	db.OffboardTenant(ctx, "tenant1") // Drop the tenant schema and associated tables
+	func main() {
+		db, err := multitenancy.Open(postgres.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, &Tenant{}, &Book{})
+		db.MigrateSharedModels(ctx)
+		// Assuming we have a tenant with schema name 'tenant1'
+		db.MigrateTenantModels(ctx, "tenant1")
+		db.OffboardTenant(ctx, "tenant1") // Drop the tenant schema and associated tables
+	}
 
 Postgres Adapter:
 
@@ -252,18 +303,20 @@ returns a reset function to revert the database context and an error if the oper
 		"github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
-	db, err := multitenancy.Open(postgres.Open(dsn))
-	if err != nil {...}
-	db.RegisterModels(ctx, &Tenant{}, &Book{})
-	db.MigrateSharedModels(ctx)
-	// Assuming we have a tenant with schema name 'tenant1'
-	reset, err := db.UseTenant(ctx, "tenant1")
-	if err != nil {...}
-	defer reset() // reset to the default search path
-	// ... do operations with the search path set to 'tenant1'
-	db.Create(&Book{Title: "The Great Gatsby"})
-	db.Find(&Book{})
-	db.Delete(&Book{})
+	func main() {
+		db, err := multitenancy.Open(postgres.Open(dsn))
+		if err != nil {...}
+		db.RegisterModels(ctx, &Tenant{}, &Book{})
+		db.MigrateSharedModels(ctx)
+		// Assuming we have a tenant with schema name 'tenant1'
+		reset, err := db.UseTenant(ctx, "tenant1")
+		if err != nil {...}
+		defer reset() // reset to the default search path
+		// ... do operations with the search path set to 'tenant1'
+		db.Create(&Book{Title: "The Great Gatsby"})
+		db.Find(&Book{})
+		db.Delete(&Book{})
+	}
 
 Postgres Adapter:
 
@@ -313,7 +366,7 @@ Between Tenant-Specific Tables:
     schema.
   - Example: Within a tenant's schema, a `projects` table can reference an `employees` table.
 
-# Example:
+# Example
 
 	package main
 
