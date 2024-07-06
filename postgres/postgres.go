@@ -48,6 +48,7 @@ package postgres
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/bartventer/gorm-multitenancy/postgres/v8/schema"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
@@ -72,6 +73,15 @@ func init() { //nolint:gochecknoinits // Required for driver registration.
 // AdaptDB implements [multitenancy.Adapter].
 func (p *postgresAdapter) AdaptDB(ctx context.Context, db *gorm.DB) (*multitenancy.DB, error) {
 	return multitenancy.NewDB(&postgresAdapter{}, db), nil
+}
+
+// OpenDBURL implements [multitenancy.Adapter].
+func (p *postgresAdapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+	db, err := gorm.Open(postgres.Open(u.String()), opts...)
+	if err != nil {
+		return nil, err
+	}
+	return p.AdaptDB(ctx, db)
 }
 
 // MigrateSharedModels implements [driver.DBFactory].

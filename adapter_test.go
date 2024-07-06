@@ -3,6 +3,7 @@ package multitenancy
 import (
 	"context"
 	"errors"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,15 @@ func (m *adapter) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
 	return nil, nil
 }
 
-func TestDB(t *testing.T) {
+// OpenDBURL implements Adapter.
+func (m *adapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*DB, error) {
+	if u.Scheme == "err" {
+		return nil, errors.New("forced error")
+	}
+	return nil, nil
+}
+
+func TestAdaptDB(t *testing.T) {
 	ctx := context.Background()
 	mux := new(driverMux)
 
@@ -63,6 +72,61 @@ func TestDB(t *testing.T) {
 	}
 }
 
+func TestOpenDBURL(t *testing.T) {
+	ctx := context.Background()
+	mux := new(driverMux)
+
+	fake := &adapter{}
+	mux.Register("foo", fake)
+	mux.Register("err", fake)
+
+	for _, tc := range []struct {
+		name    string
+		url     string
+		wantErr bool
+	}{
+		{
+			name:    "empty URL",
+			wantErr: true,
+		},
+		{
+			name:    "invalid URL",
+			url:     ":foo",
+			wantErr: true,
+		},
+		{
+			name:    "invalid URL no scheme",
+			url:     "foo",
+			wantErr: true,
+		},
+		{
+			name:    "unregistered scheme",
+			url:     "bar://mydb",
+			wantErr: true,
+		},
+		{
+			name:    "func returns error",
+			url:     "err://mydb",
+			wantErr: true,
+		},
+		{
+			name: "no query options",
+			url:  "foo://mydb",
+		},
+		{
+			name: "empty query options",
+			url:  "foo://mydb?",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, gotErr := mux.OpenDB(ctx, tc.url)
+			if (gotErr != nil) != tc.wantErr {
+				t.Fatalf("got err %v, want error %v", gotErr, tc.wantErr)
+			}
+		})
+	}
+}
+
 func TestRegister(t *testing.T) {
 	fake := &adapter{}
 
@@ -83,6 +147,19 @@ func TestOpen(t *testing.T) {
 
 	// Test creating a new DB instance with an unregistered driver, should return an error.
 	_, err = Open(gorm.Dialector(&mockDialector{name: "bar"}))
+	assert.Error(t, err)
+}
+
+func TestOpenDB(t *testing.T) {
+	fake := &adapter{}
+	Register("foo2", fake)
+
+	// Test creating a new DB instance with a registered driver.
+	_, err := OpenDB(context.Background(), "foo2://mydb")
+	require.NoError(t, err)
+
+	// Test creating a new DB instance with an unregistered driver, should return an error.
+	_, err = OpenDB(context.Background(), "bar://mydb")
 	assert.Error(t, err)
 }
 

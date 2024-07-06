@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"sync"
 	"testing"
 
@@ -23,6 +24,20 @@ type mockApater struct {
 
 var _ multitenancy.Adapter = new(mockApater)
 var _ driver.DBFactory = new(mockApater)
+
+// OpenDBURL implements multitenancy.Adapter.
+func (m *mockApater) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+	opts = append(opts, &gorm.Config{
+		DryRun: true,
+	})
+	db, err := gorm.Open(tests.DummyDialector{}, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %v", err)
+	}
+	return multitenancy.NewDB(&mockApater{
+		registry: m.registry,
+	}, db), nil
+}
 
 // CurrentTenant implements [driver.DBFactory].
 func (m *mockApater) CurrentTenant(ctx context.Context, db *gorm.DB) string {

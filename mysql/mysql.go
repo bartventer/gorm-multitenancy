@@ -43,6 +43,7 @@ package mysql
 
 import (
 	"context"
+	"net/url"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -68,6 +69,15 @@ func init() { //nolint:gochecknoinits // Required for driver registration.
 // AdaptDB implements [multitenancy.Adapter].
 func (p *mysqlAdapter) AdaptDB(ctx context.Context, db *gorm.DB) (*multitenancy.DB, error) {
 	return multitenancy.NewDB(&mysqlAdapter{}, db), nil
+}
+
+// OpenDBURL implements [multitenancy.Adapter].
+func (p *mysqlAdapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+	db, err := gorm.Open(mysql.Open(u.String()), opts...)
+	if err != nil {
+		return nil, err
+	}
+	return p.AdaptDB(ctx, db)
 }
 
 // MigrateSharedModels implements [driver.DBFactory].

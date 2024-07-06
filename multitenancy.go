@@ -20,88 +20,130 @@ implementing multitenancy in Go applications.
 
 # Opening a Database Connection
 
-The package supports multitenancy for both PostgreSQL and MySQL databases.
+The package supports multitenancy for both PostgreSQL and MySQL databases, offering three methods
+for establishing a new database connection with multitenancy support:
 
-Two methods are available for establishing a new database connection with multitenancy support:
+# Approach 1: OpenDB with URL (Recommended for Most Users)
 
-# Approach 1: Unified API
-
-Utilize [Open] with a supported driver. The returned [*DB] instance not only provides a unified,
-database-agnostic API for managing tenant-specific and shared data within a multi-tenant
-application but also embeds the [gorm.DB] instance, thereby exposing all the functionality of GORM.
-This approach is recommended for users seeking an integrated experience with multitenancy features,
-allowing for seamless switching between database drivers. Starting from v8.0.0, this method is
-recommended for new users.
+[OpenDB] allows opening a database connection using a URL-like DSN string, providing a flexible
+and easy way to switch between drivers. This method abstracts the underlying driver mechanics,
+offering a straightforward connection process and a unified, database-agnostic API through the
+returned [*DB] instance, which embeds the [gorm.DB] instance.
 
 	import (
-		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/<driver>/v8"
+	    _ "github.com/bartventer/gorm-multitenancy/<driver>/v8"
+	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
 	func main() {
-		dsn := "<driver-specific DSN>"
-		db, err := multitenancy.Open(<driver>.Open(dsn))
-		if err != nil {...}
+	    url := "<driver>://user:password@host:port/dbname"
+	    db, err := multitenancy.OpenDB(context.Background(), url)
+	    if err != nil {...}
 		db.RegisterModels(ctx, ...) // Access to a database-agnostic API with GORM features
 	}
 
+This approach is useful for applications that need to dynamically switch between
+different database drivers or configurations without changing the codebase.
+
 Postgres:
 
 	import (
-		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+	    _ "github.com/bartventer/gorm-multitenancy/postgres/v8"
+	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
 	func main() {
-		dsn := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
-		db, err := multitenancy.Open(postgres.Open(dsn))
+	    url := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+	    db, err := multitenancy.OpenDB(context.Background(), url)
+	    if err != nil {...}
 	}
 
 MySQL:
 
 	import (
-		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/mysql/v8"
+	    _ "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
 	func main() {
-		dsn := "user:password@tcp(localhost:3306)/dbname"
-		db, err := multitenancy.Open(mysql.Open(dsn))
+	    url := "mysql://user:password@tcp(localhost:3306)/dbname"
+	    db, err := multitenancy.OpenDB(context.Background(), url)
+	    if err != nil {...}
 	}
 
-# Approach 2: Direct Driver API
+# Approach 2: Unified API
 
-For users who prefer the [gorm.DB] API for its direct access and only need multitenancy features
-for specific tasks, this approach allows the direct invocation of driver-specific functions.
-Initially, until the release of v8.0.0, it was the exclusive method for interacting with the
-framework. However, it's important to note that opting for this method entails managing
-database-specific operations manually, offering a lower level of abstraction compared to what the
-unified API provides.
+[Open] with a supported driver offers a unified, database-agnostic API for managing tenant-specific
+and shared data, embedding the [gorm.DB] instance. This method facilitates seamless switching between
+database drivers while maintaining access to GORM's full functionality.
+
+	import (
+	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	    "github.com/bartventer/gorm-multitenancy/<driver>/v8"
+	)
+
+	func main() {
+	    dsn := "<driver-specific DSN>"
+	    db, err := multitenancy.Open(<driver>.Open(dsn))
+	    if err != nil {...}
+	    db.RegisterModels(ctx, ...) // Access to a database-agnostic API with GORM features
+	}
 
 Postgres:
 
 	import (
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
-		"gorm.io/gorm"
+	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	    "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		// Directly call driver-specific functions
-		postgres.RegisterModels(db, ...)
+	    dsn := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
+	    db, err := multitenancy.Open(postgres.Open(dsn))
+	}
+
+MySQL:
+
+	    import (
+	        multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	        "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	    )
+
+	    func main() {
+	        dsn := "user:password@tcp(localhost:3306)/dbname"
+			db, err := multitenancy.Open(mysql.Open(dsn))
+	    }
+
+# Approach 3: Direct Driver API
+
+For direct access to the [gorm.DB] API and multitenancy features for specific tasks, this approach
+allows invoking driver-specific functions directly. It provides a lower level of abstraction,
+requiring manual management of database-specific operations. Prior to version 8, this was the
+only method available for using the package.
+
+Postgres:
+
+	import (
+	    "github.com/bartventer/gorm-multitenancy/postgres/v8"
+	    "gorm.io/gorm"
+	)
+
+	func main() {
+	    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	    // Directly call driver-specific functions
+	    postgres.RegisterModels(db, ...)
 	}
 
 MySQL:
 
 	import (
-		"github.com/bartventer/gorm-multitenancy/mysql/v8"
-		"gorm.io/gorm"
+	    "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	    "gorm.io/gorm"
 	)
 
 	func main() {
-		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-		// Directly call driver-specific functions
-		mysql.RegisterModels(db, ...)
+	    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	    // Directly call driver-specific functions
+	    mysql.RegisterModels(db, ...)
 	}
 
 # Declaring Models
