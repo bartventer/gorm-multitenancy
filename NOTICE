@@ -31,11 +31,15 @@ This product includes software developed by third parties.
    License: MIT
    Note: GORM is extensively used in this project. The MIT License text is included below to comply with the terms of the license.
 
-7. github.com/go-gorm/mysql
+7. github.com/go-gorm/postgres
    License: MIT
-   Note: GORM is extensively used in this project. The MIT License text is included below to comply with the terms of the license.
+   Note: The GORM postgres driver is used directly in this project. The MIT License text is included below to comply with the terms of the license.
 
-8. github.com/labstack/echo
+8. github.com/go-gorm/mysql
+   License: MIT
+   Note: The GORM mysq driver is used directly in this project. The MIT License text is included below to comply with the terms of the license.
+
+9. github.com/labstack/echo
    License: MIT
    Note: Echo is used in this project. The MIT License text is included below to comply with the terms of the license.
 
