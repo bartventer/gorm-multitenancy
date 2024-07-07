@@ -4,6 +4,7 @@ updates:
     directories:
       - "/"
       - "/postgres"
+      - "/mysql"
       - "/middleware/echo"
       - "/middleware/nethttp"
     reviewers:
