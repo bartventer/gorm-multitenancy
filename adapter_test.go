@@ -3,9 +3,9 @@ package multitenancy
 import (
 	"context"
 	"errors"
-	"net/url"
 	"testing"
 
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -25,7 +25,7 @@ func (m *adapter) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
 }
 
 // OpenDBURL implements Adapter.
-func (m *adapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*DB, error) {
+func (m *adapter) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gorm.Option) (*DB, error) {
 	if u.Scheme == "err" {
 		return nil, errors.New("forced error")
 	}
@@ -34,7 +34,7 @@ func (m *adapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option
 
 func TestAdaptDB(t *testing.T) {
 	ctx := context.Background()
-	mux := new(driverMux)
+	mux := new(adapterMux)
 
 	fake := &adapter{}
 	mux.Register("foo", fake)
@@ -74,7 +74,7 @@ func TestAdaptDB(t *testing.T) {
 
 func TestOpenDBURL(t *testing.T) {
 	ctx := context.Background()
-	mux := new(driverMux)
+	mux := new(adapterMux)
 
 	fake := &adapter{}
 	mux.Register("foo", fake)
@@ -116,6 +116,10 @@ func TestOpenDBURL(t *testing.T) {
 		{
 			name: "empty query options",
 			url:  "foo://mydb?",
+		},
+		{
+			name: "valid URL",
+			url:  "foo://user:password@tcp(localhost:3306)/dbname",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

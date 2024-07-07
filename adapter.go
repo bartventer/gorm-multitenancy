@@ -4,26 +4,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"sync"
 
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	"gorm.io/gorm"
 )
 
 type (
 
-	// Adapter defines an interface for enhancing gorm.DB instances with additional functionalities.
+	// Adapter defines an interface for enhancing [gorm.DB] instances with additional functionalities.
 	Adapter interface {
-		// AdaptDB enhances an existing gorm.DB instance with additional functionalities and returns
-		// a new DB instance. The returned DB instance should be used by a single goroutine at a time
+		// AdaptDB enhances an existing [gorm.DB] instance with additional functionalities and returns
+		// a new [DB] instance. The returned DB instance should be used by a single goroutine at a time
 		// to ensure thread safety and prevent concurrent access issues.
 		AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error)
 
-		// OpenDBURL creates and returns a new DB instance using the provided URL. It returns an error
+		// OpenDBURL creates and returns a new [DB] instance using the provided URL. It returns an error
 		// if the URL is invalid or the adapter fails to open the database. The URL must follow a standard
 		// format, using the scheme to determine the driver.
-		OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*DB, error)
+		OpenDBURL(ctx context.Context, u *driver.URL, opts ...gorm.Option) (*DB, error)
 	}
 
 	// adapterMux is a multiplexer that holds a map of driver names to their respective adapters.
@@ -63,9 +63,9 @@ func (mux *adapterMux) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
 // OpenDB creates a new [DB] instance using the provided URL string and returns it.
 // It returns an error if the URL is invalid or if the adapter fails to open the database.
 func (mux *adapterMux) OpenDB(ctx context.Context, urlstr string, opts ...gorm.Option) (*DB, error) {
-	u, err := url.Parse(urlstr)
+	u, err := driver.ParseURL(urlstr)
 	if err != nil {
-		return nil, gmterrors.New(fmt.Errorf("failed to parse URL: %w", err))
+		return nil, gmterrors.New(err)
 	}
 	driverName := u.Scheme
 	mux.mu.RLock()
