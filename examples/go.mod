@@ -14,18 +14,15 @@ replace github.com/bartventer/gorm-multitenancy/middleware/echo/v8 => ../middlew
 
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../middleware/nethttp
 
-// TODO: Remove once github.com/testcontainers/testcontainers-go is updated (from v0.31.0) to use the latest version of github.com/docker/docker
-replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
-
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.0.0
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.0.0
-	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.0.0
-	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.0.0
-	github.com/bartventer/gorm-multitenancy/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/v8 v8.1.0
 	github.com/docker/go-connections v0.5.0
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/testcontainers/testcontainers-go v0.31.0
+	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/urfave/negroni v1.0.0
 	gorm.io/gorm v1.25.10
 )
@@ -90,7 +87,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
-	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect

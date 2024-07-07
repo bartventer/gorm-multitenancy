@@ -6,13 +6,10 @@ toolchain go1.22.5
 
 replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
-// TODO: Remove once github.com/testcontainers/testcontainers-go is updated (from v0.31.0) to use the latest version of github.com/docker/docker
-replace github.com/docker/docker => github.com/docker/docker v26.1.4+incompatible
-
 require (
-	github.com/bartventer/gorm-multitenancy/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/v8 v8.1.0
 	github.com/stretchr/testify v1.9.0
-	github.com/testcontainers/testcontainers-go v0.31.0
+	github.com/testcontainers/testcontainers-go v0.32.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.10
 )
