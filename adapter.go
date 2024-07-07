@@ -11,32 +11,31 @@ import (
 	"gorm.io/gorm"
 )
 
-// Adapater describes the interface for enhancing existing [gorm.DB] instances with additional
-// functionalities.
-type Adapter interface {
-	// AdaptDB takes an existing [gorm.DB] instance and returns a new [DB] instance adapted with
-	// additional functionalities.
-	//
-	// The returned [DB] instance is intended to be used by a single goroutine at a time,
-	// ensuring thread safety and avoiding concurrent access issues.
-	AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error)
+type (
 
-	// OpenDBURL creates a new [DB] instance using the provided URL and returns it.
-	// It returns an error if the URL is invalid or if the adapter fails to open the database.
-	//
-	// The URL must be in a standard url format, as the scheme is used to determine the driver to use.
-	OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*DB, error)
-}
+	// Adapter defines an interface for enhancing gorm.DB instances with additional functionalities.
+	Adapter interface {
+		// AdaptDB enhances an existing gorm.DB instance with additional functionalities and returns
+		// a new DB instance. The returned DB instance should be used by a single goroutine at a time
+		// to ensure thread safety and prevent concurrent access issues.
+		AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error)
 
-// driverMux acts as a registry for database driver openers, allowing dynamic driver management.
-type driverMux struct {
-	mu      sync.RWMutex       // Protects access to the drivers map.
-	drivers map[string]Adapter // Maps driver names to their respective openers.
-}
+		// OpenDBURL creates and returns a new DB instance using the provided URL. It returns an error
+		// if the URL is invalid or the adapter fails to open the database. The URL must follow a standard
+		// format, using the scheme to determine the driver.
+		OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*DB, error)
+	}
+
+	// adapterMux is a multiplexer that holds a map of driver names to their respective adapters.
+	adapterMux struct {
+		mu      sync.RWMutex       // Protects access to the drivers map.
+		drivers map[string]Adapter // Maps driver names to their respective openers.
+	}
+)
 
 // Register adds a new adapter to the registry under the specified driver name.
 // It panics if a Adapter for the given driver name is already registered.
-func (mux *driverMux) Register(driver string, adapter Adapter) {
+func (mux *adapterMux) Register(driver string, adapter Adapter) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	if mux.drivers == nil {
@@ -50,7 +49,7 @@ func (mux *driverMux) Register(driver string, adapter Adapter) {
 
 // AdaptDB creates a new [DB] instance using the provided db instance and driver name.
 // It returns an error if no adapter is registered for the given driver name.
-func (mux *driverMux) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
+func (mux *adapterMux) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
 	driverName := db.Name()
 	mux.mu.RLock()
 	adapter, ok := mux.drivers[driverName]
@@ -63,7 +62,7 @@ func (mux *driverMux) AdaptDB(ctx context.Context, db *gorm.DB) (*DB, error) {
 
 // OpenDB creates a new [DB] instance using the provided URL string and returns it.
 // It returns an error if the URL is invalid or if the adapter fails to open the database.
-func (mux *driverMux) OpenDB(ctx context.Context, urlstr string, opts ...gorm.Option) (*DB, error) {
+func (mux *adapterMux) OpenDB(ctx context.Context, urlstr string, opts ...gorm.Option) (*DB, error) {
 	u, err := url.Parse(urlstr)
 	if err != nil {
 		return nil, gmterrors.New(fmt.Errorf("failed to parse URL: %w", err))
@@ -78,7 +77,7 @@ func (mux *driverMux) OpenDB(ctx context.Context, urlstr string, opts ...gorm.Op
 	return adapter.OpenDBURL(ctx, u, opts...)
 }
 
-var defaultDriverMux = new(driverMux)
+var defaultDriverMux = new(adapterMux)
 
 // Register adds a new [Adapter] to the default registry under the specified driver name.
 // It panics if an [Adapter] for the given driver name is already registered.
@@ -122,14 +121,10 @@ func Open(dialector gorm.Dialector, opts ...gorm.Option) (*DB, error) {
 	return defaultDriverMux.AdaptDB(context.TODO(), db)
 }
 
-// OpenDB creates a new [DB] instance using the provided URL string and returns it.
-//
-// The URL string must be in a standard url format, as the scheme is used to determine
-// the driver to use. The following are examples of valid URL strings for MySQL and
-// PostgreSQL:
-//
-//	"mysql://user:password@tcp(localhost:3306)/dbname"
-//	"postgres://user:password@localhost:5432/dbname"
+// OpenDB creates a new DB instance using the provided URL string and returns it.
+// The URL string must be in a standard URL format, as the scheme is used to determine
+// the driver to use. Refer to the driver-specific documentation for more information
+// on the URL format.
 //
 // MySQL:
 //
@@ -156,6 +151,6 @@ func Open(dialector gorm.Dialector, opts ...gorm.Option) (*DB, error) {
 //		db, err := multitenancy.OpenDB(context.Background(), url)
 //		if err != nil {...}
 //	}
-func OpenDB(ctx context.Context, urlstr string) (*DB, error) {
-	return defaultDriverMux.OpenDB(ctx, urlstr)
+func OpenDB(ctx context.Context, urlstr string, opts ...gorm.Option) (*DB, error) {
+	return defaultDriverMux.OpenDB(ctx, urlstr, opts...)
 }
