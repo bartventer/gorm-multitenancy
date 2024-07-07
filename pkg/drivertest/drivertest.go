@@ -71,7 +71,7 @@ func withDB[TB testing.TB](t TB, newHarness HarnessMaker[TB], f func(TB, *multit
 	db := multitenancy.NewDB(a, gdb) // multitenancy db
 	require.NoError(t, err)
 
-	f(t, db, h.Options())
+	f(t, db.Session(&gorm.Session{}), h.Options())
 }
 
 // testRegisterModels tests the RegisterModels method.
@@ -188,7 +188,6 @@ func testUseTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 		assert.NoError(t, err)
 	})
 
-	// Check reset
 	t.Run("TestReset", func(t *testing.T) {
 		ctx := context.Background()
 		reset, err := db.UseTenant(ctx, tenant.ID)
@@ -198,8 +197,7 @@ func testUseTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 		assert.NoError(t, err)
 	})
 
-	// Check invalid empty tenant
-	t.Run("TestReset", func(t *testing.T) {
+	t.Run("TestEmptyTenant", func(t *testing.T) {
 		ctx := context.Background()
 		_, err := db.UseTenant(ctx, "")
 		require.Error(t, err)
