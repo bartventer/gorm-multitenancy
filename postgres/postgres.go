@@ -11,6 +11,14 @@ PostgreSQL database instance. This approach facilitates efficient resource utili
 and simplifies maintenance, making it ideal for applications that require flexible
 data isolation without the overhead of managing multiple database instances.
 
+# URL Format
+
+The URL format for PostgreSQL databases is as follows:
+
+	postgres://user:password@localhost:5432/dbname
+
+See the [PostgreSQL connection strings] documentation for more information.
+
 # Model Registration
 
 To register models for multitenancy support, use [RegisterModels]. This should
@@ -43,22 +51,21 @@ To configure the database for operations specific to a tenant, use [schema.SetSe
 To retrieve the identifier for the current tenant context, use [schema.CurrentSearchPath].
 
 [PostgreSQL]: https://www.postgresql.org
+[PostgreSQL connection strings]: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING-URIS
 */
 package postgres
 
 import (
 	"context"
-	"net/url"
 
 	"github.com/bartventer/gorm-multitenancy/postgres/v8/schema"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-// DriverName specifies the PostgreSQL driver name, used for driver registration.
-var DriverName = postgres.Dialector{}.Name()
+// DriverName is the name of the PostgreSQL driver.
+const DriverName = "postgres"
 
 var _ multitenancy.Adapter = new(postgresAdapter)
 var _ driver.DBFactory = new(postgresAdapter)
@@ -68,6 +75,7 @@ type postgresAdapter struct{}
 
 func init() { //nolint:gochecknoinits // Required for driver registration.
 	multitenancy.Register(DriverName, &postgresAdapter{})
+	multitenancy.Register("postgresql", &postgresAdapter{}) // Alias for postgres driver.
 }
 
 // AdaptDB implements [multitenancy.Adapter].
@@ -76,8 +84,8 @@ func (p *postgresAdapter) AdaptDB(ctx context.Context, db *gorm.DB) (*multitenan
 }
 
 // OpenDBURL implements [multitenancy.Adapter].
-func (p *postgresAdapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
-	db, err := gorm.Open(postgres.Open(u.String()), opts...)
+func (p *postgresAdapter) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+	db, err := gorm.Open(Open(u.Raw()), opts...)
 	if err != nil {
 		return nil, err
 	}

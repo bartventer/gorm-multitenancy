@@ -10,6 +10,14 @@ allows for complete data isolation by utilizing separate databases for each tena
 This approach ensures maximum security and performance isolation between tenants,
 making it suitable for applications with stringent data security requirements.
 
+# URL Format
+
+The URL format for MySQL databases is as follows:
+
+	mysql://user:password@tcp(localhost:3306)/dbname
+
+See the [MySQL connection strings] documentation for more information.
+
 # Model Registration
 
 To register models for multitenancy support, use [RegisterModels]. This should
@@ -38,23 +46,23 @@ To clean up the database for a removed tenant, use [DropDatabaseForTenant].
 To configure the database for operations specific to a tenant, use [schema.UseDatabase].
 
 [MySQL]: https://www.mysql.com
+[MySQL connection strings]: https://dev.mysql.com/doc/refman/8.4/en/connecting-using-uri-or-key-value-pairs.html#connecting-using-uri
 */
 package mysql
 
 import (
 	"context"
-	"net/url"
 
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/dsn"
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 )
 
-// DriverName specifies the MySQL driver name, used for driver registration.
-var DriverName = mysql.Dialector{}.Name()
+// DriverName is the name of the MySQL driver.
+const DriverName = "mysql"
 
 var _ multitenancy.Adapter = new(mysqlAdapter)
 var _ driver.DBFactory = new(mysqlAdapter)
@@ -64,6 +72,7 @@ type mysqlAdapter struct{}
 
 func init() { //nolint:gochecknoinits // Required for driver registration.
 	multitenancy.Register(DriverName, &mysqlAdapter{})
+	multitenancy.Register("mysqlx", &mysqlAdapter{})
 }
 
 // AdaptDB implements [multitenancy.Adapter].
@@ -72,8 +81,9 @@ func (p *mysqlAdapter) AdaptDB(ctx context.Context, db *gorm.DB) (*multitenancy.
 }
 
 // OpenDBURL implements [multitenancy.Adapter].
-func (p *mysqlAdapter) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
-	db, err := gorm.Open(mysql.Open(u.String()), opts...)
+func (p *mysqlAdapter) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+	urlstr := dsn.StripSchemeFromURL(u.Raw())
+	db, err := gorm.Open(Open(urlstr), opts...)
 	if err != nil {
 		return nil, err
 	}
