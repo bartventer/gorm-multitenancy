@@ -9,8 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/bartventer/gorm-multitenancy/mysql/v8"
-	"github.com/bartventer/gorm-multitenancy/postgres/v8"
+	// Enable MySQL driver
+	_ "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	// Enable PostgreSQL driver
+	_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
+
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -82,11 +85,13 @@ func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup f
 		}
 	}
 
-	host, err := container.Host(ctx)
+	var host string
+	host, err = container.Host(ctx)
 	if err != nil {
 		return nil, cleanup, err
 	}
-	natPort, err := container.MappedPort(ctx, nat.Port(config.Port))
+	var natPort nat.Port
+	natPort, err = container.MappedPort(ctx, nat.Port(config.Port))
 	if err != nil {
 		return nil, cleanup, err
 	}
@@ -96,20 +101,18 @@ func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup f
 	case "postgres":
 		dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			config.User, config.Password, host, natPort.Port(), config.Name)
-		db, err = multitenancy.Open(postgres.Open(dsn), &gorm.Config{})
 	case "mysql":
-		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+		dsn = fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s?parseTime=true",
 			config.User, config.Password, host, natPort.Port(), config.Name)
-		db, err = multitenancy.Open(mysql.Open(dsn), &gorm.Config{})
 	default:
-		err = errors.New("invalid driver")
+		return nil, cleanup, errors.New("unsupported driver")
 	}
+	db, err = multitenancy.OpenDB(ctx, dsn, &gorm.Config{})
 	if err != nil {
 		log.Println("Failed to connect to database:", err)
 		return nil, cleanup, err
-	} else {
-		log.Println("Connected to database.")
-		log.Printf("DSN: %q", dsn)
 	}
+	log.Println("Connected to database.")
+	log.Printf("DSN: %q", dsn)
 	return db, cleanup, nil
 }
