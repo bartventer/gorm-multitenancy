@@ -30,6 +30,9 @@ and easy way to switch between drivers. This method abstracts the underlying dri
 offering a straightforward connection process and a unified, database-agnostic API through the
 returned [*DB] instance, which embeds the [gorm.DB] instance.
 
+For constructing the DSN string, refer to the driver-specific documentation for the required
+parameters and formats.
+
 	import (
 	    _ "github.com/bartventer/gorm-multitenancy/<driver>/v8"
 	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
@@ -74,8 +77,10 @@ MySQL:
 # Approach 2: Unified API
 
 [Open] with a supported driver offers a unified, database-agnostic API for managing tenant-specific
-and shared data, embedding the [gorm.DB] instance. This method facilitates seamless switching between
-database drivers while maintaining access to GORM's full functionality.
+and shared data, embedding the [gorm.DB] instance. This method allows developers to initialize and
+configure the dialect themselves before opening the database connection, providing granular control
+over the database connection and configuration. It facilitates seamless switching between database
+drivers while maintaining access to GORM's full functionality.
 
 	import (
 	    multitenancy "github.com/bartventer/gorm-multitenancy/v8"
