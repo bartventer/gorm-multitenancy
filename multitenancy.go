@@ -231,7 +231,7 @@ Use [mysql.RegisterModels] to register models.
 
 To ensure data integrity and schema isolation across tenants, the AutoMigrate method
 has been disabled. Instead, use the provided shared and tenant-specific migration methods.
-[driver.ErrInvalidMigration] is returned if the migration method is called directly.
+[driver.ErrInvalidMigration] is returned if the AutoMigrate method is called directly.
 
 # Shared Model Migrations
 
