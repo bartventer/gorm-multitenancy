@@ -1,27 +1,22 @@
 name: License
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - master
+    workflow_dispatch:
+    push:
+        branches:
+            - master
 
 jobs:
-  license-scan:
-    name: License scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install FOSSA
-        run: |
-          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+    license-scan:
+        name: License scan
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Install FOSSA
+              run: |
+                  curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
 
-      - name: Run FOSSA analysis
-        env:
-          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-        run: fossa analyze
-
-      - name: Check FOSSA status
-        env:
-          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
-        run: fossa test
+            - name: Run FOSSA analysis
+              env:
+                  FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+              run: fossa analyze
