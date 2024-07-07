@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"sync"
 	"testing"
 
@@ -26,7 +25,7 @@ var _ multitenancy.Adapter = new(mockApater)
 var _ driver.DBFactory = new(mockApater)
 
 // OpenDBURL implements multitenancy.Adapter.
-func (m *mockApater) OpenDBURL(ctx context.Context, u *url.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
+func (m *mockApater) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gorm.Option) (*multitenancy.DB, error) {
 	opts = append(opts, &gorm.Config{
 		DryRun: true,
 	})

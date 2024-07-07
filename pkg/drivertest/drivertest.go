@@ -54,7 +54,7 @@ func RunConformanceTests(t *testing.T, newHarness HarnessMaker[*testing.T]) {
 	t.Run("UseTenant", func(t *testing.T) { withDB(t, newHarness, testUseTenant) })
 	t.Run("CurrentTenant", func(t *testing.T) { withDB(t, newHarness, testCurrentTenant) })
 	t.Run("TenantModel", func(t *testing.T) { withDB(t, newHarness, testTenantModel) })
-	t.Run("InvalidAutoMigrate", func(t *testing.T) { withDB(t, newHarness, testInvalidAutoMigrate) })
+	t.Run("DBInstance", func(t *testing.T) { withDB(t, newHarness, testDBInstance) })
 }
 
 // withDB creates a new DB and runs the test function.
@@ -288,15 +288,34 @@ func testTenantModel(t *testing.T, db *multitenancy.DB, opts Options) {
 	}
 }
 
-// testInvalidAutoMigrate tests the invalid auto migration.
-func testInvalidAutoMigrate(t *testing.T, db *multitenancy.DB, opts Options) {
+// testDBInstance tests the DB instance.
+func testDBInstance(t *testing.T, db *multitenancy.DB, opts Options) {
 	t.Parallel()
 	if opts.IsMock {
 		t.Skip("skipping test for mock implementations; not supported")
 	}
 
-	err := db.AutoMigrate(&userShared{})
-	assert.ErrorIs(t, err, driver.ErrInvalidMigration)
+	t.Run("InvalidAutoMigrate", func(t *testing.T) {
+		err := db.AutoMigrate(&userShared{})
+		require.ErrorIs(t, err, driver.ErrInvalidMigration)
+	})
+
+	t.Run("Transaction", func(t *testing.T) {
+		err := db.Transaction(func(tx *multitenancy.DB) error {
+			sqlTx, ok := tx.Statement.ConnPool.(gorm.TxCommitter)
+			require.True(t, ok, "expected sql.Tx")
+			require.NotNil(t, sqlTx, "expected sql.Tx")
+			return nil
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("Begin", func(t *testing.T) {
+		tx := db.Begin()
+		sqlTx, ok := tx.Statement.ConnPool.(gorm.TxCommitter)
+		require.True(t, ok, "expected sql.Tx")
+		require.NotNil(t, sqlTx, "expected sql.Tx")
+	})
 }
 
 // setupTenant sets up a tenant for testing.
