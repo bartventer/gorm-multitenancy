@@ -7,7 +7,7 @@ on:
             - "v[0-9]+.[0-9]+.[0-9]+"
             - "[a-z]+/v[0-9]+.[0-9]+.[0-9]+"
     workflow_run:
-        workflows: ["Test"]
+        workflows: ["Tests"]
         branches: [master]
         types: [completed]
 
