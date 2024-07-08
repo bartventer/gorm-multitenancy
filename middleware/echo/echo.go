@@ -103,7 +103,7 @@ func WithTenant(config WithTenantConfig) echo.MiddlewareFunc {
 		config.Skipper = DefaultWithTenantConfig.Skipper
 	}
 
-	if config.TenantGetters == nil {
+	if len(config.TenantGetters) == 0 {
 		config.TenantGetters = DefaultWithTenantConfig.TenantGetters
 	}
 

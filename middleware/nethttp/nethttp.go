@@ -140,7 +140,7 @@ func WithTenant(config WithTenantConfig) func(http.Handler) http.Handler {
 		config.Skipper = DefaultWithTenantConfig.Skipper
 	}
 
-	if config.TenantGetters == nil {
+	if len(config.TenantGetters) == 0 {
 		config.TenantGetters = DefaultWithTenantConfig.TenantGetters
 	}
 
