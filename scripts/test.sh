@@ -20,6 +20,7 @@ gotestflags=(
     ["./postgres"]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./mysql"]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./middleware/echo"]="${gotestflagsbase[@]}"
+    ["./middleware/gin"]="${gotestflagsbase[@]}"
     ["./middleware/nethttp"]="${gotestflagsbase[@]}"
 )
 

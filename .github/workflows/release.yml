@@ -25,6 +25,7 @@ jobs:
                     - "postgres"
                     - "mysql"
                     - "middleware/echo"
+                    - "middleware/gin"
                     - "middleware/nethttp"
         permissions:
             contents: write
