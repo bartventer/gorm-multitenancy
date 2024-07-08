@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"slices"
+	"syscall"
+	"time"
 
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/echoserver"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/ginserver"
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/initdb"
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/nethttpserver"
+	"github.com/fatih/color"
 )
 
 type options struct {
@@ -21,7 +26,7 @@ type options struct {
 var opts options
 
 func (o *options) validate() error {
-	validServers := []string{"echo", "nethttp"}
+	validServers := []string{"echo", "gin", "nethttp"}
 	validDrivers := []string{"postgres", "mysql"}
 	if !slices.Contains(validServers, o.server) {
 		return fmt.Errorf("invalid server: %s", o.server)
@@ -33,8 +38,19 @@ func (o *options) validate() error {
 }
 
 func main() {
+	color.Cyan(`
+	Welcome to the GORM Multitenancy Example Application! 🚀
+	We're glad you're here. Let's explore multitenancy together.
+	`)
+
+	color.Yellow(`
+	Resources:
+	- API Usage: https://github.com/bartventer/gorm-multitenancy/tree/master/examples/USAGE.md
+	- Documentation & Guides: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8
+	`)
+
 	flag.StringVar(&opts.driver, "driver", "postgres", "Specifies the database driver to use. Options: 'postgres', 'mysql'.")
-	flag.StringVar(&opts.server, "server", "echo", "Specifies the HTTP server to run and the gorm-multitenancy middleware to use. Options: 'echo', 'nethttp'.")
+	flag.StringVar(&opts.server, "server", "echo", "Specifies the HTTP server to run and the gorm-multitenancy middleware to use. Options: 'echo', 'gin', 'nethttp'.")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -50,35 +66,68 @@ Note: The server and driver flags are optional. When not specified, the default 
 	}
 	flag.Parse()
 	if err := opts.validate(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		color.Red("error: %v\n", err)
 		flag.Usage()
 	}
 
 	log.SetPrefix("[gorm-multitenancy/examples📦]: ")
 	log.SetFlags(log.LstdFlags)
-	log.Printf("Starting server with driver: %q, server: %q", opts.driver, opts.server)
+	color.Magenta(`
+	Starting server with the following options:
+	- Server: %s
+	- Driver: %s
+	`, opts.server, opts.driver)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		log.Println("Shutting down server... 🛑")
+		cancel()
+	}()
+
 	db, cleanup, err := initdb.Connect(ctx, opts.driver)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to database: %v\n", err)
 	}
 	defer cleanup()
 	err = initdb.CreateExampleData(ctx, db)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create example data: %v\n", err)
 	}
 
-	// Start server
 	switch opts.server {
-	case "nethttp":
-		nethttpserver.Start(db)
 	case "echo":
-		echoserver.Start(db)
+		err = echoserver.Start(ctx, db)
+	case "gin":
+		err = ginserver.Start(ctx, db)
+	case "nethttp":
+		err = nethttpserver.Start(ctx, db)
 	default:
 		log.Println("invalid server")
+		cancel()
 	}
 
-	log.Println("Adios! 🚀")
+	if err != nil {
+		log.Printf("Failed to start server: %v\n", err)
+		cancel()
+	}
+
+	<-ctx.Done()
+
+	color.Magenta(`
+	Thank you for using the GORM Multitenancy Example Application! 🙏
+	We hope you found it informative and helpful.
+	If you have any questions or feedback, please let us know.
+	
+	For more information, visit https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8
+
+	Until next time! Happy coding! 🚀
+	`)
+
+	time.Sleep(2 * time.Second)
+	os.Exit(0)
 }

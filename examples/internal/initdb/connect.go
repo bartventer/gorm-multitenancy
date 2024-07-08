@@ -11,6 +11,8 @@ import (
 
 	// Enable MySQL driver
 	_ "github.com/bartventer/gorm-multitenancy/mysql/v8"
+	"github.com/fatih/color"
+
 	// Enable PostgreSQL driver
 	_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
@@ -22,6 +24,10 @@ import (
 )
 
 func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup func(), err error) {
+	color.Set(color.FgYellow, color.Bold)
+	defer color.Unset()
+	log.Printf("Connecting to %q database...", driver)
+	log.Println("This may take a few seconds...")
 	var config = struct {
 		User, Password, Name, Port string
 	}{
@@ -112,6 +118,7 @@ func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup f
 		log.Println("Failed to connect to database:", err)
 		return nil, cleanup, err
 	}
+	color.Set(color.FgGreen, color.Bold)
 	log.Println("Connected to database.")
 	log.Printf("DSN: %q", dsn)
 	return db, cleanup, nil

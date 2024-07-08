@@ -8,13 +8,17 @@ import (
 
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/models"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/fatih/color"
 )
 
 var once sync.Once
 
 func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 	once.Do(func() {
+		color.Set(color.FgYellow, color.Bold)
+		defer color.Unset()
 		log.Println("Creating example data...")
+		log.Println("This may take a few seconds...")
 		if err = db.RegisterModels(ctx, &models.Tenant{}, &models.Book{}); err != nil {
 			return
 		}
@@ -40,6 +44,7 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 		if err = db.Create(&tenants).Error; err != nil {
 			return
 		}
+		color.Set(color.FgYellow)
 		log.Printf("Created %d tenants", len(tenants))
 		for _, tenant := range tenants {
 			log.Printf("Tenant ID:%d", tenant.ID)
@@ -72,11 +77,14 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 			if err = db.Create(books).Error; err != nil {
 				return
 			}
-			log.Printf("Created %d books for tenant: %s", len(books), tenant.SchemaName)
+			color.Set(color.FgYellow)
+			log.Printf("Created %d books for tenant: %q", len(books), tenant.SchemaName)
 			for _, book := range books {
-				log.Printf("Book ID:%d Name:%s TenantSchema:%s", book.ID, book.Name, book.TenantSchema)
+				log.Printf("Book ID:%d Name:%q TenantSchema:%q", book.ID, book.Name, book.TenantSchema)
 			}
 		}
+		color.Set(color.FgGreen, color.Bold)
+		log.Println("OK. Example data created.")
 	})
 
 	if err != nil {
@@ -84,6 +92,5 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 		return err
 	}
 
-	log.Println("OK. Example data created.")
 	return nil
 }

@@ -18,10 +18,9 @@ import (
 	"github.com/urfave/negroni"
 )
 
-// Start starts the HTTP server.
-func Start(db *multitenancy.DB) {
+func Start(ctx context.Context, db *multitenancy.DB) error {
 	cr := &controller{db: db}
-	cr.start()
+	return cr.start(ctx)
 }
 
 type controller struct {
@@ -29,11 +28,10 @@ type controller struct {
 	once sync.Once
 }
 
-func (cr *controller) start() {
+func (cr *controller) start(ctx context.Context) (err error) {
 	cr.once.Do(func() {
 		mux := http.NewServeMux()
 
-		// routes
 		mux.HandleFunc("POST /tenants", cr.createTenantHandler)
 		mux.HandleFunc("GET /tenants/{id}", cr.getTenantHandler)
 		mux.HandleFunc("DELETE /tenants/{id}", cr.deleteTenantHandler)
@@ -42,30 +40,44 @@ func (cr *controller) start() {
 		mux.HandleFunc("DELETE /books/{id}", cr.deleteBookHandler)
 		mux.HandleFunc("PUT /books/{id}", cr.updateBookHandler)
 
-		// Global middleware
-		tenantMux := nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
+		n := negroni.Classic()
+		n.UseHandler(nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
 			Skipper: func(r *http.Request) bool {
 				return strings.HasPrefix(r.URL.Path, "/tenants")
 			},
-		})(mux)
-		n := negroni.Classic()
-		n.UseHandler(tenantMux)
+		})(mux))
 
-		// Start server
-		server := &http.Server{
+		srv := &http.Server{
 			Addr:         ":8080",
 			Handler:      n,
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 		}
-		log.Printf("Server listening on %s", server.Addr)
-		if err := server.ListenAndServe(); err != nil {
-			log.Fatalf("failed to start server: %v", err)
+
+		go func() {
+			if serveErr := srv.ListenAndServe(); serveErr != nil && serveErr != http.ErrServerClosed {
+				log.Printf("listen: %s\n", serveErr)
+				err = serveErr
+			}
+		}()
+
+		<-ctx.Done()
+
+		ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if shutdownErr := srv.Shutdown(ctxShutdown); shutdownErr != nil {
+			log.Printf("Server forced to shutdown: %v", shutdownErr)
+			if err == nil {
+				err = shutdownErr
+			}
 		}
+
+		log.Println("Server exiting")
 	})
+	return err
 }
 
-// TenantFromContext returns the tenant from the given HTTP request's context.
 func TenantFromContext(ctx context.Context) (string, error) {
 	tenant, ok := ctx.Value(nethttpmw.TenantKey).(string)
 	if !ok {

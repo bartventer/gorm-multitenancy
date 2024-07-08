@@ -3,9 +3,11 @@ package echoserver
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/models"
 	echomw "github.com/bartventer/gorm-multitenancy/middleware/echo/v8"
@@ -20,44 +22,60 @@ type controller struct {
 	once sync.Once
 }
 
-// Start starts the Echo server.
-func Start(mtDB *multitenancy.DB) {
-	cr := &controller{db: mtDB}
-	cr.start()
+func Start(ctx context.Context, db *multitenancy.DB) error {
+	cr := &controller{db: db}
+	return cr.start(ctx)
 }
 
-func (cr *controller) start() {
+func (cr *controller) start(ctx context.Context) (err error) {
 	cr.once.Do(func() {
 		e := echo.New()
 		e.Use(middleware.Logger())
 		e.Use(middleware.Recover())
-
-		// create tenant middleware
-		mw := echomw.WithTenant(echomw.WithTenantConfig{
+		e.Use(echomw.WithTenant(echomw.WithTenantConfig{
 			Skipper: func(c echo.Context) bool {
 				return strings.HasPrefix(c.Request().URL.Path, "/tenants") // skip tenant routes
 			},
-		})
-		e.Use(mw)
+		}))
 
-		// routes
 		e.POST("/tenants", cr.createTenantHandler)
 		e.GET("/tenants/:id", cr.getTenantHandler)
 		e.DELETE("/tenants/:id", cr.deleteTenantHandler)
-
 		e.GET("/books", cr.getBooksHandler)
 		e.POST("/books", cr.createBookHandler)
 		e.DELETE("/books/:id", cr.deleteBookHandler)
 		e.PUT("/books/:id", cr.updateBookHandler)
 
-		// start echo server
-		if err := e.Start(":8080"); err != nil {
-			panic(err)
+		srv := &http.Server{
+			Addr:         ":8080",
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
 		}
+
+		go func() {
+			if serveErr := e.StartServer(srv); serveErr != nil {
+				log.Printf("listen: %s\n", serveErr)
+				err = serveErr
+			}
+		}()
+
+		<-ctx.Done()
+
+		ctxShutdown, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		if shutdownErr := e.Shutdown(ctxShutdown); shutdownErr != nil {
+			log.Printf("Server forced to shutdown: %v", shutdownErr)
+			if err == nil {
+				err = shutdownErr
+			}
+		}
+
+		log.Println("Server exiting")
 	})
+	return err
 }
 
-// TenantFromContext returns the tenant from the context.
 func TenantFromContext(c echo.Context) (string, error) {
 	tenantID, ok := c.Get(echomw.TenantKey.String()).(string)
 	if !ok {
