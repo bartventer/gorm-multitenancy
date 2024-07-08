@@ -51,6 +51,7 @@ Depending on the database in use, this package utilizes either the _"shared data
 ## Router Integration
 
 - Echo - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v8)
+- Gin - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/gin/v8)
 - Net/HTTP - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8)
 
 ## Installation
@@ -76,6 +77,9 @@ Optionally, install the router-specific middleware:
 ```bash
 # Echo
 go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v8
+
+# Gin
+go get -u github.com/bartventer/gorm-multitenancy/middleware/gin/v8
 
 # Net/HTTP
 go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8
