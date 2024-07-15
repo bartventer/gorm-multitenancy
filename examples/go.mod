@@ -28,7 +28,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/urfave/negroni v1.0.0
-	gorm.io/gorm v1.25.10
+	gorm.io/gorm v1.25.11
 )
 
 require (
