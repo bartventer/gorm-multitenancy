@@ -42,9 +42,9 @@ jobs:
                     ${{ github.workspace }}/package.json
             - name: 'Run semantic-release in "${{ matrix.directory }}"'
               working-directory: ${{ matrix.directory }}
+              shell: bash
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  cp ${{ github.workspace }}/yarn.lock ${{ github.workspace }}/package.json .
-                  yarn install --modules-folder ${{ github.workspace }}/node_modules
-                  npx semantic-release
+                yarn install --modules-folder ${{ github.workspace }}/node_modules
+                npx semantic-release
