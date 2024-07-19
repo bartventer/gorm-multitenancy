@@ -1,0 +1,24 @@
+name: "Setup Go environment for the gorm-multitenancy project"
+author: "Bart Venter <bartventer@outlook.com>"
+branding:
+  icon: "settings"
+  color: "blue"
+description: "Sets up the Go environment for the gorm-multitenancy project"
+inputs:
+  go-version:
+    description: "The Go version to use"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache-dependency-path: |
+          ${{ github.workspace }}/go.sum
+          ${{ github.workspace }}/postgres/go.sum
+          ${{ github.workspace }}/mysql/go.sum
+          ${{ github.workspace }}/middleware/echo/go.sum
+          ${{ github.workspace }}/middleware/gin/go.sum
+          # middlware/nethttp has no go.sum file
