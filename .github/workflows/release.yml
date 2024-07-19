@@ -35,8 +35,7 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   check-latest: true
-                  node-version: "22"
-                  cache: "yarn"
+                  node-version: ">=22"
             - name: 'Run semantic-release in "${{ matrix.directory }}"'
               working-directory: ${{ matrix.directory }}
               env:
