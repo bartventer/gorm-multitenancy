@@ -32,10 +32,15 @@ jobs:
             issues: write
         steps:
             - uses: actions/checkout@v4
+            - uses: actions/setup-node@v2
+              with:
+                  check-latest: true
+                  node-version: "22"
+                  cache: "yarn"
             - name: 'Run semantic-release in "${{ matrix.directory }}"'
               working-directory: ${{ matrix.directory }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  yarn global add semantic-release@17 @semantic-release/git
+                  yarn global add semantic-release@24 @semantic-release/git
                   semantic-release
