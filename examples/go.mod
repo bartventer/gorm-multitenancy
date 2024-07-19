@@ -17,18 +17,18 @@ replace github.com/bartventer/gorm-multitenancy/middleware/gin/v8 => ../middlewa
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../middleware/nethttp
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.1.0
-	github.com/bartventer/gorm-multitenancy/middleware/gin/v8 v8.0.0-00010101000000-000000000000
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.1.0
-	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.1.0
-	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.1.0
-	github.com/bartventer/gorm-multitenancy/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.3.0
+	github.com/bartventer/gorm-multitenancy/middleware/gin/v8 v8.0.0
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.3.0
+	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.3.0
+	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.3.0
+	github.com/bartventer/gorm-multitenancy/v8 v8.3.0
 	github.com/docker/go-connections v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/urfave/negroni v1.0.0
-	gorm.io/gorm v1.25.10
+	gorm.io/gorm v1.25.11
 )
 
 require (
@@ -36,9 +36,9 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/Microsoft/hcsshim v0.12.4 // indirect
+	github.com/Microsoft/hcsshim v0.12.5 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/containerd/containerd v1.7.19 // indirect
+	github.com/containerd/containerd v1.7.20 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
-	github.com/moby/sys/sequential v0.5.0 // indirect
+	github.com/moby/sys/sequential v0.6.0 // indirect
 	github.com/moby/sys/user v0.1.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
@@ -77,18 +77,18 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic v1.11.6 // indirect
+	github.com/bytedance/sonic v1.11.9 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/fatih/color v1.17.0
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.20.0 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/go-playground/validator/v10 v10.22.0 // indirect
+	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -97,7 +97,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
