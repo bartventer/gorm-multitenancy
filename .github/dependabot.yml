@@ -6,6 +6,7 @@ updates:
       - "/postgres"
       - "/mysql"
       - "/middleware/echo"
+      - "/middleware/gin"
       - "/middleware/nethttp"
     reviewers:
       - "bartventer"
@@ -48,7 +49,7 @@ updates:
       include: "scope"
 
   - package-ecosystem: "devcontainers"
-    directory: "/"
+    directory: "/.devcontainer/build"
     schedule:
       interval: "weekly"
       day: "monday"
