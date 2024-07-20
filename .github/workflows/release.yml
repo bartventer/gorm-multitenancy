@@ -34,16 +34,14 @@ jobs:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v2
               with:
-                  check-latest: true
-                  node-version: ">=22"
+                  node-version-file: package.json
                   cache: "yarn"
-                  cache-dependency-path: |
-                    ${{ github.workspace }}/yarn.lock
+                  cache-dependency-path: yarn.lock
             - name: 'Run semantic-release in "${{ matrix.directory }}"'
               working-directory: ${{ matrix.directory }}
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                yarn install --modules-folder ${{ github.workspace }}/node_modules
+                yarn install
                 npx semantic-release
