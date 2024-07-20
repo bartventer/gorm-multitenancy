@@ -4,6 +4,9 @@
   },
   "dependencies": {
     "@semantic-release/git": "^10.0.1",
-    "semantic-release": "24"
+    "semantic-release": "24.0.0"
+  },
+  "scripts": {
+    "release": "cd $GOMODDIR && semantic-release"
   }
 }
