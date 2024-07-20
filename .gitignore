@@ -8,3 +8,6 @@ tmp.*
 # Go files
 go.work*
 benchout*
+
+# Node
+node_modules
