@@ -12,21 +12,10 @@ on:
         types: [completed]
 
 jobs:
-    semantic-release:
-        name: Semantic Release
+    release:
+        name: Release
         runs-on: ubuntu-latest
         if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
-        strategy:
-            fail-fast: false
-            max-parallel: 1
-            matrix:
-                directory:
-                    - "."
-                    - "postgres"
-                    - "mysql"
-                    - "middleware/echo"
-                    - "middleware/gin"
-                    - "middleware/nethttp"
         permissions:
             contents: write
             issues: write
@@ -37,11 +26,8 @@ jobs:
                   node-version-file: package.json
                   cache: "yarn"
                   cache-dependency-path: yarn.lock
-            - name: 'Run semantic-release in "${{ matrix.directory }}"'
-              working-directory: ${{ matrix.directory }}
+            - name: 'Run release'
               shell: bash
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                yarn install
-                npx semantic-release
+              run: make release
