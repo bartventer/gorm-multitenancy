@@ -1,6 +1,6 @@
 {
   "engines": {
-    "node": ">=22"
+    "node": "22.0.0"
   },
   "devDependencies": {
     "@semantic-release/git": "^10.0.1",
