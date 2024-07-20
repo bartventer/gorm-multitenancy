@@ -39,7 +39,6 @@ jobs:
                   cache: "yarn"
                   cache-dependency-path: |
                     ${{ github.workspace }}/yarn.lock
-                    ${{ github.workspace }}/package.json
             - name: 'Run semantic-release in "${{ matrix.directory }}"'
               working-directory: ${{ matrix.directory }}
               shell: bash
