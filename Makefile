@@ -40,3 +40,7 @@ coverbrowser: ## View coverage in browser
 .PHONY: update_deps
 update_deps: ## Update dependencies
 	$(SCRIPTS_DIR)/update_deps.sh
+
+.PHONY: release
+release: ## Create a new release
+	$(SCRIPTS_DIR)/release.sh
