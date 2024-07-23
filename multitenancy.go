@@ -1,9 +1,7 @@
 /*
-Package multitenancy provides a framework for implementing multitenancy in Go applications. It
-simplifies the development and management of multi-tenant applications by offering functionalities
-for tenant-specific and shared model migrations, alongside thorough tenant management. Central to
-this package is its ability to abstract multitenancy complexities, presenting a unified,
-database-agnostic API that integrates seamlessly with GORM.
+Package multitenancy provides a Go framework for building multi-tenant applications, streamlining
+tenant management and model migrations. It abstracts multitenancy complexities through a unified,
+database-agnostic API compatible with GORM.
 
 The framework supports two primary multitenancy strategies:
   - Shared Database, Separate Schemas: This approach allows for data isolation and schema
@@ -389,29 +387,25 @@ Use [mysql.UseDatabase] function to set the database for a tenant.
 
 # Foreign Key Constraints
 
-The framework supports various types of relationships between tables, each with its own set of
-considerations. The term "public schema" refers to tables shared across all tenants, while
-"tenant-specific tables" are unique to a single tenant.
+For the most part, foreign key constraints work as expected, but there are some restrictions and
+considerations to keep in mind when working with multitenancy. The following guidelines outline
+the supported relationships between tables:
 
 Between Tables in the Public Schema:
-  - No restrictions on foreign key constraints between tables in the public schema.
-  - Example: `public.events` can reference `public.locations` without restrictions.
+  - No foreign key constraints restrictions
+  - E.g., `public.events` -> `public.locations`.
 
 From Public Schema Tables to Tenant-Specific Tables:
-  - Tables in the public schema should not have foreign key constraints to tenant-specific tables
-    to maintain schema isolation and ensure data integrity across tenants.
-  - Example: `public.users` should not reference a tenant-specific `orders` table.
+  - Avoid foreign key constraints to maintain isolation and integrity.
+  - E.g., `public.users` should not reference `orders` in a tenant-specific schema.
 
 From Tenant-Specific Tables to Public Schema Tables:
-  - Tenant-specific tables can have foreign key constraints to tables in the public schema,
-    allowing tenant-specific data to reference shared resources or configurations.
-  - Example: A tenant-specific `invoices` table can reference `public.payment_methods`.
+  - Allowed, enabling references to shared resources.
+  - E.g., `invoices` in a tenant schema -> `public.payment_methods`.
 
 Between Tenant-Specific Tables:
-  - Tenant-specific tables can have foreign key constraints to other tenant-specific tables within
-    the same tenant schema, ensuring all related data is encapsulated within a single tenant's
-    schema.
-  - Example: Within a tenant's schema, a `projects` table can reference an `employees` table.
+  - Constraints allowed within the same tenant schema for encapsulation.
+  - E.g., `projects` -> `employees` within a tenant's schema.
 
 # Example
 
@@ -420,7 +414,7 @@ Between Tenant-Specific Tables:
 	import (
 		"context"
 
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	)
 
@@ -440,14 +434,13 @@ Between Tenant-Specific Tables:
 	func (Book) IsSharedModel() bool { return false }
 
 	func main() {
-		// Open a new PostgreSQL connection as usual
+		ctx := context.Background()
 		dsn := "postgres://user:password@localhost:5432/dbname?sslmode=disable"
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {
 			panic(err)
 		}
 
-		ctx := context.Background()
 		if err := db.RegisterModels(ctx, &Tenant{}, &Book{}); err != nil {
 			panic(err)
 		}
