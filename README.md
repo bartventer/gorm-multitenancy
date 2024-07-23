@@ -19,11 +19,9 @@
 
 ## Overview
 
-Gorm-multitenancy provides a framework for implementing multitenancy in Go applications. It
-simplifies the development and management of multi-tenant applications by offering functionalities
-for tenant-specific and shared model migrations, alongside thorough tenant management. Central to
-this package is its ability to abstract multitenancy complexities, presenting a unified,
-database-agnostic API that integrates seamlessly with GORM.
+Gorm-multitenancy provides a Go framework for building multi-tenant applications, streamlining
+tenant management and model migrations. It abstracts multitenancy complexities through a unified,
+database-agnostic API compatible with GORM.
 
 ## Multitenancy Approaches
 
