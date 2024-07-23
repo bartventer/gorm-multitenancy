@@ -29,7 +29,7 @@ func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err erro
 	if schemaName == "" {
 		return nil, errors.New("schema name is empty")
 	}
-	sql := fmt.Sprintf("SET search_path TO %s", tx.Statement.Quote(schemaName))
+	sql := "SET search_path TO " + tx.Statement.Quote(schemaName)
 	if err = tx.Exec(sql).Error; err != nil {
 		return nil, fmt.Errorf("failed to set search path: %w", err)
 	}
