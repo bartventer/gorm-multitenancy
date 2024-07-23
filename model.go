@@ -10,7 +10,7 @@ package multitenancy
 //	  multitenancy.TenantModel
 //	}
 type TenantModel struct {
-	// DomainURL is the domain URL of the tenant
+	// DomainURL is the domain URL of the tenant; same as [net/url.URL.Host].
 	DomainURL string `json:"domainURL" mapstructure:"domainURL" gorm:"column:domain_url;uniqueIndex;size:128"`
 
 	// SchemaName is the schema name of the tenant.
@@ -40,7 +40,7 @@ type TenantModel struct {
 
 // TenantPKModel is identical to [TenantModel] but with SchemaName as a primary key field.
 type TenantPKModel struct {
-	// DomainURL is the domain URL of the tenant
+	// DomainURL is the domain URL of the tenant; same as [net/url.URL.Host].
 	DomainURL string `json:"domainURL" mapstructure:"domainURL" gorm:"column:domain_url;uniqueIndex;size:128"`
 
 	// SchemaName is the schema name of the tenant and the primary key of the model.
