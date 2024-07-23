@@ -6,14 +6,14 @@ import (
 )
 
 func ExampleExtractSubdomain() {
-	subdomain, err := ExtractSubdomain("http://test.domain.com")
+	subdomain, err := ExtractSubdomain("test.domain.com")
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
 		fmt.Println("Subdomain:", subdomain)
 	}
 
-	subdomain, err = ExtractSubdomain("http://test.sub.domain.com")
+	subdomain, err = ExtractSubdomain("test.sub.domain.com")
 	if err != nil {
 		fmt.Println("Error:", err)
 	} else {
@@ -27,75 +27,24 @@ func ExampleExtractSubdomain() {
 
 func TestExtractSubdomain(t *testing.T) {
 	tests := []struct {
-		name      string
-		domainURL string
-		want      string
-		wantErr   bool
+		name    string
+		host    string
+		want    string
+		wantErr bool
 	}{
-		{
-			name:      "valid domainURL with subdomain",
-			domainURL: "https://sub.example.com",
-			want:      "sub",
-			wantErr:   false,
-		},
-		{
-			name:      "valid domainURL with subdomain and port",
-			domainURL: "https://sub.example.com:8080",
-			want:      "sub",
-			wantErr:   false,
-		},
-		{
-			name:      "valid domainURL with subdomain, no scheme",
-			domainURL: "sub.example.com",
-			want:      "sub",
-			wantErr:   false,
-		},
-		{
-			name:      "valid domainURL with subdomain and port, no scheme",
-			domainURL: "sub.example.com:8080",
-			want:      "sub",
-			wantErr:   false,
-		},
-		{
-			name:      "invalid domainURL without subdomain",
-			domainURL: "https://example.com",
-			want:      "",
-			wantErr:   true,
-		},
-		{
-			name:      "invalid domainURL without subdomain but with port",
-			domainURL: "https://example.com:8080",
-			want:      "",
-			wantErr:   true,
-		},
-		{
-			name:      "invalid domainURL without subdomain, no scheme",
-			domainURL: "example.com",
-			want:      "",
-			wantErr:   true,
-		},
-		{
-			name:      "invalid domainURL without subdomain but with port, no scheme",
-			domainURL: "example.com:8080",
-			want:      "",
-			wantErr:   true,
-		},
-		{
-			name:      "invalid URL",
-			domainURL: "this is not a valid URL",
-			want:      "",
-			wantErr:   true,
-		},
-		{
-			name:      "invalid subdomain starting with pg_",
-			domainURL: "https://pg_sub.example.com",
-			want:      "",
-			wantErr:   true,
-		},
+		{"valid:subdomain", "sub.example.com", "sub", false},
+		{"valid:subdomain-with-port", "sub.example.com:8080", "sub", false},
+		{"invalid:no-subdomain", "example.com", "", true},
+		{"invalid:no-subdomain-with-port", "example.com:8080", "", true},
+		{"invalid:pg-subdomain", "pg_sub.example.com", "", true},
+		{"invalid:host-is-ipv4-RFC-3986", "192.168.0.1", "", true},
+		{"invalid:host-is-ipv4-RFC-3986-with-port", "192.168.0.1:8080", "", true},
+		{"invalid:host-is-ipv6-RFC-3986", "[fe80::1]", "", true},
+		{"invalid:host-is-ipv6-RFC-3986-with-port", "[fe80::1]:8080", "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ExtractSubdomain(tt.domainURL)
+			got, err := ExtractSubdomain(tt.host)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ExtractSubdomain() error = %v, wantErr %v", err, tt.wantErr)
 				return
