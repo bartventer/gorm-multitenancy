@@ -1,15 +1,11 @@
 package echo
 
-import (
-	"fmt"
-)
-
 type contextKey struct {
 	name string
 }
 
 func (c contextKey) String() string {
-	return fmt.Sprintf("gorm-multitenancy/middleware/echo/%s", c.name)
+	return "gorm-multitenancy/middleware/echo/" + c.name
 }
 
 var (

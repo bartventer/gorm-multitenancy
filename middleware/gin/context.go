@@ -1,15 +1,11 @@
 package ginmiddleware
 
-import (
-	"fmt"
-)
-
 type contextKey struct {
 	name string
 }
 
 func (c contextKey) String() string {
-	return fmt.Sprintf("gorm-multitenancy/middleware/gin/%s", c.name)
+	return "gorm-multitenancy/middleware/gin/" + c.name
 }
 
 var (
