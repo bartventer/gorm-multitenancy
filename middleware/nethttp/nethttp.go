@@ -32,7 +32,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -51,32 +50,9 @@ func DefaultSkipper(r *http.Request) bool {
 	return false
 }
 
-// DefaultTenantFromSubdomain extracts the subdomain from the given HTTP request's host.
-// It removes the port from the host if present and adds a scheme to the host for parsing.
-// The function then parses the URL and extracts the subdomain.
-// It returns the extracted subdomain as a string and any error encountered during the process.
-//
-// This function calls the [ExtractSubdomain] function to extract the subdomain from the host.
+// DefaultTenantFromSubdomain extracts the tenant from the subdomain in the HTTP request.
 func DefaultTenantFromSubdomain(r *http.Request) (string, error) {
-	// Extract the host from the request
-	host := r.Host
-
-	// If the host includes a port, remove it
-	if strings.Contains(host, ":") {
-		host = strings.Split(host, ":")[0]
-	}
-
-	// Add a scheme to the host so it can be parsed by url.Parse
-	urlStr := fmt.Sprintf("https://%s", host)
-
-	// Parse the URL
-	u, err := url.Parse(urlStr)
-	if err != nil {
-		return "", err
-	}
-
-	// Extract the subdomain
-	return ExtractSubdomain(u.String())
+	return ExtractSubdomain(r.Host)
 }
 
 // DefaultTenantFromHeader extracts the tenant from the [XTenantHeader] header in the HTTP request.
