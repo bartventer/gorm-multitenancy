@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	gmtmigrator "github.com/bartventer/gorm-multitenancy/mysql/v8/internal/migrator"
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
+	gmtmigrator "github.com/bartventer/gorm-multitenancy/v8/pkg/migrator"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
 )
