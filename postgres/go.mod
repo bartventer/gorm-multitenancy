@@ -8,7 +8,7 @@ replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
 require (
 	github.com/bartventer/gorm-multitenancy/v8 v8.3.0
-	github.com/docker/docker v27.0.3+incompatible
+	github.com/docker/docker v27.1.1+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.32.0
