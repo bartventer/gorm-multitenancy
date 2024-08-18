@@ -16,6 +16,9 @@ import (
 // responsibility of the caller to ensure that the schemaName has been sanitized to avoid SQL
 // injection vulnerabilities.
 //
+// Not safe for concurrent use by multiple goroutines. Use a separate database connection or
+// transaction for each goroutine that requires a different search path.
+//
 // Example:
 //
 //	reset, err := postgres.SetSearchPath(db, "domain1")
@@ -27,11 +30,15 @@ import (
 func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err error) {
 	tx = tx.Session(&gorm.Session{})
 	if schemaName == "" {
-		return nil, errors.New("schema name is empty")
+		err = errors.New("schema name is empty")
+		tx.AddError(err)
+		return nil, err
 	}
-	sql := "SET search_path TO " + tx.Statement.Quote(schemaName)
-	if err = tx.Exec(sql).Error; err != nil {
-		return nil, fmt.Errorf("failed to set search path: %w", err)
+	sqlstr := "SET search_path TO " + schemaName
+	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
+		err = fmt.Errorf("failed to set search path %q: %w", schemaName, execErr)
+		tx.AddError(err)
+		return nil, err
 	}
 	reset = func() error {
 		return tx.Exec("SET search_path TO public").Error
