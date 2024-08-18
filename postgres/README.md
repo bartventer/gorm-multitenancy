@@ -29,5 +29,3 @@ All contributions are welcome! See the [Contributing Guide](../CONTRIBUTING.md) 
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](../LICENSE) file for details.
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fbartventer%2Fgorm-multitenancy?ref=badge_large&issueType=license)
