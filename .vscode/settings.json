@@ -5,5 +5,15 @@
         "--fix",
     ],
     "go.testTimeout": "15m",
-    "go.buildTags": "gorm_multitenancy_benchmarks"
+    "go.generateTestsFlags": [
+        "-template=testify",
+    ],
+    "go.testFlags": [
+        "-v",
+        "-race",
+    ],
+    "go.buildFlags": [
+        "-v",
+        "-tags=gorm_multitenancy_benchmarks",
+    ],
 }
