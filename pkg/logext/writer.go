@@ -28,7 +28,5 @@ func New(output io.Writer) *Logger {
 	return &Logger{log.New(output, "[gorm-multitenancy] ", log.LstdFlags)}
 }
 
-var std = New(os.Stderr)
-
 // Default returns the default logger.
-func Default() *Logger { return std }
+func Default() *Logger { return New(os.Stdout) }
