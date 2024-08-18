@@ -18,6 +18,9 @@ import (
 // responsibility of the caller to ensure that the dbName has been sanitized to avoid SQL
 // injection vulnerabilities.
 //
+// Not safe for concurrent use by multiple goroutines. Use a separate database connection or
+// transaction for each goroutine that requires a different database.
+//
 // Example:
 //
 //	reset, err := schema.UseDatabase(db, "domain1")
@@ -26,17 +29,22 @@ import (
 //	}
 //	defer reset() // reset the database to 'public'
 //	// ... do operations with the database with the database set to 'domain1'
-func UseDatabase(tx *gorm.DB, dbName string) (func() error, error) {
-	tx = tx.Session(&gorm.Session{})
+func UseDatabase(tx *gorm.DB, dbName string) (reset func() error, err error) {
 	if dbName == "" {
-		return nil, errors.New("database name is empty")
+		err = errors.New("database name is empty")
+		tx.AddError(err)
+		return nil, err
 	}
 
-	if err := tx.Exec("USE " + tx.Statement.Quote(dbName)).Error; err != nil {
-		return nil, fmt.Errorf("failed to set database: %w", err)
+	sqlstr := "USE " + dbName
+	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
+		err = fmt.Errorf("failed to set database %q: %w", dbName, execErr)
+		tx.AddError(err)
+		return nil, err
 	}
 
-	return func() error {
+	reset = func() error {
 		return tx.Exec("USE public").Error
-	}, nil
+	}
+	return reset, nil
 }
