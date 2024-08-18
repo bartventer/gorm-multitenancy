@@ -58,7 +58,7 @@ for dir in "${!gotestflags[@]}"; do
     coverageflags=(
         '-f' "${dir}/$modcoverage"
         '-p' "${workspace}${dir#.}"
-        "-F" "$modflag"
+        '-F' "${modflag//\//_}"
     )
     [[ ${CI:-false} != "true" ]] && coverageflags+=('-d')
 
