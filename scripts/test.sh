@@ -46,10 +46,6 @@ echo "✅ All tests passed!"
 
 [[ ${UPLOAD_COVERAGE:-false} != "true" ]] && exit 0
 
-echo "================================================================================"
-echo "📊 Generating coverage report using codecov"
-echo "================================================================================"
-
 for dir in "${!gotestflags[@]}"; do
     echo "================================================================================"
     echo "📊 Generating coverage report using codecov for module at path: $dir"
@@ -71,3 +67,5 @@ for dir in "${!gotestflags[@]}"; do
     echo "🎉 Coverage report generated for for module at path: $dir"
     echo "================================================================================"
 done
+
+echo "✅ Done. All coverage reports uploaded to Codecov!"
