@@ -3,8 +3,10 @@ package driver
 import (
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseURL(t *testing.T) {
@@ -98,6 +100,65 @@ func Test_normalizeURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := normalizeURL(tt.args.urlstr); got != tt.want {
 				t.Errorf("normalizeURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseDSNQueryParams(t *testing.T) {
+	type backoffOptions struct {
+		MaxRetries  int           `mapstructure:"max_retries"`
+		Interval    time.Duration `mapstructure:"retry_interval"`
+		MaxInterval time.Duration `mapstructure:"retry_max_interval"`
+	}
+
+	type dsnOptions struct {
+		DisableRetry bool           `mapstructure:"disable_retry"`
+		Retry        backoffOptions `mapstructure:",squash"`
+	}
+	tests := []struct {
+		name     string
+		dsn      string
+		wantOpts dsnOptions
+		wantErr  bool
+	}{
+		{
+			name: "empty DSN",
+			dsn:  "",
+			wantOpts: dsnOptions{
+				DisableRetry: false,
+				Retry:        backoffOptions{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid DSN",
+			dsn:  "mysql://user:password@tcp(localhost:3306)/dbname?disable_retry=true&max_retries=6&retry_interval=2s&retry_max_interval=30s",
+			wantOpts: dsnOptions{
+				DisableRetry: true,
+				Retry: backoffOptions{
+					MaxRetries:  6,
+					Interval:    2 * time.Second,
+					MaxInterval: 30 * time.Second,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid DSN",
+			dsn:     "%gh&%ij",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts, err := ParseDSNQueryParams[dsnOptions](tt.dsn)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.wantOpts, opts)
 			}
 		})
 	}
