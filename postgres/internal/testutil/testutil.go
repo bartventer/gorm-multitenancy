@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
@@ -35,14 +36,16 @@ func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
 			"POSTGRES_USER":     dbUser,
 			"POSTGRES_PASSWORD": dbPassword,
 		},
-		WaitingFor: wait.ForLog("database system is ready to accept connections").WithOccurrence(2),
-		Tmpfs:      map[string]string{"/var/lib/postgres": "rw"},
+		WaitingFor: wait.
+			ForLog("database system is ready to accept connections").
+			WithOccurrence(2).
+			WithStartupTimeout(15 * time.Minute),
+		Tmpfs: map[string]string{"/var/lib/postgres": "rw"},
 		HostConfigModifier: func(hc *container.HostConfig) {
 			hc.Memory = 512 * 1024 * 1024 // 512MB
 			hc.NanoCPUs = 500000000       // 0.5 CPU
 		},
 	}
-
 	postgresContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
@@ -57,11 +60,11 @@ func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
 	require.NoErrorf(t, err, "Failed to get postgres container host: %v", err)
 	natPort, err := postgresContainer.MappedPort(ctx, nat.Port(dbPort))
 	require.NoErrorf(t, err, "Failed to get postgres container port: %v", err)
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, natPort.Port(), dbUser, dbPassword, dbName)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, host, natPort.Port(), dbName)
 	db, err := gorm.Open(c.dialectOpener(dsn), c.opts...)
 	require.NoErrorf(t, err, "Failed to connect to database: %v", err)
 
-	summary := makeContainerSummary(t, postgresContainer)
+	summary := makeContainerSummary(t, postgresContainer, dsn)
 	log.Println(summary)
 
 	return db
@@ -78,7 +81,7 @@ func NewDBWithOptions(t testing.TB, ctx context.Context, opener func(dsn string)
 }
 
 // makeContainerSummary generates a summary of the container for debugging purposes.
-func makeContainerSummary(t testing.TB, container testcontainers.Container) string {
+func makeContainerSummary(t testing.TB, container testcontainers.Container, dsn string) string {
 	t.Helper()
 	containerJSON, err := container.Inspect(context.Background())
 	require.NoErrorf(t, err, "Failed to inspect container: %v", err)
@@ -86,12 +89,14 @@ func makeContainerSummary(t testing.TB, container testcontainers.Container) stri
 PostgreSQL:
 	Test: %s
 	Status: %s
+	DSN: %s
     Ports: %+v
     Env: %q
 
 `,
 		t.Name(),
 		containerJSON.State.Status,
+		dsn,
 		containerJSON.NetworkSettings.Ports,
 		containerJSON.Config.Env,
 	)

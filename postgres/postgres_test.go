@@ -27,7 +27,9 @@ func (h *harness) MakeAdapter(context.Context) (adapter driver.DBFactory, tx *go
 
 // Options implements [drivertest.Harness].
 func (h *harness) Options() drivertest.Options {
-	return drivertest.Options{}
+	return drivertest.Options{
+		MaxConnectionsSQL: "SHOW max_connections",
+	}
 }
 
 func newHarness[TB testing.TB](ctx context.Context, t TB) (drivertest.Harness, error) {
