@@ -19,8 +19,8 @@ type (
 	// By default, retry is enabled. To disable retry, set DisableRetry to true.
 	// Note that the retry logic is only applied to migrations.
 	Options struct {
-		DisableRetry bool            `json:"disable_retry" mapstructure:"disable_retry"` // Whether to disable retry.
-		Retry        backoff.Options `json:",inline"       mapstructure:",squash"`       // Retry options.
+		DisableRetry bool            `json:"gmt_disable_retry" mapstructure:"gmt_disable_retry"` // Whether to disable retry.
+		Retry        backoff.Options `json:",inline"       mapstructure:",squash"`               // Retry options.
 	}
 
 	// Option is a function that modifies an [Options] instance.
