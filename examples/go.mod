@@ -1,8 +1,6 @@
 module github.com/bartventer/gorm-multitenancy/examples/v8
 
-go 1.22
-
-toolchain go1.22.5
+go 1.23
 
 replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
@@ -17,12 +15,12 @@ replace github.com/bartventer/gorm-multitenancy/middleware/gin/v8 => ../middlewa
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../middleware/nethttp
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.3.0
-	github.com/bartventer/gorm-multitenancy/middleware/gin/v8 v8.0.0
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.3.0
-	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.3.0
-	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.3.0
-	github.com/bartventer/gorm-multitenancy/v8 v8.3.0
+	github.com/bartventer/gorm-multitenancy/middleware/echo/v8 v8.4.0
+	github.com/bartventer/gorm-multitenancy/middleware/gin/v8 v8.1.0
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.4.0
+	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.4.0
+	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.4.0
+	github.com/bartventer/gorm-multitenancy/v8 v8.4.0
 	github.com/docker/go-connections v0.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/labstack/echo/v4 v4.12.0
@@ -42,7 +40,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker v27.0.3+incompatible // indirect
+	github.com/docker/docker v27.1.2+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -54,10 +52,12 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240513124658-fba389f38bae // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.6.0 // indirect
-	github.com/moby/sys/user v0.1.0 // indirect
+	github.com/moby/sys/user v0.3.0 // indirect
+	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/moby/term v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
@@ -77,13 +77,13 @@ require (
 )
 
 require (
-	github.com/bytedance/sonic v1.11.9 // indirect
-	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/bytedance/sonic v1.12.1 // indirect
+	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/fatih/color v1.17.0
-	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -109,13 +109,13 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/arch v0.9.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -27,10 +27,10 @@ var opts options
 
 func (o *options) validate() error {
 	validServers := []string{"echo", "gin", "nethttp"}
-	validDrivers := []string{"postgres", "mysql"}
 	if !slices.Contains(validServers, o.server) {
 		return fmt.Errorf("invalid server: %s", o.server)
 	}
+	validDrivers := []string{"postgres", "mysql"}
 	if !slices.Contains(validDrivers, o.driver) {
 		return fmt.Errorf("invalid driver: %s", o.driver)
 	}
@@ -107,8 +107,7 @@ Note: The server and driver flags are optional. When not specified, the default 
 	case "nethttp":
 		err = nethttpserver.Start(ctx, db)
 	default:
-		log.Println("invalid server")
-		cancel()
+		err = fmt.Errorf("invalid server: %s", opts.server)
 	}
 
 	if err != nil {

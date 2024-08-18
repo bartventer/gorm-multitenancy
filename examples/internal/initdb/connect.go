@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
-	// Enable MySQL driver
+	// Enable MySQL driver.
 	_ "github.com/bartventer/gorm-multitenancy/mysql/v8"
 	"github.com/fatih/color"
 
-	// Enable PostgreSQL driver
+	// Enable PostgreSQL driver.
 	_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
