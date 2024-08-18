@@ -27,11 +27,13 @@ func (h *harness) MakeAdapter(context.Context) (adapter driver.DBFactory, tx *go
 
 // Options implements [drivertest.Harness].
 func (h *harness) Options() drivertest.Options {
-	return drivertest.Options{}
+	return drivertest.Options{
+		MaxConnectionsSQL: "SELECT @@max_connections",
+	}
 }
 
 func newHarness[TB testing.TB](ctx context.Context, t TB) (drivertest.Harness, error) {
-	db := testutil.NewDBWithOptions(t, ctx, Open)
+	db := testutil.NewDB(t, ctx, Open)
 	return &harness{
 		adapter: &mysqlAdapter{},
 		db:      db,

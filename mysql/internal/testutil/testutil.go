@@ -7,9 +7,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -38,7 +40,7 @@ func (c *dbContainer) generateInitSQL(t testing.TB, dbUser string) (file string)
 	return file
 }
 
-func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
+func (c *dbContainer) newDB(t testing.TB, ctx context.Context) *gorm.DB {
 	t.Helper()
 	dbName := "public"
 	dbUser := "tenants"
@@ -57,8 +59,10 @@ func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
 			"MYSQL_ROOT_PASSWORD":        dbPassword,
 			"MYSQL_ALLOW_EMPTY_PASSWORD": "yes",
 		},
-		WaitingFor: wait.ForLog("port: 3306  MySQL Community Server").WithStartupTimeout(6 * time.Minute),
-		Tmpfs:      map[string]string{"/var/lib/mysql": "rw"},
+		WaitingFor: wait.
+			ForLog("port: 3306  MySQL Community Server").
+			WithStartupTimeout(15 * time.Minute),
+		Tmpfs: map[string]string{"/var/lib/mysql": "rw"},
 		Files: []testcontainers.ContainerFile{
 			{
 				HostFilePath:      initScript,
@@ -83,41 +87,52 @@ func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
 	require.NoErrorf(t, err, "Failed to get MySQL container host: %v", err)
 	natPort, err := mysqlContainer.MappedPort(ctx, "3306/tcp")
 	require.NoErrorf(t, err, "Failed to get MySQL container port: %v", err)
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, host, natPort.Port(), dbName)
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		dbUser,
+		dbPassword,
+		host,
+		natPort.Port(),
+		dbName,
+	)
 	db, err := gorm.Open(c.dialectOpener(dsn), c.opts...)
 	require.NoErrorf(t, err, "Failed to connect to database: %v", err)
 
-	summary := makeContainerSummary(t, mysqlContainer)
+	summary := makeContainerSummary(t, mysqlContainer, dsn)
 	log.Println(summary)
 
 	return db
 }
 
-// NewDBWithOptions creates a new database instance for testing with the provided options.
-func NewDBWithOptions(t testing.TB, ctx context.Context, opener func(dsn string) gorm.Dialector, opts ...gorm.Option) *gorm.DB {
+// NewDB creates a new database instance for testing with the provided options.
+func NewDB(t testing.TB, ctx context.Context, opener func(dsn string) gorm.Dialector, opts ...gorm.Option) *gorm.DB {
 	t.Helper()
 	c := dbContainer{
 		dialectOpener: opener,
 		opts:          opts,
 	}
-	return c.NewDB(t, ctx)
+	return c.newDB(t, ctx)
 }
 
 // makeContainerSummary generates a summary of the container for debugging purposes.
-func makeContainerSummary(t testing.TB, container testcontainers.Container) string {
+func makeContainerSummary(t testing.TB, container testcontainers.Container, dsn string) string {
 	t.Helper()
 	containerJSON, err := container.Inspect(context.Background())
 	require.NoErrorf(t, err, "Failed to inspect container: %v", err)
+	u, err := driver.ParseURL(dsn)
+	require.NoErrorf(t, err, "Failed to parse DSN: %v", err)
 	return fmt.Sprintf(`
 MySQL:
 	Test: %s
     Status: %s
+	DSN: %s
     Ports: %+v
     Env: %q
 
 `,
 		t.Name(),
 		containerJSON.State.Status,
+		"mysql://"+strings.TrimPrefix(u.String(), u.Scheme+"://"),
 		containerJSON.NetworkSettings.Ports,
 		containerJSON.Config.Env,
 	)

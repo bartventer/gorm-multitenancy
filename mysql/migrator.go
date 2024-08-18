@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/locking"
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	gmtmigrator "github.com/bartventer/gorm-multitenancy/v8/pkg/migrator"
@@ -14,11 +16,17 @@ import (
 	"gorm.io/gorm/migrator"
 )
 
-var _ gorm.Migrator = new(Migrator)
+func (m Migrator) retry(fn func() error) error {
+	if !m.options.DisableRetry {
+		return backoff.Retry(fn, func(o *backoff.Options) {
+			*o = m.options.Retry
+		})
+	}
+	return fn()
+}
 
-func inTransaction(db *gorm.DB) bool {
-	committer, ok := db.Statement.ConnPool.(gorm.TxCommitter)
-	return ok && committer != nil
+func (m Migrator) acquireLock(tx *gorm.DB, tenantID string) (func() error, error) {
+	return locking.Acquire(tx, tenantID, locking.WithRetry(&m.options.Retry))
 }
 
 func (m Migrator) AutoMigrate(values ...interface{}) error {
@@ -26,98 +34,111 @@ func (m Migrator) AutoMigrate(values ...interface{}) error {
 	if err != nil {
 		return gmterrors.NewWithScheme(DriverName, err)
 	}
-	return m.Migrator.AutoMigrate(values...)
+	err = m.retry(func() error {
+		return m.Migrator.AutoMigrate(values...)
+	})
+	return err
+
 }
 
 // MigrateTenantModels creates a database for a specific tenant and migrates the tenant tables.
-func (m Migrator) MigrateTenantModels(tenantID string) error {
-	if inTransaction(m.DB) {
-		return m.migrateTenantModels(tenantID)
-	} else {
-		return m.DB.Transaction(func(tx *gorm.DB) error {
-			return m.migrateTenantModels(tenantID)
-		})
-	}
-}
-
-func (m Migrator) migrateTenantModels(tenantID string) error {
+func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 	m.logger.Printf("⏳ migrating tables for tenant %s", tenantID)
+
 	tenantModels := m.registry.TenantModels
 	if len(tenantModels) == 0 {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no tenant tables to migrate"))
 	}
+
 	tx := m.DB.Session(&gorm.Session{})
-	err := tx.Exec("CREATE DATABASE IF NOT EXISTS " + tx.Statement.Quote(tenantID)).Error
+	sqlstr := "CREATE DATABASE IF NOT EXISTS " + tx.Statement.Quote(tenantID)
+	err = tx.Exec(sqlstr).Error
 	if err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create database for tenant %s: %w", tenantID, err))
 	}
 
-	// Use tenant's database
-	var reset func() error
-	reset, err = schema.UseDatabase(tx, tenantID)
-	if err != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %s: %w", tenantID, err))
+	unlock, lockErr := m.acquireLock(tx, tenantID)
+	if lockErr != nil {
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %s: %w", tenantID, lockErr))
 	}
-	defer reset()
+	defer unlock()
 
-	// Migrate tenant tables
-	if err = tx.
-		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
-		AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); err != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %s: %w", tenantID, err))
-	}
-	m.logger.Printf("✅ private tables migrated for tenant %s", tenantID)
-	return nil
+	err = tx.Transaction(func(tx *gorm.DB) error {
+		reset, err := schema.UseDatabase(tx, tenantID)
+		if err != nil {
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %s: %w", tenantID, err))
+		}
+		defer reset()
+
+		if err = tx.
+			Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
+			AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); err != nil {
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %s: %w", tenantID, err))
+		}
+		m.logger.Printf("✅ private tables migrated for tenant %s", tenantID)
+		return nil
+	})
+	return err
 }
 
 // MigrateSharedModels migrates the shared tables in the database.
 func (m Migrator) MigrateSharedModels() error {
 	m.logger.Println("⏳ migrating public tables")
+
 	publicModels := m.registry.SharedModels
 	if len(publicModels) == 0 {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no public tables to migrate"))
 	}
 
-	// Create public table if it doesn't exist
-	if err := m.DB.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
+	db := m.DB.Session(&gorm.Session{})
+	if err := db.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create public database: %w", err))
 	}
 
-	// switch to public table
-	if err := m.DB.Exec("USE public").Error; err != nil {
+	unlock, lockErr := m.acquireLock(m.DB, driver.PublicSchemaName())
+	if lockErr != nil {
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock: %w", lockErr))
+	}
+	defer unlock()
+
+	tx := db.Begin()
+	defer func() {
+		if tx.Error == nil {
+			tx.Commit()
+			m.logger.Println("✅ public tables migrated")
+		} else {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Exec("USE public").Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to public database: %w", err))
 	}
 
-	var err error
-	if err = m.DB.
+	if err := tx.
 		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(publicModels)...); err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate public tables: %w", err))
 	}
-	m.logger.Println("✅ public tables migrated")
+
 	return nil
 }
 
 // DropDatabaseForTenant drops the database for a specific tenant.
-func (m Migrator) DropDatabaseForTenant(tenant string) error {
-	if inTransaction(m.DB) {
-		return m.dropDatabaseForTenant(tenant)
-	} else {
-		return m.DB.Transaction(func(tx *gorm.DB) error {
-			return m.dropDatabaseForTenant(tenant)
-		})
-	}
-}
+func (m Migrator) DropDatabaseForTenant(tenantID string) (err error) {
+	m.logger.Printf("⏳ dropping database for tenant %s", tenantID)
 
-func (m Migrator) dropDatabaseForTenant(tenant string) error {
 	tx := m.DB.Session(&gorm.Session{})
-	m.logger.Printf("⏳ dropping database for tenant %s", tenant)
-	var err error
-	if err = tx.Exec("DROP DATABASE IF EXISTS " + tx.Statement.Quote(tenant)).Error; err != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop database for tenant %s: %w", tenant, err))
-	}
-	m.logger.Printf("✅ database dropped for tenant %s", tenant)
-	return nil
+	err = m.retry(func() error {
+		sqlstr := "DROP DATABASE IF EXISTS " + tx.Statement.Quote(tenantID)
+		if err := tx.Exec(sqlstr).Error; err != nil {
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop database for tenant %s: %w", tenantID, err))
+		}
+		m.logger.Printf("✅ database dropped for tenant %s", tenantID)
+		return nil
+	})
+
+	return err
 }
 
 // Note: Subject to removal if the below changes are integrated into the GORM MySQL driver.
@@ -135,6 +156,7 @@ func (m Migrator) queryRaw(sql string, values ...interface{}) (tx *gorm.DB) {
 // Note: May be removed if integrated into GORM's MySQL driver.
 //
 // TODO: Create PR for these changes and link to issue https://github.com/go-gorm/gorm/issues/3958.
+
 func (m Migrator) CurrentDatabase() (name string) {
 	m.DB.Raw("SELECT DATABASE()").Row().Scan(&name)
 	return
@@ -145,6 +167,7 @@ func (m Migrator) CurrentDatabase() (name string) {
 // Note: Subject to removal if adopted into the GORM MySQL driver.
 //
 // TODO: Create PR for these changes, addressing https://github.com/go-gorm/gorm/issues/3958.
+
 func (m Migrator) CurrentSchema(stmt *gorm.Statement, table string) (interface{}, interface{}) {
 	if strings.Contains(table, ".") {
 		if tables := strings.Split(table, `.`); len(tables) == 2 {
@@ -165,6 +188,7 @@ func (m Migrator) CurrentSchema(stmt *gorm.Statement, table string) (interface{}
 // Note: Considered for deprecation if merged into GORM's MySQL driver.
 //
 // TODO: Create PR for this change, addressing issue https://github.com/go-gorm/gorm/issues/3958.
+
 func (m Migrator) HasTable(value interface{}) bool {
 	var exists bool
 	m.RunWithValue(value, func(stmt *gorm.Statement) error {
@@ -186,6 +210,7 @@ func (m Migrator) HasTable(value interface{}) bool {
 // Note: May be deprecated if integrated into GORM's MySQL driver.
 //
 // TODO: Raise issue for discussion.
+
 func (m Migrator) HasIndex(value interface{}, name string) bool {
 	var exists bool
 	m.RunWithValue(value, func(stmt *gorm.Statement) error {
@@ -214,6 +239,7 @@ func (m Migrator) HasIndex(value interface{}, name string) bool {
 // Note: Potential for deprecation if merged into GORM's MySQL driver.
 //
 // TODO: Raise issue for discussion.
+
 func (m Migrator) HasConstraint(value interface{}, name string) bool {
 	var exists bool
 	m.RunWithValue(value, func(stmt *gorm.Statement) error {
@@ -240,6 +266,7 @@ func (m Migrator) HasConstraint(value interface{}, name string) bool {
 // Note: May be removed if adopted into GORM's MySQL driver.
 //
 // TODO: Raise issue for discussion.
+
 func (m Migrator) HasColumn(value interface{}, field string) bool {
 	var exists bool
 	m.RunWithValue(value, func(stmt *gorm.Statement) error {
@@ -269,6 +296,7 @@ func (m Migrator) HasColumn(value interface{}, field string) bool {
 // Note: Subject to deprecation if integrated into GORM's MySQL driver.
 //
 // TODO: Raise issue for discussion.
+
 func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
 	columnTypes := make([]gorm.ColumnType, 0)
 	err := m.RunWithValue(value, func(stmt *gorm.Statement) error {

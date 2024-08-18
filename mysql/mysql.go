@@ -14,7 +14,7 @@ making it suitable for applications with stringent data security requirements.
 
 The URL format for MySQL databases is as follows:
 
-	mysql://user:password@tcp(localhost:3306)/dbname
+	mysql://user:password@tcp(localhost:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
 
 See the [MySQL connection strings] documentation for more information.
 
@@ -25,9 +25,26 @@ be done before running any migrations or tenant-specific operations.
 
 # Migration Strategy
 
-To ensure data integrity and schema isolation across tenants, the AutoMigrate method
-has been disabled. Instead, use the provided shared and tenant-specific migration methods.
-[driver.ErrInvalidMigration] is returned if the migration method is called directly.
+To ensure data integrity and schema isolation across tenants,[gorm.DB.AutoMigrate] has been
+disabled. Instead, use the provided shared and tenant-specific migration methods.
+[driver.ErrInvalidMigration] is returned if the `AutoMigrate` method is called directly.
+
+# Concurrent Migrations
+
+To ensure tenant isolation and facilitate concurrent migrations, this package uses
+MySQL advisory locks. These locks prevent concurrent migrations from interfering with
+each other, ensuring that only one migration process can run at a time for a given tenant.
+
+# Retry Configuration
+
+Exponential backoff retry logic is enabled by default for migrations. To disable retry or
+customize the retry behavior, either provide options to [New] or specify options
+in the DSN connection string of [Open]. The following options are available:
+
+  - `gmt_disable_retry`: Whether to disable retry. Default is false.
+  - `gmt_max_retries`: The maximum number of retry attempts. Default is 6.
+  - `gmt_retry_interval`: The initial interval between retry attempts. Default is 2 seconds.
+  - `gmt_retry_max_interval`: The maximum interval between retry attempts. Default is 30 seconds.
 
 # Shared Model Migrations
 
@@ -77,7 +94,7 @@ func init() { //nolint:gochecknoinits // Required for driver registration.
 
 // AdaptDB implements [multitenancy.Adapter].
 func (p *mysqlAdapter) AdaptDB(ctx context.Context, db *gorm.DB) (*multitenancy.DB, error) {
-	return multitenancy.NewDB(&mysqlAdapter{}, db), nil
+	return multitenancy.NewDB(p, db), nil
 }
 
 // OpenDBURL implements [multitenancy.Adapter].
@@ -87,6 +104,7 @@ func (p *mysqlAdapter) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gor
 	if err != nil {
 		return nil, err
 	}
+	// p.init(ctx, db)
 	return p.AdaptDB(ctx, db)
 }
 

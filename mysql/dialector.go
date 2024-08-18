@@ -2,64 +2,93 @@ package mysql
 
 import (
 	"fmt"
-	"sync"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/migrator"
 
+	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/logext"
 )
 
 type (
-	// Config is the MySQL configuration with multitenancy support.
+	// Options provides configuration options with multitenancy support.
+	// By default, retry is enabled. To disable retry, set DisableRetry to true.
+	// Note that the retry logic is only applied to migrations.
+	Options struct {
+		DisableRetry bool            `json:"gmt_disable_retry" mapstructure:"gmt_disable_retry"` // Whether to disable retry.
+		Retry        backoff.Options `json:",inline"       mapstructure:",squash"`               // Retry options.
+	}
+
+	// Option is a function that modifies an [Options] instance.
+	Option func(*Options)
+
+	// Config provides configuration with multitenancy support.
 	Config struct {
 		mysql.Config
 	}
 
-	// Dialector is the MySQL dialector with multitenancy support.
+	// Dialector provides a dialector with multitenancy support.
 	Dialector struct {
 		*mysql.Dialector
-		rw       *sync.RWMutex
-		registry *driver.ModelRegistry
-		logger   *logext.Logger
+		registry *driver.ModelRegistry // Model registry.
+		logger   *logext.Logger        // Logger.
+		options  *Options              // Options.
 	}
 
-	// Migrator is the MySQL migrator with multitenancy support.
+	// Migrator provides a migrator with multitenancy support.
 	Migrator struct {
 		mysql.Migrator
 		Dialector
 	}
 )
 
+func (o *Options) apply(opts ...Option) {
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	if !o.DisableRetry {
+		o.Retry.MaxRetries = max(o.Retry.MaxRetries, 6)
+		o.Retry.Interval = max(o.Retry.Interval, time.Second*2)
+		o.Retry.MaxInterval = max(o.Retry.MaxInterval, time.Second*30)
+	}
+}
+
 var _ gorm.Dialector = new(Dialector)
 
 // Open creates a new MySQL dialector with multitenancy support.
 func Open(dsn string) gorm.Dialector {
+	options, err := driver.ParseDSNQueryParams[Options](dsn)
+	if err != nil {
+		panic(fmt.Errorf("failed to parse DSN query parameters: %w", err))
+	}
+	options.apply()
 	return &Dialector{
 		Dialector: mysql.Open(dsn).(*mysql.Dialector),
-		rw:        &sync.RWMutex{},
 		registry:  &driver.ModelRegistry{},
 		logger:    logext.Default(),
+		options:   &options,
 	}
 }
 
 // New creates a new MySQL dialector with multitenancy support.
-func New(config Config) gorm.Dialector {
+func New(config Config, opts ...Option) gorm.Dialector {
+	options := &Options{}
+	options.apply(opts...)
 	return &Dialector{
 		Dialector: mysql.New(config.Config).(*mysql.Dialector),
-		rw:        &sync.RWMutex{},
 		registry:  &driver.ModelRegistry{},
 		logger:    logext.Default(),
+		options:   options,
 	}
 }
 
 // Migrator returns a [gorm.Migrator] implementation for the Dialector.
 func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
-	dialector.rw.RLock()
-	defer dialector.rw.RUnlock()
 	return &Migrator{
 		mysql.Migrator{
 			Migrator: migrator.Migrator{
@@ -75,19 +104,19 @@ func (dialector Dialector) Migrator(db *gorm.DB) gorm.Migrator {
 }
 
 // RegisterModels registers the given models with the dialector for multitenancy support.
+// Not safe for concurrent use by multiple goroutines.
 func (dialector *Dialector) RegisterModels(models ...driver.TenantTabler) error {
 	registry, err := driver.NewModelRegistry(models...)
 	if err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to register models: %w", err))
 	}
 
-	dialector.rw.Lock()
 	dialector.registry = registry
-	dialector.rw.Unlock()
 	return nil
 }
 
 // RegisterModels registers the given models with the provided [gorm.DB] instance for multitenancy support.
+// Not safe for concurrent use by multiple goroutines.
 func RegisterModels(db *gorm.DB, models ...driver.TenantTabler) error {
 	return db.Dialector.(*Dialector).RegisterModels(models...)
 }
@@ -98,11 +127,11 @@ func MigrateSharedModels(db *gorm.DB) error {
 }
 
 // MigrateTenantModels creates a new schema for a specific tenant in the MySQL database.
-func MigrateTenantModels(db *gorm.DB, schemaName string) error {
-	return db.Migrator().(*Migrator).MigrateTenantModels(schemaName)
+func MigrateTenantModels(db *gorm.DB, tenantID string) error {
+	return db.Migrator().(*Migrator).MigrateTenantModels(tenantID)
 }
 
 // DropDatabaseForTenant drops the database for a specific tenant in the MySQL database.
-func DropDatabaseForTenant(db *gorm.DB, tenant string) error {
-	return db.Migrator().(*Migrator).DropDatabaseForTenant(tenant)
+func DropDatabaseForTenant(db *gorm.DB, tenantID string) error {
+	return db.Migrator().(*Migrator).DropDatabaseForTenant(tenantID)
 }
