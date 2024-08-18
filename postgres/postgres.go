@@ -15,7 +15,7 @@ data isolation without the overhead of managing multiple database instances.
 
 The URL format for PostgreSQL databases is as follows:
 
-	postgres://user:password@localhost:5432/dbname
+	postgres://user:password@localhost:5432/dbname?sslmode=disable
 
 See the [PostgreSQL connection strings] documentation for more information.
 
@@ -26,9 +26,26 @@ be done before running any migrations or tenant-specific operations.
 
 # Migration Strategy
 
-To ensure data integrity and schema isolation across tenants, the AutoMigrate method
-has been disabled. Instead, use the provided shared and tenant-specific migration methods.
-[driver.ErrInvalidMigration] is returned if the migration method is called directly.
+To ensure data integrity and schema isolation across tenants,[gorm.DB.AutoMigrate] has been
+disabled. Instead, use the provided shared and tenant-specific migration methods.
+[driver.ErrInvalidMigration] is returned if the `AutoMigrate` method is called directly.
+
+# Concurrent Migrations
+
+To ensure tenant isolation and facilitate concurrent migrations, this package uses
+PostgreSQL transaction advisory locks. This mechanism prevents concurrent migrations
+from interfering with each other and ensures that only one migration can run at a time.
+
+# Retry Configuration
+
+Exponential backoff retry logic is enabled by default for migrations. To disable retry or
+customize the retry behavior, either provide options to [New] or specify options
+in the DSN connection string of [Open]. The following options are available:
+
+  - `gmt_disable_retry`: Whether to disable retry. Default is false.
+  - `gmt_max_retries`: The maximum number of retry attempts. Default is 6.
+  - `gmt_retry_interval`: The initial interval between retry attempts. Default is 2 seconds.
+  - `gmt_retry_max_interval`: The maximum interval between retry attempts. Default is 30 seconds.
 
 # Shared Model Migrations
 
