@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy/mysql/v8)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy/mysql/v8)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](../LICENSE)
 
-MySQL provides a driver for the [gorm-multitenancy](../README.md) package, allowing for easy multitenancy setup in PostgreSQL databases.
+MySQL provides a driver for the [gorm-multitenancy](../README.md) package, allowing for easy multitenancy setup in MySQL databases.
 
 ## Installation
 
