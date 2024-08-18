@@ -98,7 +98,6 @@ func WithTenant(config WithTenantConfig) gin.HandlerFunc {
 
 	if config.ContextKey == nil {
 		config.ContextKey = DefaultWithTenantConfig.ContextKey
-
 	}
 
 	if config.ErrorHandler == nil {
