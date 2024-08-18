@@ -1,5 +1,5 @@
 # Output files
-/tmp
+**/tmp
 *cover*.html
 tmp.*
 *.out
@@ -11,3 +11,4 @@ benchout*
 
 # Node
 node_modules
+**.test
