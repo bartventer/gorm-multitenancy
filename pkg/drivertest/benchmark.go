@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/internal/testmodels"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,7 +35,7 @@ func RunConformanceBenchmarks(b *testing.B, newHarness HarnessMaker[*testing.B])
 func benchmarkRegisterModels(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	models := makeAllModels(b)
+	models := testmodels.MakeAllModels(b)
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -49,7 +50,7 @@ func benchmarkRegisterModels(b *testing.B, db *multitenancy.DB, _ Options) {
 func benchmarkMigrateSharedModels(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	models := makeSharedModels(b)
+	models := testmodels.MakeSharedModels(b)
 	err := db.RegisterModels(context.Background(), models...)
 
 	b.ResetTimer()
@@ -65,7 +66,7 @@ func benchmarkMigrateSharedModels(b *testing.B, db *multitenancy.DB, _ Options) 
 func benchmarkMigrateTenantModels(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	models := makeAllModels(b)
+	models := testmodels.MakeAllModels(b)
 	err := db.RegisterModels(context.Background(), models...)
 	require.NoError(b, err)
 
@@ -78,7 +79,7 @@ func benchmarkMigrateTenantModels(b *testing.B, db *multitenancy.DB, _ Options) 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			id := nextID.Add(1)
-			tenant := &userShared{ID: fmt.Sprintf("tenant%d", id)}
+			tenant := &testmodels.Tenant{ID: fmt.Sprintf("tenant%d", id)}
 			err := db.FirstOrCreate(tenant).Error
 			require.NoError(b, err)
 			err = db.MigrateTenantModels(context.Background(), tenant.ID)
@@ -91,8 +92,8 @@ func benchmarkMigrateTenantModels(b *testing.B, db *multitenancy.DB, _ Options) 
 func benchmarkOffboardTenant(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -110,8 +111,8 @@ func benchmarkOffboardTenant(b *testing.B, db *multitenancy.DB, _ Options) {
 func benchmarkUseTenant(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -130,8 +131,8 @@ func benchmarkUseTenantCreate(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
 	var nextID atomic.Uint32
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -141,9 +142,9 @@ func benchmarkUseTenantCreate(b *testing.B, db *multitenancy.DB, _ Options) {
 			defer reset()
 
 			id := nextID.Add(1)
-			author := &authorPrivate{
-				User:  *tenant,
-				Books: generateBooks(b, id),
+			author := &testmodels.Author{
+				Tenant: *tenant,
+				Books:  generateBooks(b, id),
 			}
 			err = db.Create(author).Error
 			require.NoError(b, err)
@@ -155,12 +156,12 @@ func benchmarkUseTenantCreate(b *testing.B, db *multitenancy.DB, _ Options) {
 func benchmarkUseTenantFind(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
-	author := &authorPrivate{
-		User:  *tenant,
-		Books: generateBooks(b, 1),
+	author := &testmodels.Author{
+		Tenant: *tenant,
+		Books:  generateBooks(b, 1),
 	}
 	err := db.Create(author).Error
 	require.NoError(b, err)
@@ -172,7 +173,7 @@ func benchmarkUseTenantFind(b *testing.B, db *multitenancy.DB, _ Options) {
 			require.NoError(b, err)
 			defer reset()
 
-			var authors []authorPrivate
+			var authors []testmodels.Author
 			err = db.Find(&authors).Error
 			require.NoError(b, err)
 		}
@@ -183,12 +184,12 @@ func benchmarkUseTenantFind(b *testing.B, db *multitenancy.DB, _ Options) {
 func benchmarkUseTenantUpdate(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
-	author := &authorPrivate{
-		User:  *tenant,
-		Books: generateBooks(b, 1),
+	author := &testmodels.Author{
+		Tenant: *tenant,
+		Books:  generateBooks(b, 1),
 	}
 	err := db.Create(author).Error
 	require.NoError(b, err)
@@ -211,11 +212,11 @@ func benchmarkUseTenantDelete(b *testing.B, db *multitenancy.DB, _ Options) {
 	b.Helper()
 
 	var nextID atomic.Uint32
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(b, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(b, db, tenant)
 
-	author := &authorPrivate{
-		User: *tenant,
+	author := &testmodels.Author{
+		Tenant: *tenant,
 	}
 	err := db.Create(author).Error
 	require.NoError(b, err)
@@ -228,7 +229,7 @@ func benchmarkUseTenantDelete(b *testing.B, db *multitenancy.DB, _ Options) {
 			defer reset()
 
 			id := nextID.Add(1)
-			book := &bookPrivate{Title: fmt.Sprintf("Book %d", id)}
+			book := &testmodels.Book{Title: fmt.Sprintf("Book %d", id)}
 			err = db.Create(book).Error
 			require.NoError(b, err)
 
@@ -239,10 +240,10 @@ func benchmarkUseTenantDelete(b *testing.B, db *multitenancy.DB, _ Options) {
 }
 
 // generateBooks creates a slice of bookPrivate pointers for a given author ID.
-func generateBooks(tb testing.TB, id uint32) []*bookPrivate {
+func generateBooks(tb testing.TB, id uint32) []*testmodels.Book {
 	tb.Helper()
-	return []*bookPrivate{
-		{Title: fmt.Sprintf("Book 1-%d", id), Languages: []*languagePrivate{{Name: "English"}}},
-		{Title: fmt.Sprintf("Book 2-%d", id), Languages: []*languagePrivate{{Name: "French"}}},
+	return []*testmodels.Book{
+		{Title: fmt.Sprintf("Book 1-%d", id), Languages: []*testmodels.Language{{Name: "English"}}},
+		{Title: fmt.Sprintf("Book 2-%d", id), Languages: []*testmodels.Language{{Name: "French"}}},
 	}
 }

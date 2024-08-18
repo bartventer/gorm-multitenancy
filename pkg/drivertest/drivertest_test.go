@@ -126,7 +126,8 @@ func (h *harness) MakeAdapter(context.Context) (adapter driver.DBFactory, tx *go
 // Options implements [drivertest.Harness].
 func (h *harness) Options() Options {
 	return Options{
-		IsMock: true,
+		IsMock:            true,
+		MaxConnectionsSQL: "",
 	}
 }
 
@@ -152,5 +153,6 @@ func newHarness[TB testing.TB](ctx context.Context, t TB) (Harness, error) {
 var _ Harness = new(harness)
 
 func TestRunConformanceTests(t *testing.T) {
+	t.Parallel()
 	RunConformanceTests(t, newHarness)
 }

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
+	"github.com/bartventer/gorm-multitenancy/v8/internal/testmodels"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,13 +16,14 @@ import (
 
 type (
 	// Options is a set of options to configure driver specific behavior.
-	// This should be used as a last resort to for example skip tests for a feature
-	// that is not supported by the driver. Not encouraged.
 	Options struct {
 		// IsMock indicates if the driver is a mock implementation.
 		// This is useful for mock implementations or drivers that do not support
 		// the specific features required by the tests.
 		IsMock bool
+
+		// MaxConnectionsSQL specifies the SQL query to get the maximum number of connections.
+		MaxConnectionsSQL string
 	}
 
 	// Harness descibes the functionality test harnesses must provide to run
@@ -47,64 +49,49 @@ type (
 func RunConformanceTests(t *testing.T, newHarness HarnessMaker[*testing.T]) {
 	t.Helper()
 
-	t.Run("RegisterModels", func(t *testing.T) { withDB(t, newHarness, testRegisterModels) })
-	t.Run("MigrateSharedModels", func(t *testing.T) { withDB(t, newHarness, testMigrateSharedModels) })
-	t.Run("MigrateTenantModels", func(t *testing.T) { withDB(t, newHarness, testMigrateTenantModels) })
-	t.Run("OffboardTenant", func(t *testing.T) { withDB(t, newHarness, testOffboardTenant) })
-	t.Run("UseTenant", func(t *testing.T) { withDB(t, newHarness, testUseTenant) })
-	t.Run("CurrentTenant", func(t *testing.T) { withDB(t, newHarness, testCurrentTenant) })
-	t.Run("TenantModel", func(t *testing.T) { withDB(t, newHarness, testTenantModel) })
-	t.Run("DBInstance", func(t *testing.T) { withDB(t, newHarness, testDBInstance) })
-}
+	t.Run("RegisterModels", func(t *testing.T) { parallel(t, newHarness, testRegisterModels) })
+	t.Run("MigrateSharedModels", func(t *testing.T) { parallel(t, newHarness, testMigrateSharedModels) })
+	t.Run("MigrateTenantModels", func(t *testing.T) { parallel(t, newHarness, testMigrateTenantModels) })
+	t.Run("OffboardTenant", func(t *testing.T) { parallel(t, newHarness, testOffboardTenant) })
+	t.Run("UseTenant", func(t *testing.T) { parallel(t, newHarness, testUseTenant) })
+	t.Run("WithTenant", func(t *testing.T) { parallel(t, newHarness, testWithTenant) })
+	t.Run("CurrentTenant", func(t *testing.T) { parallel(t, newHarness, testCurrentTenant) })
+	t.Run("TenantModel", func(t *testing.T) { parallel(t, newHarness, testTenantModel) })
+	t.Run("DBInstance", func(t *testing.T) { parallel(t, newHarness, testDBInstance) })
 
-// withDB creates a new DB and runs the test function.
-func withDB[TB testing.TB](t TB, newHarness HarnessMaker[TB], f func(TB, *multitenancy.DB, Options)) {
-	t.Helper()
-
-	ctx := context.Background()
-	h, err := newHarness(ctx, t)
-	require.NoError(t, err)
-	defer h.Close()
-
-	a, gdb, err := h.MakeAdapter(ctx) // adapter and gorm db
-	require.NoError(t, err)
-	db := multitenancy.NewDB(a, gdb) // multitenancy db
-	require.NoError(t, err)
-
-	f(t, db.Session(&gorm.Session{}), h.Options())
+	t.Run("Concurrency", func(t *testing.T) {
+		t.Run("TenantIsolation1", func(t *testing.T) { parallel(t, newHarness, testTenantIsolation1) })
+		t.Run("TenantIsolation2", func(t *testing.T) { parallel(t, newHarness, testTenantIsolation2) })
+	})
 }
 
 // testRegisterModels tests the RegisterModels method.
 func testRegisterModels(t *testing.T, db *multitenancy.DB, _ Options) {
-	t.Parallel()
-
 	t.Run("valid models", func(t *testing.T) {
-		err := db.RegisterModels(context.Background(), makeAllModels(t)...)
+		err := db.RegisterModels(context.Background(), testmodels.MakeAllModels(t)...)
 		assert.NoError(t, err)
 	})
 
 	t.Run("invalid shared model", func(t *testing.T) {
-		err := db.RegisterModels(context.Background(), &userSharedInvalid{})
+		err := db.RegisterModels(context.Background(), &testmodels.TenantInvalid{})
 		assert.Error(t, err, "expected error, got nil")
 	})
 
 	t.Run("invalid tenant model", func(t *testing.T) {
-		err := db.RegisterModels(context.Background(), &bookPrivateInvalid{})
+		err := db.RegisterModels(context.Background(), &testmodels.BookInvalid{})
 		assert.Error(t, err, "expected error, got nil")
 	})
 }
 
 // testMigrateSharedModels tests the MigrateSharedModels method.
 func testMigrateSharedModels(t *testing.T, db *multitenancy.DB, _ Options) {
-	t.Parallel()
-
 	t.Run("no public models", func(t *testing.T) {
 		err := db.MigrateSharedModels(context.Background())
 		assert.Error(t, err, "expected error, got nil")
 	})
 
 	t.Run("valid public models", func(t *testing.T) {
-		err := db.RegisterModels(context.Background(), makeSharedModels(t)...)
+		err := db.RegisterModels(context.Background(), testmodels.MakeSharedModels(t)...)
 		require.NoError(t, err)
 
 		err = db.MigrateSharedModels(context.Background())
@@ -114,15 +101,13 @@ func testMigrateSharedModels(t *testing.T, db *multitenancy.DB, _ Options) {
 
 // testMigrateTenantModels tests the MigrateTenantModels method.
 func testMigrateTenantModels(t *testing.T, db *multitenancy.DB, opts Options) {
-	t.Parallel()
-
-	err := db.RegisterModels(context.Background(), makeSharedModels(t)...)
+	err := db.RegisterModels(context.Background(), testmodels.MakeSharedModels(t)...)
 	require.NoError(t, err)
 
 	err = db.MigrateSharedModels(context.Background())
 	require.NoError(t, err)
 
-	tenant := &userShared{ID: "tenant1"}
+	tenant := &testmodels.Tenant{ID: "tenant1"}
 	err = db.FirstOrCreate(tenant).Error
 	require.NoError(t, err)
 
@@ -133,7 +118,7 @@ func testMigrateTenantModels(t *testing.T, db *multitenancy.DB, opts Options) {
 
 	t.Run("valid tenant models", func(t *testing.T) {
 		ctx := context.Background()
-		err := db.RegisterModels(ctx, makePrivateModels(t)...)
+		err := db.RegisterModels(ctx, testmodels.MakePrivateModels(t)...)
 		require.NoError(t, err)
 
 		err = db.MigrateTenantModels(ctx, tenant.ID)
@@ -144,7 +129,7 @@ func testMigrateTenantModels(t *testing.T, db *multitenancy.DB, opts Options) {
 		if opts.IsMock {
 			t.Skip("skipping transaction test for mock implementations")
 		}
-		err := db.RegisterModels(context.Background(), makePrivateModels(t)...)
+		err := db.RegisterModels(context.Background(), testmodels.MakePrivateModels(t)...)
 		require.NoError(t, err)
 		err = db.Transaction(func(tx *multitenancy.DB) error {
 			return tx.MigrateTenantModels(context.Background(), tenant.ID)
@@ -155,10 +140,8 @@ func testMigrateTenantModels(t *testing.T, db *multitenancy.DB, opts Options) {
 
 // testOffboardTenant tests the OffboardTenant method.
 func testOffboardTenant(t *testing.T, db *multitenancy.DB, _ Options) {
-	t.Parallel()
-
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(t, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(t, db, tenant)
 
 	err := db.OffboardTenant(context.Background(), tenant.ID)
 	assert.NoError(t, err)
@@ -166,10 +149,8 @@ func testOffboardTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 
 // testUseTenant tests the UseTenant method.
 func testUseTenant(t *testing.T, db *multitenancy.DB, _ Options) {
-	t.Parallel()
-
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(t, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(t, db, tenant)
 
 	t.Run("TestCRUD", func(t *testing.T) {
 		ctx := context.Background()
@@ -177,11 +158,11 @@ func testUseTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 		require.NoError(t, err)
 		defer reset()
 
-		author := &authorPrivate{
-			User: *tenant,
-			Books: []*bookPrivate{
-				{Title: "Book 1", Languages: []*languagePrivate{{Name: "English"}}},
-				{Title: "Book 2", Languages: []*languagePrivate{{Name: "French"}}},
+		author := &testmodels.Author{
+			Tenant: *tenant,
+			Books: []*testmodels.Book{
+				{Title: "Book 1", Languages: []*testmodels.Language{{Name: "English"}}},
+				{Title: "Book 2", Languages: []*testmodels.Language{{Name: "French"}}},
 			},
 		}
 		err = db.Create(author).Error
@@ -204,15 +185,31 @@ func testUseTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 	})
 }
 
+// testWithTenant tests the WithTenant method.
+func testWithTenant(t *testing.T, db *multitenancy.DB, opts Options) {
+	if opts.IsMock {
+		t.Skip("skipping test for mock implementations; not supported")
+	}
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(t, db, tenant)
+	assert.Equal(t, "public", db.CurrentTenant(context.Background()), "expected initial tenant context")
+
+	ctx := context.Background()
+	err := db.WithTenant(ctx, tenant.ID, func(tx *multitenancy.DB) error {
+		assert.Equal(t, tenant.ID, tx.CurrentTenant(ctx), "expected tenant context")
+		return nil
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "public", db.CurrentTenant(ctx), "expected initial tenant context")
+}
+
 // testCurrentTenant tests the CurrentTenant method.
 func testCurrentTenant(t *testing.T, db *multitenancy.DB, _ Options) {
-	t.Parallel()
-
 	ctx := context.Background()
 	assert.Equal(t, "public", db.CurrentTenant(ctx), "expected initial tenant context")
 
-	tenant := &userShared{ID: "tenant1"}
-	setupTenant(t, db, tenant)
+	tenant := &testmodels.Tenant{ID: "tenant1"}
+	setupModels(t, db, tenant)
 
 	reset, err := db.UseTenant(ctx, tenant.ID)
 	require.NoError(t, err)
@@ -225,10 +222,9 @@ func testCurrentTenant(t *testing.T, db *multitenancy.DB, _ Options) {
 
 // testTenantModel tests the TenantModel struct.
 func testTenantModel(t *testing.T, db *multitenancy.DB, opts Options) {
-	t.Parallel()
 	ctx := context.Background()
 
-	err := db.RegisterModels(ctx, mockTenantModel{})
+	err := db.RegisterModels(ctx, testmodels.FakeTenant{})
 	require.NoError(t, err)
 
 	err = db.MigrateSharedModels(ctx)
@@ -270,7 +266,7 @@ func testTenantModel(t *testing.T, db *multitenancy.DB, opts Options) {
 			if opts.IsMock {
 				t.Skip("skipping test for mock implementations")
 			}
-			m := &mockTenantModel{
+			m := &testmodels.FakeTenant{
 				TenantModel: *tt.data,
 			}
 			err := db.Create(m).Error
@@ -288,13 +284,12 @@ func testTenantModel(t *testing.T, db *multitenancy.DB, opts Options) {
 
 // testDBInstance tests the DB instance.
 func testDBInstance(t *testing.T, db *multitenancy.DB, opts Options) {
-	t.Parallel()
 	if opts.IsMock {
 		t.Skip("skipping test for mock implementations; not supported")
 	}
 
 	t.Run("InvalidAutoMigrate", func(t *testing.T) {
-		err := db.AutoMigrate(&userShared{})
+		err := db.AutoMigrate(&testmodels.Tenant{})
 		require.ErrorIs(t, err, driver.ErrInvalidMigration)
 	})
 
@@ -314,22 +309,4 @@ func testDBInstance(t *testing.T, db *multitenancy.DB, opts Options) {
 		require.True(t, ok, "expected sql.Tx")
 		require.NotNil(t, sqlTx, "expected sql.Tx")
 	})
-}
-
-// setupTenant sets up a tenant for testing.
-// It registers models, migrates shared models, creates the tenant, and migrates tenant models.
-func setupTenant[TB testing.TB](t TB, db *multitenancy.DB, tenant *userShared) {
-	t.Helper()
-
-	err := db.RegisterModels(context.Background(), makeAllModels(t)...)
-	require.NoError(t, err)
-
-	err = db.MigrateSharedModels(context.Background())
-	require.NoError(t, err)
-
-	err = db.FirstOrCreate(tenant).Error
-	require.NoError(t, err)
-
-	err = db.MigrateTenantModels(context.Background(), tenant.ID)
-	require.NoError(t, err)
 }
