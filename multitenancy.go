@@ -200,11 +200,11 @@ must be registered with the DB instance using [DB.RegisterModels].
 
 	import (
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {...}
 		db.RegisterModels(ctx, &Tenant{}, &Book{})
 	}
@@ -227,9 +227,16 @@ Use [mysql.RegisterModels] to register models.
 
 # Migration Strategy
 
-To ensure data integrity and schema isolation across tenants, the AutoMigrate method
-has been disabled. Instead, use the provided shared and tenant-specific migration methods.
-[driver.ErrInvalidMigration] is returned if the AutoMigrate method is called directly.
+To ensure data integrity and schema isolation across tenants,[gorm.DB.AutoMigrate] has been
+disabled. Instead, use the provided shared and tenant-specific migration methods.
+[driver.ErrInvalidMigration] is returned if the `AutoMigrate` method is called directly.
+
+# Concurrent Migrations
+
+To ensure tenant isolation and facilitate concurrent migrations, driver-specific locking mechanisms
+are used. These locks prevent concurrent migrations from interfering with each other, ensuring that
+only one migration process can run at a time for a given tenant. Consult the driver-specific
+documentation for more information.
 
 # Shared Model Migrations
 
@@ -238,11 +245,11 @@ After registering models, shared models are migrated using [DB.MigrateSharedMode
 	import (
 		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {...}
 		db.RegisterModels(ctx, &Tenant{}, &Book{})
 		db.MigrateSharedModels(ctx)
@@ -271,11 +278,11 @@ After registering models, tenant-specific models are migrated using [DB.MigrateT
 	import (
 		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {...}
 		db.RegisterModels(ctx, &Tenant{}, &Book{})
 		db.MigrateSharedModels(ctx)
@@ -307,11 +314,11 @@ should be cleaned up using [DB.OffboardTenant].
 	import (
 		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {...}
 		db.RegisterModels(ctx, &Tenant{}, &Book{})
 		db.MigrateSharedModels(ctx)
@@ -345,11 +352,11 @@ returns a reset function to revert the database context and an error if the oper
 	import (
 		"context"
 		multitenancy "github.com/bartventer/gorm-multitenancy/v8"
-		"github.com/bartventer/gorm-multitenancy/postgres/v8"
+		_ "github.com/bartventer/gorm-multitenancy/postgres/v8"
 	)
 
 	func main() {
-		db, err := multitenancy.Open(postgres.Open(dsn))
+		db, err := multitenancy.OpenDB(ctx, dsn)
 		if err != nil {...}
 		db.RegisterModels(ctx, &Tenant{}, &Book{})
 		db.MigrateSharedModels(ctx)
@@ -539,7 +546,6 @@ import (
 )
 
 type (
-
 	// DB wraps a GORM DB connection, integrating support for multitenancy operations.
 	// It provides a unified interface for managing tenant-specific and shared data within
 	// a multi-tenant application, leveraging GORM's ORM capabilities for database operations.
@@ -557,11 +563,16 @@ func (db *DB) CurrentTenant(ctx context.Context) string {
 
 // RegisterModels registers GORM model structs for multitenancy support, preparing models for
 // tenant-specific operations.
+//
+// Not safe for concurrent use by multiple goroutines. Call this method from you main function
+// or during application initialization.
 func (db *DB) RegisterModels(ctx context.Context, models ...driver.TenantTabler) error {
 	return db.driver.RegisterModels(ctx, db.DB, models...)
 }
 
 // MigrateSharedModels migrates all registered shared/public models.
+//
+// Safe for concurrent use by multiple goroutines.
 func (db *DB) MigrateSharedModels(ctx context.Context) error {
 	return db.driver.MigrateSharedModels(ctx, db.DB)
 }
@@ -569,12 +580,16 @@ func (db *DB) MigrateSharedModels(ctx context.Context) error {
 // MigrateTenantModels migrates all registered tenant-specific models for the specified tenant.
 // This method is intended to be used when onboarding a new tenant or updating an existing tenant's
 // schema to match the latest model definitions.
+//
+// Safe for concurrent use by multiple goroutines.
 func (db *DB) MigrateTenantModels(ctx context.Context, tenantID string) error {
 	return db.driver.MigrateTenantModels(ctx, db.DB, tenantID)
 }
 
 // OffboardTenant cleans up the database by dropping the tenant-specific schema and associated tables.
 // This method is intended to be used after a tenant has been removed.
+//
+// Safe for concurrent use by multiple goroutines.
 func (db *DB) OffboardTenant(ctx context.Context, tenantID string) error {
 	return db.driver.OffboardTenant(ctx, db.DB, tenantID)
 }
@@ -583,8 +598,35 @@ func (db *DB) OffboardTenant(ctx context.Context, tenantID string) error {
 // to revert the database context to its original state. This method is intended to be used when
 // performing operations specific to a tenant, such as creating, updating, or deleting tenant-specific
 // data.
+//
+// Not safe for concurrent use by multiple goroutines. Either use [DB.WithTenant], or ensure that this
+// method is called within a transaction or from its own database connection.
 func (db *DB) UseTenant(ctx context.Context, tenantID string) (reset func() error, err error) {
 	return db.driver.UseTenant(ctx, db.DB, tenantID)
+}
+
+// WithTenant executes the provided function within the context of a specific tenant, ensuring that
+// the database operations are scoped to the tenant's schema. This method is intended to be used when
+// performing a series of operations within a tenant context, such as creating, updating, or deleting
+// tenant-specific data.
+//
+// Safe for concurrent use by multiple goroutines.
+func (db *DB) WithTenant(ctx context.Context, tenantID string, fc func(tx *DB) error, opts ...*sql.TxOptions) (err error) {
+	tx := db.WithContext(ctx).Begin(opts...)
+	defer func() {
+		if tx.Error == nil {
+			err = tx.Commit().Error
+		} else {
+			err = tx.Rollback().Error
+		}
+	}()
+
+	reset, err := tx.UseTenant(ctx, tenantID)
+	if err != nil {
+		return err
+	}
+	defer reset()
+	return fc(NewDB(db.driver, tx.DB))
 }
 
 // NewDB creates a new [DB] instance using the provided [driver.DBFactory] and [gorm.DB]
