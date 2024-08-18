@@ -90,7 +90,7 @@ SET search_path TO tenant_id;
 CREATE TABLE IF NOT EXISTS tenant_specific_table (id SERIAL PRIMARY KEY, name VARCHAR(255));
 
 -- Reset search path
-RESET search_path;
+SET search_path TO public;
 
 -- Commit transaction
 COMMIT;
@@ -110,7 +110,7 @@ DROP SCHEMA IF EXISTS tenant_id CASCADE;
 SET search_path TO tenant_id;
 
 -- Cleanup function to reset search path
-RESET search_path;
+SET search_path TO public;
 ```
 
 ### MySQL
