@@ -38,7 +38,7 @@ func TestValidateTenantModel(t *testing.T) {
 	assert.Error(t, validateTenantModel("public.tenant_specific"), "invalid tenant model should return an error")
 }
 
-func TestNewConfig(t *testing.T) {
+func TestNewModelRegistry(t *testing.T) {
 	t.Run("valid models", func(t *testing.T) {
 		config, err := NewModelRegistry([]TenantTabler{sharedModel{}, tenantModel{}}...)
 		require.NoError(t, err)
