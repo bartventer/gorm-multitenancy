@@ -13,7 +13,7 @@ jobs:
 
             - uses: ./.github/actions/setup-go
               with:
-                  go-version: '1.22.x'
+                  go-version: '1.23.x'
 
             - name: Run golangci-lint
               uses: golangci/golangci-lint-action@v6
