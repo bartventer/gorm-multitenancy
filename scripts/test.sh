@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This script runs tests for all modules in the project and generates a coverage report.
+# This script runs tests and generates coverage reports for all modules in the project.
 
 workspace="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
 coverprofile="${COVERPROFILE:-$workspace/cover.out}"
@@ -16,7 +16,7 @@ gotestflagsbase=(
 
 declare -A gotestflags
 gotestflags=(
-    ["."]="${gotestflagsbase[@]}"
+    ["."]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./postgres"]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./mysql"]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./middleware/echo"]="${gotestflagsbase[@]}"
@@ -49,16 +49,25 @@ echo "✅ All tests passed!"
 echo "================================================================================"
 echo "📊 Generating coverage report using codecov"
 echo "================================================================================"
-# Codecov (for opts see: bash <(curl -s https://codecov.io/bash) -help)
-coverageflags=(
-    '-f' "$coverprofile"
-    '-p' "$workspace"
-)
-[[ ${CI:-false} != "true" ]] && coverageflags+=('-d')
-_temp=$(mktemp)
-awk '!seen[$0]++' "$coverprofile" >_temp && mv _temp "$coverprofile"
-bash <(curl -s https://codecov.io/bash) "${coverageflags[@]}"
 
-echo "================================================================================"
-echo "🎉 Coverage report generated successfully!"
-echo "================================================================================"
+for dir in "${!gotestflags[@]}"; do
+    echo "================================================================================"
+    echo "📊 Generating coverage report using codecov for module at path: $dir"
+    echo "================================================================================"
+    modflag=$(basename "$workspace")
+    if [[ "$dir" != "." ]]; then
+        modflag+="/${dir#./}"
+    fi
+    # for more opts see: bash <(curl -s https://codecov.io/bash) -help
+    coverageflags=(
+        '-f' "${dir}/$modcoverage"
+        '-p' "${workspace}${dir#.}"
+        "-F" "$modflag"
+    )
+    [[ ${CI:-false} != "true" ]] && coverageflags+=('-d')
+
+    bash <(curl -s https://codecov.io/bash) "${coverageflags[@]}"
+    echo "================================================================================"
+    echo "🎉 Coverage report generated for for module at path: $dir"
+    echo "================================================================================"
+done
