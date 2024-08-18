@@ -48,6 +48,8 @@ Operations requiring a tenant identifier for execution, enabling tenant-specific
 | Shared Data Storage | The `public` schema stores shared data structures. |
 | Tenant-Specific Data Storage | Resides in a schema named after the tenant's identifier (e.g., `tenant_id`). |
 | Data Access | The `search_path` is adjusted to the tenant's schema for querying tenant-specific data and is reset post-operation. |
+| Transaction Management | Transactions are used to ensure atomicity and consistency during schema creation and migration. |
+| Advisory Locks | Uses transaction-level advisory locks to prevent concurrent migrations that may interfere with each other. |
 
 #### References
 
@@ -56,8 +58,17 @@ Operations requiring a tenant identifier for execution, enabling tenant-specific
 #### MigrateSharedModels
 
 ```sql
+-- Start transaction
+BEGIN;
+
+-- Acquire advisory lock to prevent concurrent migrations (automatically released at the end of the transaction)
+SELECT pg_advisory_xact_lock(1);
+
 -- Apply migrations
 CREATE TABLE IF NOT EXISTS shared_table (id SERIAL PRIMARY KEY, name VARCHAR(255));
+
+-- Commit transaction
+COMMIT;
 ```
 
 #### MigrateTenantModels
@@ -65,6 +76,12 @@ CREATE TABLE IF NOT EXISTS shared_table (id SERIAL PRIMARY KEY, name VARCHAR(255
 ```sql
 -- Create schema if not exists
 CREATE SCHEMA IF NOT EXISTS tenant_id;
+
+-- Start transaction
+BEGIN;
+
+-- Acquire advisory lock to prevent concurrent migrations (automatically released at the end of the transaction)
+SELECT pg_advisory_xact_lock(1);
 
 -- Set search path to tenant's schema
 SET search_path TO tenant_id;
@@ -74,6 +91,9 @@ CREATE TABLE IF NOT EXISTS tenant_specific_table (id SERIAL PRIMARY KEY, name VA
 
 -- Reset search path
 RESET search_path;
+
+-- Commit transaction
+COMMIT;
 ```
 
 #### OffboardTenant
@@ -101,6 +121,8 @@ RESET search_path;
 | Shared Data Storage | The `public` database contains shared data structures. |
 | Tenant-Specific Data Storage | Stored in a database named after the tenant's identifier (e.g., `tenant_id`). |
 | Data Access | The database context is switched to the tenant's database for querying tenant-specific data and is reset post-operation. |
+| Transaction Management | Transactions are used to ensure atomicity and consistency during schema creation and migration. |
+| Advisory Locks | Used to prevent concurrent migrations that may interfere with each other. |
 
 #### References
 
@@ -110,8 +132,20 @@ RESET search_path;
 #### MigrateSharedModels
 
 ```sql
+-- Acquire advisory lock to prevent concurrent migrations
+SELECT GET_LOCK('tenant_id', -1);
+
+-- Start transaction
+START TRANSACTION;
+
 -- Apply migrations
 CREATE TABLE IF NOT EXISTS shared_table (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255));
+
+-- Commit transaction
+COMMIT;
+
+-- Release advisory lock
+SELECT RELEASE_LOCK('tenant_id');
 ```
 
 #### MigrateTenantModels
@@ -123,6 +157,12 @@ SHOW DATABASES LIKE 'tenant_id';
 -- Create database if not exists
 CREATE DATABASE IF NOT EXISTS tenant_id;
 
+-- Acquire advisory lock to prevent concurrent migrations
+SELECT GET_LOCK('tenant_id', -1);
+
+-- Start transaction
+START TRANSACTION;
+
 -- Use database
 USE tenant_id;
 
@@ -131,6 +171,12 @@ CREATE TABLE IF NOT EXISTS tenant_specific_table (id INT AUTO_INCREMENT PRIMARY 
 
 -- Reset database (switch to default database)
 USE public;
+
+-- Commit transaction
+COMMIT;
+
+-- Release advisory lock
+SELECT RELEASE_LOCK('tenant_id');
 ```
 
 #### OffboardTenant
