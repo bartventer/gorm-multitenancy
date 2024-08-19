@@ -17,8 +17,7 @@ func ExampleExtractSubdomain() {
 
 	for _, subdomain := range subdomains {
 		if sub, err := nethttp.ExtractSubdomain(subdomain); err != nil {
-			// log.Fatalf("unexpected error for host: %q", subdomain)
-			fmt.Printf("unexpected error: %v\n", err)
+			log.Fatalf("unexpected error for host: %q", subdomain)
 		} else {
 			fmt.Println(sub)
 		}
