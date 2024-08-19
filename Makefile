@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.SHELLFLAGS = -ecuo pipefail
 SHELL = /bin/bash
+.SHELLFLAGS = -ecuo pipefail
 
 SCRIPTS_DIR := ./scripts
 
 .PHONY: lint
-lint: ## Run golangci-lint on all files
+lint: ## Lint the project
 	$(SCRIPTS_DIR)/lint.sh
+
+.PHONY: fmt
+fmt: ## Format the project
+	$(SCRIPTS_DIR)/fmt.sh
 
 .PHONY: build
 build: ## Build the project
