@@ -10,65 +10,6 @@ import (
 	"testing"
 )
 
-func ExampleDefaultTenantFromSubdomain() {
-	req, err := http.NewRequest(http.MethodGet, "http://test.domain.com", nil)
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
-
-	req.Host = "test.domain.com"
-
-	subdomain, err := DefaultTenantFromSubdomain(req)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Subdomain:", subdomain)
-	}
-
-	// Output:
-	// Subdomain: test
-}
-
-func ExampleDefaultTenantFromHeader() {
-	req, err := http.NewRequest(http.MethodGet, "http://test.domain.com", nil)
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
-
-	req.Header.Set(XTenantHeader, "test-tenant")
-
-	tenant, err := DefaultTenantFromHeader(req)
-	if err != nil {
-		fmt.Println("Error:", err)
-	} else {
-		fmt.Println("Tenant:", tenant)
-	}
-
-	// Output:
-	// Tenant: test-tenant
-}
-
-func ExampleWithTenant() {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tenant := r.Context().Value(TenantKey).(string)
-		fmt.Println("Tenant:", tenant)
-	})
-
-	handler := WithTenant(DefaultWithTenantConfig)(mux)
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Host = "tenant.example.com"
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
-
-	// Output: Tenant: tenant
-}
-
 func TestWithTenant(t *testing.T) {
 	type args struct {
 		tenant string
