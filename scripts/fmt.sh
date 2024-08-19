@@ -1,22 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "================================================================================"
-echo "🔍 Starting Linting Process"
-echo "================================================================================"
-
 gomoddirs=$(find . -name 'go.mod' -type f -exec dirname {} \; | sort)
 
-golangci-lint run --verbose ./...
+echo "================================================================================"
+echo "🔍 Starting Formatting Process"
+echo "================================================================================"
+
 for dir in $gomoddirs; do
     echo "--------------------------------------------------------------------------------"
-    echo "Linting in directory: $dir"
+    echo "Formatting in directory: $dir"
     echo "--------------------------------------------------------------------------------"
     pushd "$dir"
-    golangci-lint run --verbose ./...
+    golangci-lint run --fix --verbose ./...
     popd
 done
 
 echo "================================================================================"
-echo "✅ Linting Process Completed Successfully"
+echo "✅ Formatting Process Completed Successfully"
 echo "================================================================================"
