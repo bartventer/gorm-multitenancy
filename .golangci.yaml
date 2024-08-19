@@ -345,6 +345,8 @@ issues:
   # Set to 0 to disable.
   # Default: 3
   max-same-issues: 50
+  exclude-dirs:
+    - examples
 
   exclude-rules:
     - source: "(noinspection|TODO)"
