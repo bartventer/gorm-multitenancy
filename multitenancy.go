@@ -564,7 +564,7 @@ func (db *DB) CurrentTenant(ctx context.Context) string {
 // RegisterModels registers GORM model structs for multitenancy support, preparing models for
 // tenant-specific operations.
 //
-// Not safe for concurrent use by multiple goroutines. Call this method from you main function
+// Not safe for concurrent use by multiple goroutines. Call this method from your main function
 // or during application initialization.
 func (db *DB) RegisterModels(ctx context.Context, models ...driver.TenantTabler) error {
 	return db.driver.RegisterModels(ctx, db.DB, models...)
@@ -572,7 +572,7 @@ func (db *DB) RegisterModels(ctx context.Context, models ...driver.TenantTabler)
 
 // MigrateSharedModels migrates all registered shared/public models.
 //
-// Safe for concurrent use by multiple goroutines.
+// Safe for concurrent use by multiple goroutines ito ensuring data integrity and schema isolation.
 func (db *DB) MigrateSharedModels(ctx context.Context) error {
 	return db.driver.MigrateSharedModels(ctx, db.DB)
 }
@@ -581,7 +581,7 @@ func (db *DB) MigrateSharedModels(ctx context.Context) error {
 // This method is intended to be used when onboarding a new tenant or updating an existing tenant's
 // schema to match the latest model definitions.
 //
-// Safe for concurrent use by multiple goroutines.
+// Safe for concurrent use by multiple goroutines ito ensuring data integrity and schema isolation.
 func (db *DB) MigrateTenantModels(ctx context.Context, tenantID string) error {
 	return db.driver.MigrateTenantModels(ctx, db.DB, tenantID)
 }
@@ -589,7 +589,7 @@ func (db *DB) MigrateTenantModels(ctx context.Context, tenantID string) error {
 // OffboardTenant cleans up the database by dropping the tenant-specific schema and associated tables.
 // This method is intended to be used after a tenant has been removed.
 //
-// Safe for concurrent use by multiple goroutines.
+// Safe for concurrent use by multiple goroutines ito ensuring data integrity and schema isolation.
 func (db *DB) OffboardTenant(ctx context.Context, tenantID string) error {
 	return db.driver.OffboardTenant(ctx, db.DB, tenantID)
 }
@@ -599,8 +599,9 @@ func (db *DB) OffboardTenant(ctx context.Context, tenantID string) error {
 // performing operations specific to a tenant, such as creating, updating, or deleting tenant-specific
 // data.
 //
-// Not safe for concurrent use by multiple goroutines. Either use [DB.WithTenant], or ensure that this
-// method is called within a transaction or from its own database connection.
+// Technically safe for concurrent use by multiple goroutines, but should not be used concurrently
+// ito ensuring data integrity and schema isolation. Either use [DB.WithTenant], or ensure that this method is called
+// within a transaction or from its own database connection.
 func (db *DB) UseTenant(ctx context.Context, tenantID string) (reset func() error, err error) {
 	return db.driver.UseTenant(ctx, db.DB, tenantID)
 }
@@ -610,7 +611,7 @@ func (db *DB) UseTenant(ctx context.Context, tenantID string) (reset func() erro
 // performing a series of operations within a tenant context, such as creating, updating, or deleting
 // tenant-specific data.
 //
-// Safe for concurrent use by multiple goroutines.
+// Safe for concurrent use by multiple goroutines ito ensuring data integrity and schema isolation.
 func (db *DB) WithTenant(ctx context.Context, tenantID string, fc func(tx *DB) error, opts ...*sql.TxOptions) (err error) {
 	tx := db.WithContext(ctx).Begin(opts...)
 	defer func() {

@@ -18,8 +18,9 @@ import (
 // responsibility of the caller to ensure that the dbName has been sanitized to avoid SQL
 // injection vulnerabilities.
 //
-// Not safe for concurrent use by multiple goroutines. Use a separate database connection or
-// transaction for each goroutine that requires a different database.
+// Technically safe for concurrent use by multiple goroutines, but should not be used concurrently
+// ito ensuring data integrity and schema isolation. Use a separate database connection or transaction for each
+// goroutine that requires a different database.
 //
 // Example:
 //
