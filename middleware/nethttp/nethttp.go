@@ -61,7 +61,7 @@ func DefaultTenantFromHeader(r *http.Request) (string, error) {
 	tenant := r.Header.Get(XTenantHeader)
 	tenant = strings.TrimSpace(tenant)
 	if tenant == "" {
-		return "", fmt.Errorf("failed to get tenant from `%s` header, header is empty", XTenantHeader)
+		return "", fmt.Errorf("%w: failed to get tenant from `%s` header, header is empty", ErrTenantInvalid, XTenantHeader)
 	}
 	return tenant, nil
 }
