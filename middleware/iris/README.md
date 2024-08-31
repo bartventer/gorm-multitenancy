@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bartventer/gorm-multitenancy/middleware/iris/v8)](https://goreportcard.com/report/github.com/bartventer/gorm-multitenancy/middleware/iris/v8)
 [![License](https://img.shields.io/github/license/bartventer/gorm-multitenancy.svg)](../../LICENSE)
 
-iris provides middleware for easy tenant context management in web applications. It integrates seamlessly with the [gorm-multitenancy](../../README.md) package.
+`iris` provides middleware for easy tenant context management in web applications. It integrates seamlessly with the [gorm-multitenancy](../../README.md) package.
 
 ## Installation
 
