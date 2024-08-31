@@ -5,7 +5,7 @@ go 1.23
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../nethttp
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.4.0
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.6.0
 	github.com/labstack/echo/v4 v4.12.0
 )
 
