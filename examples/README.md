@@ -28,7 +28,7 @@ go run -C examples . [options]
 -   `-server` string
 
     -   Description: Specifies the HTTP server to run (_and `gorm-multitenancy` middleware to use_)
-    -   Options: [`echo`](../middleware/echo/README.md), [`gin`](../middleware/gin/README.md), [`nethttp`](../middleware/nethttp/README.md)
+    -   Options: [`echo`](../middleware/echo/README.md), [`gin`](../middleware/gin/README.md), [`iris`](../middleware/iris/README.md), [`nethttp`](../middleware/nethttp/README.md)
     -   Default: [`echo`](../middleware/echo/README.md)
 
 -   `-driver` string

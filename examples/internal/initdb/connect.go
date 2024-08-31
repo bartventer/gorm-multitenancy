@@ -23,7 +23,21 @@ import (
 	"gorm.io/gorm"
 )
 
-func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup func(), err error) {
+type Options struct {
+	MySQLInitScriptFilePath string
+}
+
+type Option func(*Options)
+
+func Connect(ctx context.Context, driver string, opts ...Option) (db *multitenancy.DB, cleanup func(), err error) {
+
+	options := Options{
+		MySQLInitScriptFilePath: filepath.Join("testdata", "init.sql"),
+	}
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	color.Set(color.FgYellow, color.Bold)
 	defer color.Unset()
 	log.Printf("Connecting to %q database...", driver)
@@ -56,7 +70,7 @@ func Connect(ctx context.Context, driver string) (db *multitenancy.DB, cleanup f
 	case "mysql":
 		config.Port = "3306/tcp"
 		config.Name = "public"
-		initScriptPath := filepath.Join("testdata", "init.sql")
+		initScriptPath := options.MySQLInitScriptFilePath
 		container, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 			ContainerRequest: testcontainers.ContainerRequest{
 				Image:        "mysql:8.0",

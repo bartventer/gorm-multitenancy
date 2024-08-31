@@ -14,6 +14,7 @@ import (
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/echoserver"
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/ginserver"
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/initdb"
+	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/irisserver"
 	"github.com/bartventer/gorm-multitenancy/examples/v8/internal/nethttpserver"
 	"github.com/fatih/color"
 )
@@ -26,7 +27,7 @@ type options struct {
 var opts options
 
 func (o *options) validate() error {
-	validServers := []string{"echo", "gin", "nethttp"}
+	validServers := []string{"echo", "gin", "iris", "nethttp"}
 	if !slices.Contains(validServers, o.server) {
 		return fmt.Errorf("invalid server: %s", o.server)
 	}
@@ -50,7 +51,7 @@ func main() {
 	`)
 
 	flag.StringVar(&opts.driver, "driver", "postgres", "Specifies the database driver to use. Options: 'postgres', 'mysql'.")
-	flag.StringVar(&opts.server, "server", "echo", "Specifies the HTTP server to run and the gorm-multitenancy middleware to use. Options: 'echo', 'gin', 'nethttp'.")
+	flag.StringVar(&opts.server, "server", "echo", "Specifies the HTTP server to run and the gorm-multitenancy middleware to use. Options: 'echo', 'gin', 'iris', 'nethttp'.")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
 		flag.PrintDefaults()
@@ -104,6 +105,8 @@ Note: The server and driver flags are optional. When not specified, the default 
 		err = echoserver.Start(ctx, db)
 	case "gin":
 		err = ginserver.Start(ctx, db)
+	case "iris":
+		err = irisserver.Start(ctx, db)
 	case "nethttp":
 		err = nethttpserver.Start(ctx, db)
 	default:

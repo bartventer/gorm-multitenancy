@@ -26,22 +26,26 @@ func Start(ctx context.Context, db *multitenancy.DB) error {
 	return cr.start(ctx)
 }
 
+func (c *controller) init(r *gin.Engine) {
+	r.Use(ginmw.WithTenant(ginmw.WithTenantConfig{
+		Skipper: func(c *gin.Context) bool {
+			return strings.HasPrefix(c.Request.URL.Path, "/tenants") // skip tenant routes
+		},
+	}))
+
+	r.POST("/tenants", c.createTenantHandler)
+	r.GET("/tenants/:id", c.getTenantHandler)
+	r.DELETE("/tenants/:id", c.deleteTenantHandler)
+	r.GET("/books", c.getBooksHandler)
+	r.POST("/books", c.createBookHandler)
+	r.DELETE("/books/:id", c.deleteBookHandler)
+	r.PUT("/books/:id", c.updateBookHandler)
+}
+
 func (cr *controller) start(ctx context.Context) (err error) {
 	cr.once.Do(func() {
 		r := gin.Default()
-		r.Use(ginmw.WithTenant(ginmw.WithTenantConfig{
-			Skipper: func(c *gin.Context) bool {
-				return strings.HasPrefix(c.Request.URL.Path, "/tenants") // skip tenant routes
-			},
-		}))
-
-		r.POST("/tenants", cr.createTenantHandler)
-		r.GET("/tenants/:id", cr.getTenantHandler)
-		r.DELETE("/tenants/:id", cr.deleteTenantHandler)
-		r.GET("/books", cr.getBooksHandler)
-		r.POST("/books", cr.createBookHandler)
-		r.DELETE("/books/:id", cr.deleteBookHandler)
-		r.PUT("/books/:id", cr.updateBookHandler)
+		cr.init(r)
 
 		srv := &http.Server{
 			Addr:         ":8080",

@@ -28,24 +28,28 @@ type controller struct {
 	once sync.Once
 }
 
+func (c *controller) init(mux *http.ServeMux, n *negroni.Negroni) {
+	mux.HandleFunc("POST /tenants", c.createTenantHandler)
+	mux.HandleFunc("GET /tenants/{id}", c.getTenantHandler)
+	mux.HandleFunc("DELETE /tenants/{id}", c.deleteTenantHandler)
+	mux.HandleFunc("POST /books", c.createBookHandler)
+	mux.HandleFunc("GET /books", c.getBooksHandler)
+	mux.HandleFunc("DELETE /books/{id}", c.deleteBookHandler)
+	mux.HandleFunc("PUT /books/{id}", c.updateBookHandler)
+
+	n.UseHandler(nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
+		Skipper: func(r *http.Request) bool {
+			return strings.HasPrefix(r.URL.Path, "/tenants")
+		},
+	})(mux))
+}
+
 func (cr *controller) start(ctx context.Context) (err error) {
 	cr.once.Do(func() {
+
 		mux := http.NewServeMux()
-
-		mux.HandleFunc("POST /tenants", cr.createTenantHandler)
-		mux.HandleFunc("GET /tenants/{id}", cr.getTenantHandler)
-		mux.HandleFunc("DELETE /tenants/{id}", cr.deleteTenantHandler)
-		mux.HandleFunc("POST /books", cr.createBookHandler)
-		mux.HandleFunc("GET /books", cr.getBooksHandler)
-		mux.HandleFunc("DELETE /books/{id}", cr.deleteBookHandler)
-		mux.HandleFunc("PUT /books/{id}", cr.updateBookHandler)
-
 		n := negroni.Classic()
-		n.UseHandler(nethttpmw.WithTenant(nethttpmw.WithTenantConfig{
-			Skipper: func(r *http.Request) bool {
-				return strings.HasPrefix(r.URL.Path, "/tenants")
-			},
-		})(mux))
+		cr.init(mux, n)
 
 		srv := &http.Server{
 			Addr:         ":8080",

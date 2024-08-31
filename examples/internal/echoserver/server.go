@@ -22,6 +22,24 @@ type controller struct {
 	once sync.Once
 }
 
+func (c *controller) init(e *echo.Echo) {
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(echomw.WithTenant(echomw.WithTenantConfig{
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Request().URL.Path, "/tenants") // skip tenant routes
+		},
+	}))
+
+	e.POST("/tenants", c.createTenantHandler)
+	e.GET("/tenants/:id", c.getTenantHandler)
+	e.DELETE("/tenants/:id", c.deleteTenantHandler)
+	e.GET("/books", c.getBooksHandler)
+	e.POST("/books", c.createBookHandler)
+	e.DELETE("/books/:id", c.deleteBookHandler)
+	e.PUT("/books/:id", c.updateBookHandler)
+}
+
 func Start(ctx context.Context, db *multitenancy.DB) error {
 	cr := &controller{db: db}
 	return cr.start(ctx)
@@ -30,24 +48,11 @@ func Start(ctx context.Context, db *multitenancy.DB) error {
 func (cr *controller) start(ctx context.Context) (err error) {
 	cr.once.Do(func() {
 		e := echo.New()
-		e.Use(middleware.Logger())
-		e.Use(middleware.Recover())
-		e.Use(echomw.WithTenant(echomw.WithTenantConfig{
-			Skipper: func(c echo.Context) bool {
-				return strings.HasPrefix(c.Request().URL.Path, "/tenants") // skip tenant routes
-			},
-		}))
-
-		e.POST("/tenants", cr.createTenantHandler)
-		e.GET("/tenants/:id", cr.getTenantHandler)
-		e.DELETE("/tenants/:id", cr.deleteTenantHandler)
-		e.GET("/books", cr.getBooksHandler)
-		e.POST("/books", cr.createBookHandler)
-		e.DELETE("/books/:id", cr.deleteBookHandler)
-		e.PUT("/books/:id", cr.updateBookHandler)
+		cr.init(e)
 
 		srv := &http.Server{
 			Addr:         ":8080",
+			Handler:      e,
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 		}

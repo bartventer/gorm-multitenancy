@@ -13,8 +13,40 @@ import (
 
 var once sync.Once
 
-func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
+type CreateExampleDataOptions struct {
+	TenantCount int
+	BookCount   int
+}
+
+func MakeTenant(id int) *models.Tenant {
+	return &models.Tenant{
+		TenantModel: multitenancy.TenantModel{
+			DomainURL:  fmt.Sprintf("tenant%d.example.com", id),
+			SchemaName: fmt.Sprintf("tenant%d", id),
+		},
+	}
+}
+
+func MakeBook(tenant *models.Tenant, id int) *models.Book {
+	return &models.Book{
+		Tenant: *tenant,
+		Name:   fmt.Sprintf("Book %d", id),
+	}
+}
+
+type CreateExampleDataOption func(*CreateExampleDataOptions)
+
+func CreateExampleData(ctx context.Context, db *multitenancy.DB, opts ...CreateExampleDataOption) (err error) {
 	once.Do(func() {
+
+		options := CreateExampleDataOptions{
+			TenantCount: 2,
+			BookCount:   5,
+		}
+		for _, opt := range opts {
+			opt(&options)
+		}
+
 		color.Set(color.FgYellow, color.Bold)
 		defer color.Unset()
 		log.Println("Creating example data...")
@@ -27,19 +59,9 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 			return
 		}
 
-		tenants := []*models.Tenant{
-			{
-				TenantModel: multitenancy.TenantModel{
-					DomainURL:  "tenant1.example.com",
-					SchemaName: "tenant1",
-				},
-			},
-			{
-				TenantModel: multitenancy.TenantModel{
-					DomainURL:  "tenant2.example.com",
-					SchemaName: "tenant2",
-				},
-			},
+		tenants := make([]*models.Tenant, options.TenantCount)
+		for i := range tenants {
+			tenants[i] = MakeTenant(i + 1)
 		}
 		if err = db.Create(&tenants).Error; err != nil {
 			return
@@ -48,16 +70,13 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 		log.Printf("Created %d tenants", len(tenants))
 		for _, tenant := range tenants {
 			log.Printf("Tenant ID:%d", tenant.ID)
-			log.Printf("%#v", tenant.TenantModel)
+			log.Printf("\t%#v", tenant.TenantModel)
 		}
 
 		var makeBooks = func(tenant *models.Tenant) []*models.Book {
-			var books []*models.Book
-			for i := 1; i <= 5; i++ {
-				books = append(books, &models.Book{
-					Tenant: *tenant,
-					Name:   fmt.Sprintf("Book %d", i),
-				})
+			books := make([]*models.Book, options.BookCount)
+			for i := range books {
+				books[i] = MakeBook(tenant, i+1)
 			}
 			return books
 		}
@@ -66,21 +85,24 @@ func CreateExampleData(ctx context.Context, db *multitenancy.DB) (err error) {
 			if err = db.MigrateTenantModels(ctx, tenant.SchemaName); err != nil {
 				return
 			}
-			// Create tenant specific data
 			var reset func() error
 			reset, err = db.UseTenant(ctx, tenant.SchemaName)
 			if err != nil {
 				return
 			}
-			defer reset()
 			books := makeBooks(tenant)
 			if err = db.Create(books).Error; err != nil {
+				reset()
 				return
 			}
 			color.Set(color.FgYellow)
 			log.Printf("Created %d books for tenant: %q", len(books), tenant.SchemaName)
 			for _, book := range books {
-				log.Printf("Book ID:%d Name:%q TenantSchema:%q", book.ID, book.Name, book.TenantSchema)
+				log.Printf("\tBook ID:%d Name:%q TenantSchema:%q", book.ID, book.Name, book.TenantSchema)
+			}
+
+			if err = reset(); err != nil {
+				return
 			}
 		}
 		color.Set(color.FgGreen, color.Bold)
