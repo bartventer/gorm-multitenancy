@@ -23,7 +23,7 @@ gotestflags=(
     ["./middleware/gin"]="${gotestflagsbase[@]}"
     ["./middleware/iris"]="${gotestflagsbase[@]}"
     ["./middleware/nethttp"]="${gotestflagsbase[@]}"
-    ["./examples"]="${gotestflagsbase[@]-coverpkg=./...}"
+    ["./examples"]="${gotestflagsbase[@]} -coverpkg=./..."
 )
 
 cleanup() {
