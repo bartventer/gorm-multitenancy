@@ -21,7 +21,9 @@ gotestflags=(
     ["./mysql"]="${gotestflagsbase[@]} -coverpkg=./..."
     ["./middleware/echo"]="${gotestflagsbase[@]}"
     ["./middleware/gin"]="${gotestflagsbase[@]}"
+    ["./middleware/iris"]="${gotestflagsbase[@]}"
     ["./middleware/nethttp"]="${gotestflagsbase[@]}"
+    ["./examples"]="${gotestflagsbase[@]-coverpkg=./...}"
 )
 
 cleanup() {
