@@ -49,6 +49,7 @@ Depending on the database in use, this package utilizes either the _"shared data
 
 - Echo - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/echo/v8)
 - Gin - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/gin/v8)
+- Iris - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/iris/v8)
 - Net/HTTP - [Guide](https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8)
 
 ## Installation
@@ -77,6 +78,9 @@ go get -u github.com/bartventer/gorm-multitenancy/middleware/echo/v8
 
 # Gin
 go get -u github.com/bartventer/gorm-multitenancy/middleware/gin/v8
+
+# Iris
+go get -u github.com/bartventer/gorm-multitenancy/middleware/iris/v8
 
 # Net/HTTP
 go get -u github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8
