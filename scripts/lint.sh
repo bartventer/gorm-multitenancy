@@ -7,7 +7,6 @@ echo "==========================================================================
 
 gomoddirs=$(find . -name 'go.mod' -type f -exec dirname {} \; | sort)
 
-golangci-lint run --verbose ./...
 for dir in $gomoddirs; do
     echo "--------------------------------------------------------------------------------"
     echo "Linting in directory: $dir"
