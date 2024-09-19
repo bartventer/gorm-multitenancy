@@ -21,4 +21,5 @@ runs:
           ${{ github.workspace }}/mysql/go.sum
           ${{ github.workspace }}/middleware/echo/go.sum
           ${{ github.workspace }}/middleware/gin/go.sum
+          ${{ github.workspace }}/middleware/iris/go.sum
           # middlware/nethttp has no go.sum file
