@@ -37,7 +37,7 @@ func testTenantIsolation1(t *testing.T, db *multitenancy.DB, opts Options) {
 			defer wg.Done()
 			tenantCtx, cancel := context.WithCancel(ctx)
 			defer cancel()
-			tx := db.WithContext(ctx)
+			tx := db.WithContext(tenantCtx)
 			if err := tx.MigrateTenantModels(tenantCtx, tenant.ID); err != nil {
 				errCh <- err
 				return
