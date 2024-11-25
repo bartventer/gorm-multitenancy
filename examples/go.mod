@@ -28,7 +28,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/kataras/iris/v12 v12.2.11
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.33.0
 	github.com/urfave/negroni v1.0.0
 	gorm.io/gorm v1.25.12
