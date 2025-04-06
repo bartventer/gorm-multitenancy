@@ -346,7 +346,7 @@ issues:
   # Default: 3
   max-same-issues: 50
   exclude-dirs:
-    - examples
+    - _examples
 
   exclude-rules:
     - source: "(noinspection|TODO)"

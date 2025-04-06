@@ -18,7 +18,7 @@ Check out the [pkg.go.dev](https://pkg.go.dev/github.com/bartventer/gorm-multite
 
 ### Running the Example Application
 
-For a practical demonstration, you can run [the example application](../../examples/README.md). It showcases various configurations and usage scenarios.
+For a practical demonstration, you can run [the example application](../../_examples/README.md). It showcases various configurations and usage scenarios.
 
 ## Contributing
 
