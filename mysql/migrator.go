@@ -60,7 +60,11 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 	if lockErr != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %s: %w", tenantID, lockErr))
 	}
-	defer unlock()
+	defer func() {
+		if err = unlock(); err != nil {
+			m.logger.Printf("failed to release advisory lock for tenant %s: %v", tenantID, err)
+		}
+	}()
 
 	err = tx.Transaction(func(tx *gorm.DB) error {
 		reset, useDBErr := schema.UseDatabase(tx, tenantID)
@@ -81,7 +85,7 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 }
 
 // MigrateSharedModels migrates the shared tables in the database.
-func (m Migrator) MigrateSharedModels() error {
+func (m Migrator) MigrateSharedModels() (err error) {
 	m.logger.Println("⏳ migrating public tables")
 
 	publicModels := m.registry.SharedModels
@@ -98,7 +102,12 @@ func (m Migrator) MigrateSharedModels() error {
 	if lockErr != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock: %w", lockErr))
 	}
-	defer unlock()
+
+	defer func() {
+		if err = unlock(); err != nil {
+			m.logger.Printf("failed to release advisory lock: %v", err)
+		}
+	}()
 
 	tx := db.Begin()
 	defer func() {
