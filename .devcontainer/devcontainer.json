@@ -5,11 +5,9 @@
         "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
         "source=${localEnv:HOME}/.vscode-server,target=/home/vscode/.vscode-server-insiders/extensions,type=bind,consistency=cached"
     ],
-    "forwardPorts": [
-        8080
-    ],
+    "forwardPorts": [8080],
     "remoteEnv": {
         "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
-        "PATH": "${containerEnv:PATH}:${containerEnv:HOME}/go"
+        "PATH": "${containerWorkspaceFolder}/bin:${containerEnv:PATH}"
     }
 }
