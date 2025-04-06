@@ -74,7 +74,6 @@ func (m Migrator) MigrateTenantModels(tenantID string) error {
 		return err
 	}
 	return nil
-
 }
 
 // MigrateSharedModels migrates the public tables in the database.
