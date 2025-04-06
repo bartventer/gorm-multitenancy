@@ -1,22 +1,35 @@
 name: Lint
 
 on:
-    push:
-        branches: [master]
-    pull_request:
+  push:
+    branches: [master]
+  pull_request:
 
 jobs:
-    golangci:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+  golangci:
+    strategy:
+      fail-fast: false
+      matrix:
+        dir:
+          - "."
+          - "_examples"
+          - "postgres"
+          - "mysql"
+          - "middleware/echo"
+          - "middleware/gin"
+          - "middleware/iris"
+          - "middleware/nethttp"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: ./.github/actions/setup-go
-              with:
-                  go-version: '1.24.x'
+      - uses: ./.github/actions/setup-go
+        with:
+          go-version: "1.24.x"
 
-            - name: Run golangci-lint
-              uses: golangci/golangci-lint-action@v6
-              with:
-                  version: v1.60.1
-                  args: --verbose --timeout 5m
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
+        with:
+          working-directory: ${{ matrix.dir }}
+          version: v2.0.2
+          args: --verbose --timeout 5m
