@@ -22,7 +22,7 @@ updates:
       include: "scope"
 
   - package-ecosystem: "gomod"
-    directory: "/examples"
+    directory: "/_examples"
     assignees:
       - "bartventer"
     reviewers:

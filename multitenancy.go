@@ -530,7 +530,7 @@ For a detailed technical overview of SQL design strategies adopted by the framew
 [mysql.DropDatabaseForTenant]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#OffboardTenant
 [postgres.SetSearchPath]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/postgres/v8#UseTenant
 [mysql.UseDatabase]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/mysql/v8#UseDatabase
-[the example application]: https://github.com/bartventer/gorm-multitenancy/tree/master/examples/README.md
+[the example application]: https://github.com/bartventer/gorm-multitenancy/tree/master/_examples/README.md
 [pkg/namespace/Validate]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/v8/pkg/namespace#Validate
 [middleware/nethttp/ExtractSubdomain]: https://pkg.go.dev/github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8#ExtractSubdomain
 [STRATEGY.md]: https://github.com/bartventer/gorm-multitenancy/tree/master/docs/STRATEGY.md
