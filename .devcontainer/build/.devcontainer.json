@@ -1,22 +1,22 @@
 {
-    "name": "Gorm Multi-Tenancy Devcontainer",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "cweijan.vscode-database-client2",
-                "github.vscode-github-actions",
-                "rioj7.command-variable"
-            ]
-        }
-    },
-    "features": {
-        "ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker:latest": {},
-        "ghcr.io/bartventer/arch-devcontainer-features/go:latest": {
-            "golangciLintVersion": "v1.58.1"
-        }
-    },
-    "remoteUser": "vscode"
+	"name": "Gorm Multi-Tenancy Devcontainer",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"cweijan.vscode-database-client2",
+				"github.vscode-github-actions",
+				"rioj7.command-variable"
+			]
+		}
+	},
+	"features": {
+		"ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker:latest": {},
+		"ghcr.io/bartventer/arch-devcontainer-features/go:latest": {
+			"golangciLintVersion": "v2.0.2"
+		}
+	},
+	"remoteUser": "vscode"
 }
