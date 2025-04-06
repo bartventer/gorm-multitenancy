@@ -21,9 +21,8 @@ var (
 // See the [benchmark results] for performance comparisons between different hashing algorithms.
 //
 // [benchmark results]: https://github.com/bartventer/gorm-multitenancy/blob/master/docs/LOCKING.md
-func GenerateLockKey(s string) int64 {
+func GenerateLockKey(s string) uint64 {
 	hasher := fnv.New64a()
 	hasher.Write([]byte(s))
-	hash := hasher.Sum64()
-	return int64(hash)
+	return hasher.Sum64()
 }

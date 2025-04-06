@@ -15,12 +15,12 @@ func TestGenerateLockKey(t *testing.T) {
 	tests := []struct {
 		name string
 		text string
-		want int64
+		want uint64
 	}{
 		{
 			name: "test",
 			text: "test",
-			want: -439409999022904539,
+			want: 18007334074686647077,
 		},
 	}
 	for _, tt := range tests {
@@ -30,35 +30,35 @@ func TestGenerateLockKey(t *testing.T) {
 	}
 }
 
-func GenerateLockKeyMD5(s string) int64 {
+func GenerateLockKeyMD5(s string) uint64 {
 	hash := md5.Sum([]byte(s))
 	bigInt := new(big.Int).SetBytes(hash[:])
-	return bigInt.Int64()
+	return bigInt.Uint64()
 }
 
-func GenerateLockKeySha1(s string) int64 {
+func GenerateLockKeySha1(s string) uint64 {
 	hash := sha1.Sum([]byte(s))
 	bigInt := new(big.Int).SetBytes(hash[:])
-	return bigInt.Int64()
+	return bigInt.Uint64()
 }
-func GenerateLockKeySha256(s string) int64 {
+func GenerateLockKeySha256(s string) uint64 {
 	hash := sha256.Sum256([]byte(s))
 	bigInt := new(big.Int).SetBytes(hash[:])
-	return bigInt.Int64()
+	return bigInt.Uint64()
 }
 
-func GenerateLockKeySha512(s string) int64 {
+func GenerateLockKeySha512(s string) uint64 {
 	hash := sha512.Sum512([]byte(s))
 	bigInt := new(big.Int).SetBytes(hash[:])
-	return bigInt.Int64()
+	return bigInt.Uint64()
 }
 
-var result int64
+var result uint64
 
 func BenchmarkGenerateLockKey(b *testing.B) {
 	for _, f := range []struct {
 		name string
-		fn   func(string) int64
+		fn   func(string) uint64
 	}{
 		{name: "FNV-1a", fn: GenerateLockKey},
 		{name: "MD5", fn: GenerateLockKeyMD5},
