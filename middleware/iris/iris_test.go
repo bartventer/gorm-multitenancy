@@ -3,22 +3,12 @@ package irismiddleware
 import (
 	"errors"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )
-
-func assertEqual[T any](t *testing.T, expected, actual T) bool {
-	t.Helper()
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected: %v, got: %v", expected, actual)
-		return false
-	}
-	return true
-}
 
 func TestWithTenant(t *testing.T) {
 	type args struct {
