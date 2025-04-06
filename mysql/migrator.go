@@ -38,7 +38,6 @@ func (m Migrator) AutoMigrate(values ...interface{}) error {
 		return m.Migrator.AutoMigrate(values...)
 	})
 	return err
-
 }
 
 // MigrateTenantModels creates a database for a specific tenant and migrates the tenant tables.
@@ -64,9 +63,9 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 	defer unlock()
 
 	err = tx.Transaction(func(tx *gorm.DB) error {
-		reset, err := schema.UseDatabase(tx, tenantID)
-		if err != nil {
-			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %s: %w", tenantID, err))
+		reset, useDBErr := schema.UseDatabase(tx, tenantID)
+		if useDBErr != nil {
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %s: %w", tenantID, useDBErr))
 		}
 		defer reset()
 
@@ -131,8 +130,8 @@ func (m Migrator) DropDatabaseForTenant(tenantID string) (err error) {
 	tx := m.DB.Session(&gorm.Session{})
 	err = m.retry(func() error {
 		sqlstr := "DROP DATABASE IF EXISTS " + tx.Statement.Quote(tenantID)
-		if err := tx.Exec(sqlstr).Error; err != nil {
-			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop database for tenant %s: %w", tenantID, err))
+		if execErr := tx.Exec(sqlstr).Error; execErr != nil {
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop database for tenant %s: %w", tenantID, execErr))
 		}
 		m.logger.Printf("✅ database dropped for tenant %s", tenantID)
 		return nil
@@ -297,13 +296,13 @@ func (m Migrator) HasColumn(value interface{}, field string) bool {
 //
 // TODO: Raise issue for discussion.
 
-func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
+func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) { //nolint:cyclop // ignore cyclomatic complexity
 	columnTypes := make([]gorm.ColumnType, 0)
 	err := m.RunWithValue(value, func(stmt *gorm.Statement) error {
 		var (
 			currentDatabase, table = m.CurrentSchema(stmt, stmt.Table)
 			columnTypeSQL          = "SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale "
-			rows, err              = m.DB.Session(&gorm.Session{}).Table(stmt.Quote(currentDatabase) + "." + stmt.Quote(table)).Limit(1).Rows()
+			rows, err              = m.DB.Session(&gorm.Session{}).Table(stmt.Quote(currentDatabase) + "." + stmt.Quote(table)).Limit(1).Rows() //nolint:rowserrcheck // ignore rows error check
 		)
 
 		if err != nil {
@@ -316,7 +315,7 @@ func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
 			return err
 		}
 
-		if err := rows.Close(); err != nil {
+		if err := rows.Close(); err != nil { //nolint:sqlclosecheck // ignore sql close check
 			return err
 		}
 		if !m.Migrator.DisableDatetimePrecision {
@@ -324,7 +323,7 @@ func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
 		}
 		columnTypeSQL += "FROM INFORMATION_SCHEMA.columns WHERE table_schema = ? AND table_name = ? ORDER BY ORDINAL_POSITION"
 
-		columns, rowErr := m.DB.Table(table.(string)).Raw(columnTypeSQL, currentDatabase, table).Rows()
+		columns, rowErr := m.DB.Table(table.(string)).Raw(columnTypeSQL, currentDatabase, table).Rows() //nolint:rowserrcheck // ignore rows error check
 		if rowErr != nil {
 			return rowErr
 		}
