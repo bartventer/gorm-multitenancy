@@ -51,9 +51,9 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 
 	tx := m.DB.Session(&gorm.Session{})
 	sqlstr := "CREATE DATABASE IF NOT EXISTS " + tx.Statement.Quote(tenantID)
-	err = tx.Exec(sqlstr).Error
-	if err != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create database for tenant %s: %w", tenantID, err))
+	execErr := tx.Exec(sqlstr).Error
+	if execErr != nil {
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create database for tenant %s: %w", tenantID, execErr))
 	}
 
 	unlock, lockErr := m.acquireLock(tx, tenantID)
@@ -61,8 +61,10 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %s: %w", tenantID, lockErr))
 	}
 	defer func() {
-		if err = unlock(); err != nil {
-			m.logger.Printf("failed to release advisory lock for tenant %s: %v", tenantID, err)
+		unlockErr := unlock()
+		if unlockErr != nil {
+			m.logger.Printf("failed to release advisory lock for tenant %s: %v", tenantID, unlockErr)
+			err = errors.Join(err, fmt.Errorf("failed to release advisory lock for tenant %s: %w", tenantID, unlockErr))
 		}
 	}()
 
@@ -94,18 +96,20 @@ func (m Migrator) MigrateSharedModels() (err error) {
 	}
 
 	db := m.DB.Session(&gorm.Session{})
-	if err := db.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
+	if err = db.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create public database: %w", err))
 	}
 
 	unlock, lockErr := m.acquireLock(m.DB, driver.PublicSchemaName())
 	if lockErr != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock: %w", lockErr))
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for public schema: %w", lockErr))
 	}
 
 	defer func() {
-		if err = unlock(); err != nil {
-			m.logger.Printf("failed to release advisory lock: %v", err)
+		unlockErr := unlock()
+		if unlockErr != nil {
+			m.logger.Printf("failed to release advisory lock: %v", unlockErr)
+			err = errors.Join(err, fmt.Errorf("failed to release advisory lock: %w", unlockErr))
 		}
 	}()
 
@@ -119,11 +123,11 @@ func (m Migrator) MigrateSharedModels() (err error) {
 		}
 	}()
 
-	if err := tx.Exec("USE public").Error; err != nil {
+	if err = tx.Exec("USE public").Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to public database: %w", err))
 	}
 
-	if err := tx.
+	if err = tx.
 		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(publicModels)...); err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate public tables: %w", err))
