@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Errors
+// Errors.
 var (
 	ErrInvalidHost      = errors.New("invalid host")
 	ErrInvalidSubdomain = errors.New("invalid subdomain")
