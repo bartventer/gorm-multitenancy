@@ -60,7 +60,7 @@ func (c *dbContainer) NewDB(t testing.TB, ctx context.Context) *gorm.DB {
 	require.NoErrorf(t, err, "Failed to get postgres container host: %v", err)
 	natPort, err := postgresContainer.MappedPort(ctx, nat.Port(dbPort))
 	require.NoErrorf(t, err, "Failed to get postgres container port: %v", err)
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, host, natPort.Port(), dbName)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, host, natPort.Port(), dbName) //nolint:nosprintfhostport // Ignore linter error, as this is a valid DSN format.
 	db, err := gorm.Open(c.dialectOpener(dsn), c.opts...)
 	require.NoErrorf(t, err, "Failed to connect to database: %v", err)
 
