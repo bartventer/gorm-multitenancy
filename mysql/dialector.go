@@ -123,12 +123,20 @@ func RegisterModels(db *gorm.DB, models ...driver.TenantTabler) error {
 
 // MigrateSharedModels migrates the public schema in the database.
 func MigrateSharedModels(db *gorm.DB) error {
-	return db.Migrator().(*Migrator).MigrateSharedModels()
+	return db.Connection(func(tx *gorm.DB) error {
+		return tx.Migrator().(*Migrator).MigrateSharedModels()
+	})
 }
 
 // MigrateTenantModels creates a new schema for a specific tenant in the MySQL database.
 func MigrateTenantModels(db *gorm.DB, tenantID string) error {
-	return db.Migrator().(*Migrator).MigrateTenantModels(tenantID)
+	// MySQL advisory locks (GET_LOCK and RELEASE_LOCK) are connection-specific, meaning they
+	// are tied to the session that acquired them. If a different connection is used for
+	// releasing the lock, the operation will fail. Using db.Connection ensures that the
+	// same connection is used for all operations within the provided callback.
+	return db.Connection(func(tx *gorm.DB) error {
+		return tx.Migrator().(*Migrator).MigrateTenantModels(tenantID)
+	})
 }
 
 // DropDatabaseForTenant drops the database for a specific tenant in the MySQL database.
