@@ -46,7 +46,6 @@ func (c *dbContainer) newDB(t testing.TB, ctx context.Context) *gorm.DB {
 	dbUser := "tenants"
 	dbPassword := "tenants"
 
-	// generate init sql
 	initScript := c.generateInitSQL(t, dbUser)
 
 	req := testcontainers.ContainerRequest{
