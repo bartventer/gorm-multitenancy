@@ -67,7 +67,7 @@ func BenchmarkGenerateLockKey(b *testing.B) {
 		{name: "Sha512", fn: GenerateLockKeySha512},
 	} {
 		b.Run(f.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				result = f.fn("test")
 			}
 		})

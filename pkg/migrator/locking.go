@@ -7,13 +7,8 @@ import (
 )
 
 var (
-	// ErrExecSQL is returned when the migrator fails to execute SQL.
-	ErrExecSQL = errors.New("locking: failed to execute SQL")
-
-	// ErrAcquireLock is returned when the migrator fails to acquire an advisory lock.
+	ErrExecSQL     = errors.New("locking: failed to execute SQL")
 	ErrAcquireLock = errors.New("locking: failed to acquire advisory lock")
-
-	// ErrReleaseLock is returned when the migrator fails to release an advisory lock.
 	ErrReleaseLock = errors.New("locking: failed to release advisory lock")
 )
 
@@ -23,8 +18,11 @@ var (
 //
 // [benchmark results]: https://github.com/bartventer/gorm-multitenancy/blob/master/docs/LOCKING.md
 func GenerateLockKey(s string) int64 {
-	hasher := fnv.New64a()
-	hasher.Write([]byte(s))
-	bigInt := new(big.Int).SetUint64(hasher.Sum64())
+	h := fnv.New64a()
+	_, err := h.Write([]byte(s))
+	if err != nil {
+		return 0
+	}
+	bigInt := new(big.Int).SetUint64(h.Sum64())
 	return bigInt.Int64()
 }
