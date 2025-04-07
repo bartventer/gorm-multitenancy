@@ -42,6 +42,6 @@ func newHarness[TB testing.TB](ctx context.Context, t TB) (drivertest.Harness, e
 
 var _ drivertest.Harness = new(harness)
 
-func TestConformance(t *testing.T) {
+func TestPostgresConformance(t *testing.T) {
 	drivertest.RunConformanceTests(t, newHarness)
 }
