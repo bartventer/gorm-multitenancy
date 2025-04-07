@@ -46,41 +46,45 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 
 	tenantModels := m.registry.TenantModels
 	if len(tenantModels) == 0 {
+		m.logger.Printf("no tenant tables to migrate for tenant %q", tenantID)
 		return gmterrors.NewWithScheme(DriverName, errors.New("no tenant tables to migrate"))
 	}
 
-	tx := m.DB.Session(&gorm.Session{})
-	sqlstr := "CREATE DATABASE IF NOT EXISTS " + tx.Statement.Quote(tenantID)
-	execErr := tx.Exec(sqlstr).Error
+	sqlstr := "CREATE DATABASE IF NOT EXISTS " + m.DB.Statement.Quote(tenantID)
+	execErr := m.DB.Exec(sqlstr).Error
 	if execErr != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create database for tenant %s: %w", tenantID, execErr))
+		m.logger.Printf("failed to create database for tenant %q: %v", tenantID, execErr)
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create database for tenant %q: %w", tenantID, execErr))
 	}
 
-	unlock, lockErr := m.acquireLock(tx, tenantID)
+	unlock, lockErr := m.acquireLock(m.DB, tenantID)
 	if lockErr != nil {
-		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %s: %w", tenantID, lockErr))
+		m.logger.Printf("failed to acquire advisory lock for tenant %q: %v", tenantID, lockErr)
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %q: %w", tenantID, lockErr))
 	}
 	defer func() {
 		unlockErr := unlock()
 		if unlockErr != nil {
-			m.logger.Printf("failed to release advisory lock for tenant %s: %v", tenantID, unlockErr)
-			err = errors.Join(err, fmt.Errorf("failed to release advisory lock for tenant %s: %w", tenantID, unlockErr))
+			m.logger.Printf("failed to release advisory lock for tenant %q: %v", tenantID, unlockErr)
+			err = errors.Join(err, fmt.Errorf("failed to release advisory lock for tenant %q: %w", tenantID, unlockErr))
 		}
 	}()
 
-	err = tx.Transaction(func(tx *gorm.DB) error {
+	err = m.DB.Transaction(func(tx *gorm.DB) error {
 		reset, useDBErr := schema.UseDatabase(tx, tenantID)
 		if useDBErr != nil {
-			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %s: %w", tenantID, useDBErr))
+			m.logger.Printf("failed to switch to tenant database %q: %v", tenantID, useDBErr)
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to tenant database %q: %w", tenantID, useDBErr))
 		}
 		defer reset()
 
-		if err = tx.
+		if err := tx.
 			Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 			AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); err != nil {
-			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %s: %w", tenantID, err))
+			m.logger.Printf("failed to migrate tables for tenant %q: %v", tenantID, err)
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %q: %w", tenantID, err))
 		}
-		m.logger.Printf("✅ private tables migrated for tenant %s", tenantID)
+		m.logger.Printf("✅ private tables migrated for tenant %q", tenantID)
 		return nil
 	})
 	return err
@@ -95,8 +99,7 @@ func (m Migrator) MigrateSharedModels() (err error) {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no public tables to migrate"))
 	}
 
-	db := m.DB.Session(&gorm.Session{})
-	if err = db.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
+	if err = m.DB.Exec("CREATE DATABASE IF NOT EXISTS public").Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create public database: %w", err))
 	}
 
@@ -113,7 +116,7 @@ func (m Migrator) MigrateSharedModels() (err error) {
 		}
 	}()
 
-	tx := db.Begin()
+	tx := m.DB.Begin()
 	defer func() {
 		if tx.Error == nil {
 			tx.Commit()
@@ -122,18 +125,23 @@ func (m Migrator) MigrateSharedModels() (err error) {
 			tx.Rollback()
 		}
 	}()
+	if err = tx.Error; err != nil {
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to begin transaction: %w", err))
+	}
 
 	if err = tx.Exec("USE public").Error; err != nil {
+		tx.Rollback()
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to switch to public database: %w", err))
 	}
 
 	if err = tx.
 		Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(publicModels)...); err != nil {
+		tx.Rollback()
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate public tables: %w", err))
 	}
 
-	return nil
+	return tx.Commit().Error
 }
 
 // DropDatabaseForTenant drops the database for a specific tenant.
