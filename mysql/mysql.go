@@ -70,16 +70,16 @@ package mysql
 import (
 	"context"
 
-	"gorm.io/gorm"
-
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/dsn"
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
 	multitenancy "github.com/bartventer/gorm-multitenancy/v8"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // DriverName is the name of the MySQL driver.
-const DriverName = "mysql"
+const DriverName = mysql.DefaultDriverName
 
 var _ multitenancy.Adapter = new(mysqlAdapter)
 var _ driver.DBFactory = new(mysqlAdapter)
@@ -104,7 +104,6 @@ func (p *mysqlAdapter) OpenDBURL(ctx context.Context, u *driver.URL, opts ...gor
 	if err != nil {
 		return nil, err
 	}
-	// p.init(ctx, db)
 	return p.AdaptDB(ctx, db)
 }
 
