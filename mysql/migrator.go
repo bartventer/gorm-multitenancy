@@ -78,11 +78,11 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 		}
 		defer reset()
 
-		if err := tx.
+		if migrateErr := tx.
 			Scopes(gmtmigrator.WithOption(gmtmigrator.MigratorOption)).
-			AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); err != nil {
+			AutoMigrate(driver.ModelsToInterfaces(tenantModels)...); migrateErr != nil {
 			m.logger.Printf("failed to migrate tables for tenant %q: %v", tenantID, err)
-			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %q: %w", tenantID, err))
+			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate tables for tenant %q: %w", tenantID, migrateErr))
 		}
 		m.logger.Printf("✅ private tables migrated for tenant %q", tenantID)
 		return nil
