@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/migrator"
-
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/gmterrors"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/logext"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/migrator"
 )
 
 type (
@@ -121,12 +120,16 @@ func RegisterModels(db *gorm.DB, models ...driver.TenantTabler) error {
 
 // MigratePublicSchema migrates the public schema in the database.
 func MigratePublicSchema(db *gorm.DB) error {
-	return db.Migrator().(*Migrator).MigrateSharedModels()
+	return db.Connection(func(tx *gorm.DB) error {
+		return tx.Migrator().(*Migrator).MigrateSharedModels()
+	})
 }
 
 // MigrateTenantModels creates a new schema for a specific tenant in the PostgreSQL database.
 func MigrateTenantModels(db *gorm.DB, schemaName string) error {
-	return db.Migrator().(*Migrator).MigrateTenantModels(schemaName)
+	return db.Connection(func(tx *gorm.DB) error {
+		return tx.Migrator().(*Migrator).MigrateTenantModels(schemaName)
+	})
 }
 
 // DropSchemaForTenant drops the schema for a specific tenant in the PostgreSQL database (CASCADE).
