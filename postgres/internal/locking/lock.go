@@ -2,6 +2,7 @@
 package locking
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
@@ -13,28 +14,24 @@ import (
 // https://www.postgresql.org/docs/16/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS
 const (
 	// pg_try_advisory_xact_lock ( key bigint ) → boolean.
+	// This will either obtain the lock immediately and return true, or return false without waiting if the lock cannot be acquired immediately.
 	sqlTryAdvisoryXactLock = "SELECT pg_try_advisory_xact_lock(?)"
 )
 
-// lock represents a PostgreSQL transaction-level advisory lock.
 type lock struct {
-	tx      *gorm.DB
-	lockKey string
-}
-
-func (p *lock) execute(sqlstr string, args ...interface{}) (bool, error) {
-	var result bool
-	if err := p.tx.Raw(sqlstr, args...).Scan(&result).Error; err == nil && result {
-		return true, nil
-	}
-	return false, fmt.Errorf("%w: %s", migrator.ErrExecSQL, sqlstr)
+	tx  *gorm.DB
+	key string
 }
 
 func (p *lock) acquire() error {
-	key := migrator.GenerateLockKey(p.lockKey)
-	ok, err := p.execute(sqlTryAdvisoryXactLock, key)
-	if err != nil || !ok {
-		return fmt.Errorf("%w for key %s: %v", migrator.ErrAcquireLock, p.lockKey, err)
+	key := migrator.GenerateLockKey(p.key)
+	var ok bool
+	if err := p.tx.Raw(sqlTryAdvisoryXactLock, key).Scan(&ok).Error; err != nil || !ok {
+		return errors.Join(
+			migrator.ErrAcquireLock,
+			migrator.ErrExecSQL,
+			fmt.Errorf("failed to acquire lock for key %s: %v", p.key, err),
+		)
 	}
 	return nil
 }
@@ -67,7 +64,7 @@ func AcquireXact(tx *gorm.DB, lockKey string, opts ...Option) error {
 	options := &Options{}
 	options.apply(opts...)
 
-	l := &lock{tx: tx, lockKey: lockKey}
+	l := &lock{tx: tx, key: lockKey}
 
 	if options.Retry != nil {
 		acquireFunc := func() error {
