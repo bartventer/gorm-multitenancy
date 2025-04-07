@@ -45,13 +45,12 @@ func (m Migrator) MigrateTenantModels(tenantID string) error {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no tenant tables to migrate"))
 	}
 
-	tx := m.DB.Session(&gorm.Session{})
-	sqlstr := "CREATE SCHEMA IF NOT EXISTS " + tx.Statement.Quote(tenantID)
-	if err := tx.Exec(sqlstr).Error; err != nil {
+	sqlstr := "CREATE SCHEMA IF NOT EXISTS " + m.DB.Statement.Quote(tenantID)
+	if err := m.DB.Exec(sqlstr).Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create schema for tenant %s: %w", tenantID, err))
 	}
 
-	err := tx.Transaction(func(tx *gorm.DB) error {
+	err := m.DB.Transaction(func(tx *gorm.DB) error {
 		err := m.acquireXact(tx, tenantID)
 		if err != nil {
 			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock for tenant %s: %w", tenantID, err))
@@ -95,27 +94,33 @@ func (m Migrator) MigrateSharedModels() error {
 		}
 	}()
 
+	if err := tx.Error; err != nil {
+		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to begin transaction: %w", err))
+	}
+
 	err := m.acquireXact(tx, driver.PublicSchemaName())
 	if err != nil {
+		tx.Rollback()
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to acquire advisory lock: %w", err))
 	}
 
 	if err := tx.
 		Scopes(migrator.WithOption(migrator.MigratorOption)).
 		AutoMigrate(driver.ModelsToInterfaces(publicModels)...); err != nil {
+		tx.Rollback()
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to migrate public tables: %w", err))
 	}
-	return nil
+
+	return tx.Commit().Error
 }
 
 // DropSchemaForTenant drops the schema for a specific tenant.
 func (m Migrator) DropSchemaForTenant(tenant string) error {
 	m.logger.Printf("⏳ dropping schema for tenant %s", tenant)
 
-	tx := m.DB.Session(&gorm.Session{})
 	err := m.retry(func() error {
-		sqlstr := "DROP SCHEMA IF EXISTS " + tx.Statement.Quote(tenant) + " CASCADE"
-		if err := tx.Exec(sqlstr).Error; err != nil {
+		sqlstr := "DROP SCHEMA IF EXISTS " + m.DB.Statement.Quote(tenant) + " CASCADE"
+		if err := m.DB.Exec(sqlstr).Error; err != nil {
 			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop schema for tenant %s: %w", tenant, err))
 		}
 		m.logger.Printf("✅ schema dropped for tenant %s", tenant)
