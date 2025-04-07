@@ -2,7 +2,7 @@
 package locking
 
 import (
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // SHA-1 is used here for non-security-critical hashing
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -54,7 +54,7 @@ func encodeKey(key string) string {
 	if len(key) <= 64 {
 		return key
 	}
-	hash := sha1.Sum([]byte(key))
+	hash := sha1.Sum([]byte(key))      //nolint:gosec // SHA-1 is used here for non-security-critical hashing
 	return hex.EncodeToString(hash[:]) // SHA-1 hash is always 40 characters in hex
 }
 
