@@ -1,17 +1,20 @@
 {
-    "go.lintOnSave": "workspace",
-    "go.lintTool": "golangci-lint-v2", //https://github.com/golang/vscode-go/issues/3732#issuecomment-2758960259
-    "go.lintFlags": [
-        "run",
-        "--issues-exit-code=0",
-        "--output.text.colors=true",
-        "--output.text.path=stdout",
-        "--output.text.print-issued-lines=false",
-        "--show-stats=false",
-        "--fix"
-    ],
-    "go.testTimeout": "15m",
-    "go.generateTestsFlags": ["-template=testify"],
-    "go.testFlags": ["-v", "-race"],
-    "go.buildFlags": ["-v", "-tags=gorm_multitenancy_benchmarks"]
+	"go.lintOnSave": "workspace",
+	"go.lintTool": "golangci-lint-v2", //https://github.com/golang/vscode-go/issues/3732#issuecomment-2758960259
+	"go.lintFlags": [
+		"run",
+		"--issues-exit-code=0",
+		"--output.text.colors=true",
+		"--output.text.path=stdout",
+		"--output.text.print-issued-lines=false",
+		"--show-stats=false",
+		"--fix"
+	],
+	"go.testTimeout": "15m",
+	"go.generateTestsFlags": ["-template=testify"],
+	"go.testFlags": ["-v", "-race"],
+	"go.buildFlags": ["-v", "-tags=gorm_multitenancy_benchmarks"],
+	"go.testEnvVars": {
+		"GMT_DEBUG": "true"
+	}
 }
