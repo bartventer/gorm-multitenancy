@@ -17,7 +17,7 @@ coverage:
 ignore:
   - "**/_examples/**"
   - "**/examples/**"
-  - "**/pkg/drivertest/**"
+  - "**/drivertest/**"
 
 fixes:
   - "github.com/bartventer/gorm-multitenancy/v8/::"
