@@ -2,15 +2,15 @@
 set -euo pipefail
 
 echo "==============================================================================="
-echo "🛠️  Upgrading dependencies"
+echo "🛠️  Downloading dependencies"
 echo "==============================================================================="
+
 find . -name 'go.mod' -type f \
     -printf "-------------------------------------------------------------------------------\n" \
     -printf "Found go.mod in: %h\n\n" \
     -printf "-------------------------------------------------------------------------------\n" \
-    -execdir go get -u ./... \; \
-    -execdir go mod tidy \; \
-    -printf "\n  ✔️ Dependencies upgraded.\n"
+    -execdir go mod download \; \
+    -printf "\n  ✔️ Dependencies downloaded.\n"
 echo "==============================================================================="
-echo "✅ Upgrade process completed"
+echo "✅ Download process completed"
 echo "==============================================================================="
