@@ -15,7 +15,8 @@ coverage:
         base: auto
 
 ignore:
-  - "**/_examples/**"
+  - "**/_examples/*"
+  - "**/examples/*"
   - "**/pkg/drivertest/*"
 
 fixes:
