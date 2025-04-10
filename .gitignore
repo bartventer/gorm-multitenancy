@@ -4,6 +4,7 @@
 tmp.*
 *.out
 .env
+*.log
 
 # Go files
 go.work*
