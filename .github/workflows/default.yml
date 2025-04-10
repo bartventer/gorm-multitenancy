@@ -32,6 +32,5 @@ jobs:
         shell: bash
         env:
           UPLOAD_COVERAGE: ${{ matrix.upload-coverage }}
-          COVERPROFILE: ./cover.out
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: make test
