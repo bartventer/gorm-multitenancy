@@ -15,8 +15,9 @@ coverage:
         base: auto
 
 ignore:
-  - "**/_examples/**"
-  - "**/examples/**"
+  - "_examples/**"
+  - "examples/**"
+  - "pkg/drivertest/*"
 
 fixes:
   - "github.com/bartventer/gorm-multitenancy/v8/::"
@@ -26,4 +27,3 @@ fixes:
   - "github.com/bartventer/gorm-multitenancy/middleware/gin/v8/::middleware/gin/"
   - "github.com/bartventer/gorm-multitenancy/middleware/iris/v8/::middleware/iris/"
   - "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8/::middleware/nethttp/"
-  
