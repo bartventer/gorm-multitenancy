@@ -32,42 +32,51 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for dir in "${!gotestflags[@]}"; do
+run_tests() {
+    local dir="$1"
     echo "================================================================================"
     echo "🧪 Testing module at path: $dir"
     echo "================================================================================"
-    pushd "$dir" >/dev/null
     # shellcheck disable=SC2086
-    go test ${gotestflags[$dir]} ./...
-    cat "$modcoverage" >>"$coverprofile"
-    go tool cover -html="$modcoverage" -o "${modcoverage%.out}.html"
+    go test ${gotestflags[$dir]} ./... 2>&1 | tee "test.log"
+    [[ ${CI:-false} != "true" ]] && tail -n +2 "$modcoverage" >>"$coverprofile"
+}
+
+if [[ ${CI:-false} != "true" ]]; then
+    mkdir -p "$(dirname "$coverprofile")"
+    echo "mode: atomic" >"$coverprofile"
+fi
+
+while read -r dir; do
+    pushd "$dir" >/dev/null
+    run_tests "$dir"
     popd >/dev/null
-done
+done < <(printf "%s\n" "${!gotestflags[@]}" | sort)
+
+[[ ${CI:-false} != "true" ]] && go tool cover -html="$coverprofile" -o "${coverprofile%.out}.html"
 
 echo "✅ All tests passed!"
 
 [[ ${UPLOAD_COVERAGE:-false} != "true" ]] && exit 0
 
-for dir in "${!gotestflags[@]}"; do
-    echo "================================================================================"
-    echo "📊 Generating coverage report using codecov for module at path: $dir"
-    echo "================================================================================"
-    modflag=$(basename "$workspace")
-    if [[ "$dir" != "." ]]; then
-        modflag+="/${dir#./}"
-    fi
-    # for more opts see: bash <(curl -s https://codecov.io/bash) -help
-    coverageflags=(
-        '-f' "${dir}/$modcoverage"
-        '-p' "${workspace}${dir#.}"
-        '-F' "${modflag//\//_}"
-    )
-    [[ ${CI:-false} != "true" ]] && coverageflags+=('-d')
+echo "================================================================================"
+echo "📊 Uploading combined coverage report to Codecov"
+echo "================================================================================"
 
+coverageflags=(
+    '-F' "combined"
+    '-X' "coveragepy"
+    '-X' "recursesubs"
+)
+
+if [[ ${CI:-false} != "true" ]]; then
+    coverageflags+=('-d')
+    bash <(curl -s https://codecov.io/bash) "${coverageflags[@]}" >"$workspace/codecov-upload.out"
+    echo "Upload file written to $workspace/codecov-upload.out"
+else
     bash <(curl -s https://codecov.io/bash) "${coverageflags[@]}"
-    echo "================================================================================"
-    echo "🎉 Coverage report generated for for module at path: $dir"
-    echo "================================================================================"
-done
+fi
 
-echo "✅ Done. All coverage reports uploaded to Codecov!"
+echo "================================================================================"
+echo "🎉 Combined coverage report uploaded to Codecov"
+echo "================================================================================"

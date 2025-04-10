@@ -1,12 +1,28 @@
+codecov:
+  disable_default_path_fixes: true
+
 coverage:
   status:
     project:
       default:
         target: 0
-        threshold: null
+        threshold: "0%"
         base: auto
     patch:
       default:
         target: 0
-        threshold: null
+        threshold: "0%"
         base: auto
+
+ignore:
+  - "./_examples/**"
+
+fixes:
+  - "github.com/bartventer/gorm-multitenancy/v8/::github.com/bartventer/gorm-multitenancy/"
+  - "github.com/bartventer/gorm-multitenancy/mysql/v8/::github.com/bartventer/gorm-multitenancy/mysql/"
+  - "github.com/bartventer/gorm-multitenancy/postgres/v8/::github.com/bartventer/gorm-multitenancy/postgres/"
+  - "github.com/bartventer/gorm-multitenancy/middleware/echo/v8/::github.com/bartventer/gorm-multitenancy/middleware/echo/"
+  - "github.com/bartventer/gorm-multitenancy/middleware/gin/v8/::github.com/bartventer/gorm-multitenancy/middleware/gin/"
+  - "github.com/bartventer/gorm-multitenancy/middleware/iris/v8/::github.com/bartventer/gorm-multitenancy/middleware/iris/"
+  - "github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8/::github.com/bartventer/gorm-multitenancy/middleware/nethttp/"
+  
