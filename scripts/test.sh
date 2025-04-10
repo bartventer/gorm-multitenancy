@@ -38,7 +38,11 @@ run_tests() {
     echo "🧪 Testing module at path: $dir"
     echo "================================================================================"
     # shellcheck disable=SC2086
-    go test ${gotestflags[$dir]} ./... 2>&1 | tee "test.log"
+    if [[ ${CI:-false} != "true" ]]; then
+        go test ${gotestflags[$dir]} ./... 2>&1 | tee "test.log"
+    else
+        go test ${gotestflags[$dir]} ./...
+    fi
     [[ ${CI:-false} != "true" ]] && tail -n +2 "$modcoverage" >>"$coverprofile"
 }
 
