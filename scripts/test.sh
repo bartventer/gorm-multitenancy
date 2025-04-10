@@ -28,7 +28,7 @@ gotestflags=(
 
 cleanup() {
     # shellcheck disable=SC2317
-    unset workspace coverprofile modcoverage gotestflagsbase gotestflags coverageflags _temp
+    unset workspace coverprofile modcoverage gotestflagsbase gotestflags coverageflags
 }
 trap cleanup EXIT
 
@@ -40,10 +40,10 @@ run_tests() {
     # shellcheck disable=SC2086
     if [[ ${CI:-false} != "true" ]]; then
         go test ${gotestflags[$dir]} ./... 2>&1 | tee "test.log"
+        tail -n +2 "$modcoverage" >>"$coverprofile"
     else
         go test ${gotestflags[$dir]} ./...
     fi
-    [[ ${CI:-false} != "true" ]] && tail -n +2 "$modcoverage" >>"$coverprofile"
 }
 
 if [[ ${CI:-false} != "true" ]]; then
