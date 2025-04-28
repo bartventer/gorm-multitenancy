@@ -29,7 +29,7 @@ require (
 	github.com/kataras/iris/v12 v12.2.11
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/stretchr/testify v1.10.0
-	github.com/testcontainers/testcontainers-go v0.36.0
+	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/urfave/negroni v1.0.0
 	gorm.io/gorm v1.25.12
 )
@@ -76,7 +76,7 @@ require (
 	github.com/kataras/tunnel v0.0.4 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
-	github.com/magiconair/properties v1.8.9 // indirect
+	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/mailgun/raymond/v2 v2.0.48 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
@@ -147,7 +147,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/arch v0.16.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
