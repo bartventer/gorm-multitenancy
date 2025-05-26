@@ -25,7 +25,7 @@ require (
 	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.7.2
 	github.com/bartventer/gorm-multitenancy/v8 v8.7.2
 	github.com/docker/go-connections v0.5.0
-	github.com/gin-gonic/gin v1.10.0
+	github.com/gin-gonic/gin v1.10.1
 	github.com/kataras/iris/v12 v12.2.11
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/stretchr/testify v1.10.0
