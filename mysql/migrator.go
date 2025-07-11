@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/locking"
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/safe"
 	"github.com/bartventer/gorm-multitenancy/mysql/v8/schema"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
@@ -50,7 +51,7 @@ func (m Migrator) MigrateTenantModels(tenantID string) (err error) {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no tenant tables to migrate"))
 	}
 
-	sqlstr := "CREATE DATABASE IF NOT EXISTS " + m.DB.Statement.Quote(tenantID)
+	sqlstr := safe.QuoteRawSQLForTenant(m.DB, "CREATE DATABASE IF NOT EXISTS ", tenantID)
 	execErr := m.DB.Exec(sqlstr).Error
 	if execErr != nil {
 		m.logger.Printf("failed to create database for tenant %q: %v", tenantID, execErr)
@@ -149,8 +150,8 @@ func (m Migrator) DropDatabaseForTenant(tenantID string) (err error) {
 	m.logger.Printf("⏳ dropping database for tenant %s", tenantID)
 
 	tx := m.DB.Session(&gorm.Session{})
+	sqlstr := safe.QuoteRawSQLForTenant(m.DB, "DROP DATABASE IF EXISTS ", tenantID)
 	err = m.retry(func() error {
-		sqlstr := "DROP DATABASE IF EXISTS " + tx.Statement.Quote(tenantID)
 		if execErr := tx.Exec(sqlstr).Error; execErr != nil {
 			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop database for tenant %s: %w", tenantID, execErr))
 		}

@@ -5,7 +5,7 @@ import (
 	stdurl "net/url"
 	"regexp"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 )
 
 // URL is a wrapper around the standard [stdurl.URL] type that includes the original URL string.

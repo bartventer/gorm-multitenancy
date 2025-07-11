@@ -31,5 +31,5 @@ jobs:
         uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
         with:
           working-directory: ${{ matrix.dir }}
-          version: v2.0.2
+          version: v2.2.1
           args: --verbose --timeout 5m

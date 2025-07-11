@@ -5,7 +5,7 @@ go 1.24
 replace github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 => ../nethttp
 
 require (
-	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.7.2
+	github.com/bartventer/gorm-multitenancy/middleware/nethttp/v8 v8.8.1
 	github.com/kataras/iris/v12 v12.2.11
 )
 
@@ -14,9 +14,9 @@ require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/CloudyKit/jet/v6 v6.3.1 // indirect
 	github.com/Joker/jade v1.1.3 // indirect
-	github.com/Shopify/goreferrer v0.0.0-20240724165105-aceaa0259138 // indirect
+	github.com/Shopify/goreferrer v0.0.0-20250617153402-88c1d9a79b05 // indirect
 	github.com/ajg/form v1.5.1 // indirect
-	github.com/andybalholm/brotli v1.1.1 // indirect
+	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
@@ -52,8 +52,8 @@ require (
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
-	github.com/tdewolff/minify/v2 v2.22.4 // indirect
-	github.com/tdewolff/parse/v2 v2.7.22 // indirect
+	github.com/tdewolff/minify/v2 v2.23.8 // indirect
+	github.com/tdewolff/parse/v2 v2.8.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -64,12 +64,12 @@ require (
 	github.com/yosssi/ace v0.0.5 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
-	golang.org/x/time v0.11.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
