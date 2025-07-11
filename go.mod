@@ -3,7 +3,7 @@ module github.com/bartventer/gorm-multitenancy/v8
 go 1.24
 
 require (
-	github.com/mitchellh/mapstructure v1.5.0
+	github.com/go-viper/mapstructure/v2 v2.3.0
 	github.com/stretchr/testify v1.10.0
 	gorm.io/gorm v1.25.12
 )

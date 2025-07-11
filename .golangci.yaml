@@ -77,7 +77,7 @@ linters:
         - ^reflect.StructField$
         - ^github.com/Shopify/sarama.Config$
         - ^github.com/Shopify/sarama.ProducerMessage$
-        - ^github.com/mitchellh/mapstructure.DecoderConfig$
+        - ^github.com/go-viper/mapstructure/v2.DecoderConfig$
         - ^github.com/prometheus/client_golang/.+Opts$
         - ^github.com/spf13/cobra.Command$
         - ^github.com/spf13/cobra.CompletionOptions$
