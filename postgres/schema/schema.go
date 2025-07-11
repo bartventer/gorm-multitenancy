@@ -6,8 +6,8 @@ package schema
 import (
 	"errors"
 	"fmt"
-	"strings"
 
+	"github.com/bartventer/gorm-multitenancy/postgres/v8/internal/safe"
 	"gorm.io/gorm"
 )
 
@@ -36,10 +36,8 @@ func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err erro
 		_ = tx.AddError(err)
 		return nil, err
 	}
-	sql := new(strings.Builder)
-	_, _ = sql.WriteString("SET search_path TO ")
-	tx.QuoteTo(sql, schemaName)
-	if execErr := tx.Exec(sql.String()).Error; execErr != nil {
+	sqlstr := safe.QuoteRawSQLForTenant(tx, "SET search_path TO ", schemaName)
+	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
 		err = fmt.Errorf("failed to set search path %q: %w", schemaName, execErr)
 		_ = tx.AddError(err)
 		return nil, err

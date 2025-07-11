@@ -8,8 +8,8 @@ package schema
 import (
 	"errors"
 	"fmt"
-	"strings"
 
+	"github.com/bartventer/gorm-multitenancy/mysql/v8/internal/safe"
 	"gorm.io/gorm"
 )
 
@@ -38,10 +38,8 @@ func UseDatabase(tx *gorm.DB, dbName string) (reset func() error, err error) {
 		return nil, err
 	}
 
-	sql := new(strings.Builder)
-	_, _ = sql.WriteString("USE ")
-	tx.QuoteTo(sql, dbName)
-	if execErr := tx.Exec(sql.String()).Error; execErr != nil {
+	sqlstr := safe.QuoteRawSQLForTenant(tx, "USE ", dbName)
+	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
 		err = fmt.Errorf("failed to set database %q: %w", dbName, execErr)
 		_ = tx.AddError(err)
 		return nil, err

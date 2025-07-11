@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bartventer/gorm-multitenancy/postgres/v8/internal/locking"
+	"github.com/bartventer/gorm-multitenancy/postgres/v8/internal/safe"
 	"github.com/bartventer/gorm-multitenancy/postgres/v8/schema"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/backoff"
 	"github.com/bartventer/gorm-multitenancy/v8/pkg/driver"
@@ -45,7 +46,7 @@ func (m Migrator) MigrateTenantModels(tenantID string) error {
 		return gmterrors.NewWithScheme(DriverName, errors.New("no tenant tables to migrate"))
 	}
 
-	sqlstr := "CREATE SCHEMA IF NOT EXISTS " + m.DB.Statement.Quote(tenantID)
+	sqlstr := safe.QuoteRawSQLForTenant(m.DB, "CREATE SCHEMA IF NOT EXISTS ", tenantID)
 	if err := m.DB.Exec(sqlstr).Error; err != nil {
 		return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to create schema for tenant %s: %w", tenantID, err))
 	}
@@ -118,8 +119,8 @@ func (m Migrator) MigrateSharedModels() error {
 func (m Migrator) DropSchemaForTenant(tenant string) error {
 	m.logger.Printf("⏳ dropping schema for tenant %s", tenant)
 
+	sqlstr := safe.QuoteRawSQLForTenant(m.DB, "DROP SCHEMA IF EXISTS ", tenant) + " CASCADE"
 	err := m.retry(func() error {
-		sqlstr := "DROP SCHEMA IF EXISTS " + m.DB.Statement.Quote(tenant) + " CASCADE"
 		if err := m.DB.Exec(sqlstr).Error; err != nil {
 			return gmterrors.NewWithScheme(DriverName, fmt.Errorf("failed to drop schema for tenant %s: %w", tenant, err))
 		}
