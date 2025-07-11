@@ -8,6 +8,7 @@ package schema
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -33,19 +34,19 @@ import (
 func UseDatabase(tx *gorm.DB, dbName string) (reset func() error, err error) {
 	if dbName == "" {
 		err = errors.New("database name is empty")
-		tx.AddError(err)
+		_ = tx.AddError(err)
 		return nil, err
 	}
 
-	sqlstr := "USE " + dbName
-	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
+	sql := new(strings.Builder)
+	_, _ = sql.WriteString("USE ")
+	tx.QuoteTo(sql, dbName)
+	if execErr := tx.Exec(sql.String()).Error; execErr != nil {
 		err = fmt.Errorf("failed to set database %q: %w", dbName, execErr)
-		tx.AddError(err)
+		_ = tx.AddError(err)
 		return nil, err
 	}
 
-	reset = func() error {
-		return tx.Exec("USE public").Error
-	}
+	reset = func() error { return tx.Exec("USE public").Error }
 	return reset, nil
 }

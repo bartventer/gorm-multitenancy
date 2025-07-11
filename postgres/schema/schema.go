@@ -6,6 +6,7 @@ package schema
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -32,18 +33,18 @@ func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err erro
 	tx = tx.Session(&gorm.Session{})
 	if schemaName == "" {
 		err = errors.New("schema name is empty")
-		tx.AddError(err)
+		_ = tx.AddError(err)
 		return nil, err
 	}
-	sqlstr := "SET search_path TO " + schemaName
-	if execErr := tx.Exec(sqlstr).Error; execErr != nil {
+	sql := new(strings.Builder)
+	_, _ = sql.WriteString("SET search_path TO ")
+	tx.QuoteTo(sql, schemaName)
+	if execErr := tx.Exec(sql.String()).Error; execErr != nil {
 		err = fmt.Errorf("failed to set search path %q: %w", schemaName, execErr)
-		tx.AddError(err)
+		_ = tx.AddError(err)
 		return nil, err
 	}
-	reset = func() error {
-		return tx.Exec("SET search_path TO public").Error
-	}
+	reset = func() error { return tx.Exec("SET search_path TO public").Error }
 	return reset, nil
 }
 
@@ -51,7 +52,7 @@ func SetSearchPath(tx *gorm.DB, schemaName string) (reset func() error, err erro
 func CurrentSearchPath(tx *gorm.DB) string {
 	tx = tx.Session(&gorm.Session{})
 	var searchPath string
-	tx.Raw("SHOW search_path").Scan(&searchPath)
+	_ = tx.Raw("SHOW search_path").Scan(&searchPath)
 	if searchPath == `"$user", public` {
 		return "public"
 	}
