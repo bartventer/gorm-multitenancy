@@ -1,11 +1,9 @@
 {
     "name": "Gorm Multi-Tenancy",
     "image": "ghcr.io/bartventer/gorm-multitenancy/devcontainer:latest",
-    "mounts": [
-        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-        "source=${localEnv:HOME}/.vscode-server,target=/home/vscode/.vscode-server-insiders/extensions,type=bind,consistency=cached"
+    "forwardPorts": [
+        8080
     ],
-    "forwardPorts": [8080],
     "remoteEnv": {
         "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
         "PATH": "${containerWorkspaceFolder}/bin:${containerEnv:PATH}"
