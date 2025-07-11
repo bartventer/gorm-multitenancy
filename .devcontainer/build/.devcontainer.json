@@ -13,10 +13,7 @@
 		}
 	},
 	"features": {
-		"ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker:latest": {},
-		"ghcr.io/bartventer/arch-devcontainer-features/go:latest": {
-			"golangciLintVersion": "v2.0.2"
-		}
+		"ghcr.io/bartventer/arch-devcontainer-features/docker-in-docker:latest": {}
 	},
 	"remoteUser": "vscode"
 }
