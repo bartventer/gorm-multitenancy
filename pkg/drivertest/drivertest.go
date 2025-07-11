@@ -136,6 +136,22 @@ func testMigrateTenantModels(t *testing.T, db *multitenancy.DB, opts Options) {
 		})
 		assert.NoError(t, err)
 	})
+
+	t.Run("Issue100 Quoting", func(t *testing.T) {
+		if opts.IsMock {
+			t.Skip("skipping case sensitive test for mock implementations")
+		}
+		ctx := context.Background()
+		tenant := &testmodels.Tenant{ID: "Tenant_One"}
+		err := db.FirstOrCreate(tenant).Error
+		require.NoError(t, err)
+
+		err = db.RegisterModels(ctx, testmodels.MakePrivateModels(t)...)
+		require.NoError(t, err)
+
+		err = db.MigrateTenantModels(ctx, tenant.ID)
+		assert.NoError(t, err)
+	})
 }
 
 // testOffboardTenant tests the OffboardTenant method.
