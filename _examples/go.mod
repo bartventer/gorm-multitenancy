@@ -1,6 +1,6 @@
 module github.com/bartventer/gorm-multitenancy/examples/v8
 
-go 1.24
+go 1.24.0
 
 replace github.com/bartventer/gorm-multitenancy/v8 => ../
 
@@ -24,12 +24,12 @@ require (
 	github.com/bartventer/gorm-multitenancy/mysql/v8 v8.8.1
 	github.com/bartventer/gorm-multitenancy/postgres/v8 v8.8.1
 	github.com/bartventer/gorm-multitenancy/v8 v8.8.1
-	github.com/docker/go-connections v0.5.0
+	github.com/docker/go-connections v0.6.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/kataras/iris/v12 v12.2.11
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/stretchr/testify v1.10.0
-	github.com/testcontainers/testcontainers-go v0.37.0
+	github.com/testcontainers/testcontainers-go v0.39.0
 	github.com/urfave/negroni v1.0.0
 	gorm.io/gorm v1.30.0
 )
@@ -53,7 +53,7 @@ require (
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker v28.3.2+incompatible // indirect
+	github.com/docker/docker v28.3.3+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -153,7 +153,7 @@ require (
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
