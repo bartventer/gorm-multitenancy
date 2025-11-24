@@ -28,7 +28,7 @@ jobs:
           go-version: "1.24.x"
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@1481404843c368bc19ca9406f87d6e0fc97bdcfd # v7.0.0
+        uses: golangci/golangci-lint-action@e7fa5ac41e1cf5b7d48e45e42232ce7ada589601 # v9.1.0
         with:
           working-directory: ${{ matrix.dir }}
           version: v2.2.1
