@@ -5,7 +5,7 @@ go 1.24
 require (
 	github.com/go-viper/mapstructure/v2 v2.3.0
 	github.com/stretchr/testify v1.10.0
-	gorm.io/gorm v1.30.0
+	gorm.io/gorm v1.31.0
 )
 
 require (
